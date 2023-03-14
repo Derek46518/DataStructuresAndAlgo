@@ -1,0 +1,150 @@
+Week 3 - Part I
+
+A review of what you have learned (main purpose : to strengthen their understanding of PATH and cmd exec.)
+
+＊ Many GUI/MUI "commands" you give (to the system) are, in effect, textual commands.
+＊ The echoing of characters. ASCII.  ctrl-m, ctrl-d, ctrl-c, ctrl-z, etc.
+＊ When is the textual command you typed sent to the system for processing?
+＊ How does the system run the textual command you typed (and ENTERd) in most cases?
+＊ What is the importance of 'PATH' (what is the importance of '$PATH'?) What is the difference between the two?
+＊ What is the importance of 'PS1' (or rather, '$PS1')?
+＊ What is '~'?
+＊ What is '~/.bashrc' for?
+＊ The content of '~/.bashrc' cannot be anything. What must it be???
+＊ What does 'source <anyFile>' do?
+＊ Why does the command 'echo ~' give that result (and not just '~')?
+
+～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
+
+Week 3 - Part II
+
+An example of how we can construct our own Linux command: PrintPara
+
+  > mkdir ~/ShellPractice
+
+  > cd ~/ShellPractice
+
+  > vi PrintPara.cpp
+
+# include <cstdio>
+using namespace std ;
+
+int main( int argc, char** argv ) {
+
+  printf( "Number of parameters : %d\n", argc ) ;
+
+  for ( int i = 0 ; i < argc ; i++ )
+    printf( "Para %d >>%s<<\n", i, argv[i] ) ;
+
+} // main()
+
+  > g++ -o PrintPara PrintPara.cpp
+  > ./PrintPara 123 456
+  > PrintPara 123 456
+
+  > cp PrintPara ~/bin/
+  # if you have not done 'PATH=$PATH:~/bin', do it now. (If it is already in .bashrc when you log in, then it has been done.)
+  > PrintPara 123 456
+  > PrintP<TAB> 123 456
+  > PrintP<TAB> ~
+
+Q: What exactly has happened?
+   Diff. between '> PrintPara' and '> ./PrintPara'???
+
+'cd ~/bin' vs. 'PrintPara cd ~/bin' (who is called and what does the being called receive?).
+
+And how about
+  > ls -alt /var
+?
+What is happening here?
+
+'echo' is the UNIX counterpart of my 'PrintPara' (unfortunately, I never realized it ... ; such is the diff. between the original UNIX engineers and me)
+
+What is '~'?
+> echo ls ~
+> PrintPara ls ~
+
+# What happened?
+
+> echo        123            456     Hi
+
+# What is the C code of 'echo'?
+
+> Print<TAB> ~/bin/Pri<TAB>
+# Why does it work?
+
+# Case in point : we just constructed a command of our own ; to put it another way, we just inherited the Unix environment and specialized it
+
+
+
+～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
+
+
+Week 3 - Part III
+
+※ <, >, >>, |  # What are the differences
+※ Concepts of stdin and stdout
+
+> date > file1.txt
+> cat file1.txt
+> date
+> date >> file1.txt
+> cat file1.txt
+> date > file1.txt
+> cat file1.txt
+
+What is /usr/include for?
+
+> ls -l /usr/include | less    # Page-Up and Page-Down ; try '/std<ENTER>' ; to exit, press 'q'
+
+> whereis stdio.h   # if not working, try 'locate stdio.h'
+
+有關'>'(與'>>')的進一步說明
+
+(a) 嚴格說來應寫'1>'與'2>'(與'1>>'與'2>>')，1是stdout 2是stderr ; 如果沒寫number，default就是1(意即stdout)
+
+(b) 還有'&>'，意思是「stdout與stderr皆往同一個地方去」 ; '&>...'的另一個寫法是'>...  2>&1'
+
+(c) '1>/dev/null'與'2>/dev/null'與'&>/dev/null'(或'>/dev/null')是「丟棄不要」的意思
+
+～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
+
+
+
+Linux Practices HW #1       
+
+Please write a C/C++ program called 'Sort1-YourIDHere.cpp'.
+
+This program will be compiled using something similar to the following Linux cmd : g++ -o MySort Sort1-YourIDHere.cpp
+
+When 'MySort' is run, it reads from the standard input and may sort the lines it gets from the input. Then, it prints the result to the standard output.
+
+When running MySort, the user has the option of supplying two arguments. These two arguments are either '-o asc' or '-o des', where 'asc' means that the lines should be printed in ascending order, while 'des' means that the lines should be printed in descending order. If no arguments are provided when MySort is run, the output should be exactly the same as the input.
+
+Here is an example. Suppose a file named 'File1' is used as the input, and also suppose that the content of File1 is the following. (Note that we can use any text file with any name we want as the input. The content of the file can also be empty if we want.)
+
+Content of file starts below but does not include this line. >>
+Roses are red
+Violets are blue
+Pigs are fat
+And so are fools
+<< Content of file ends above and does not include this line (Note that there may be no LineReturn at the end; in this example, however, there IS a LineReturn at the end)
+
+Note that to simplify your task of string processing, we purposely do not put punctuation marks such as '.' in the input.
+
+Example 1 : > ./MySort -o asc < File1
+And so are fools
+Pigs are fat
+Roses are red
+Violets are blue
+
+Example 2 : > ./MySort < File1
+Roses are red
+Violets are blue
+Pigs are fat
+And so are fools
+
+Example 3 : > ./MySort --help
+Usage: MySorc [-o ordering] < fileName
+Sort the content of the given file by lines. The specified ordering can be either 'asc' or 'des'.
+Example: MySort -o asc < myFile

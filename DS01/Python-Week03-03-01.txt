@@ -1,0 +1,1294 @@
+
+
+
+                                     階段二：語言探討(Python的種種細節)
+
+
+
+
+如果你只想用抄的，那你遲早會被「類ChatGPT」所取代！！！你必須知道發生什麼事！！！！！
+That is, you must UNDERSTAND it and not just MEMORIZE it.
+
+(IF you just want to memorize and repeat what you have been shown to work,
+ THEN sooner or later, you will be replaced by ChatGPT or the like.
+
+ But if you know what is actually happening or you can make educated guess about
+ what is actually happening, then there is no way that you'll be replaced.)
+
+- 夏延德
+
+
+
+------------------
+Preliminary preparation
+------------------
+
+To check what versions of Python are installed on my computer : >>python[TAB]<<
+# to check where it is located, (1) run that version of python (2) import os (3) os.__file__
+
+> python   # 'python[TAB][TAB]'
+python              python2             python3             python3.10          python3.11          python3.9-config
+python-config       python2.7           python3-config      python3.10-config   python3.11-config   pythonw
+python.app          python2.7-config    python3-intel64     python3.10-intel64  python3.9           pythonw2.7
+
+> python3.9
+Python 3.9.13 (main, Aug 25 2022, 18:29:29)
+[Clang 12.0.0 ] :: Anaconda, Inc. on darwin
+Type "help", "copyright", "credits" or "license" for more information.
+
+>>> import os
+
+>>> os.__file__
+'<HOME-DIR>/opt/anaconda3/lib/python3.9/os.py'
+
+# Therefore, 'python3.9' is located under '<HOME-DIR>/opt/anaconda3/bin/'
+
+>>> B( 'ls -al ~/opt/anaconda3/bin/ | grep python3' )
+# assuming that we invoked python using : > python3.9 -i ~/StartUpScript.py # see below
+
+-rwxrwxr-x    1 hsia  staff       248  1 16 16:48 ipython3
+lrwxr-xr-x    1 hsia  staff         9  1 16 16:48 python -> python3.9
+lrwxr-xr-x    1 hsia  staff         9  1 16 16:48 python3 -> python3.9
+lrwxr-xr-x    1 hsia  staff        16  1 16 16:48 python3-config -> python3.9-config
+-rwxrwxr-x    1 hsia  staff   4003360  1 16 16:48 python3.9
+-rwxrwxr-x    1 hsia  staff      2058  1 16 16:48 python3.9-config
+
+------------------
+
+Solving the problem of "pipED the relevant package but python gives a ModuleNotFoundError and says there is no such module".
+
+Approach 1 : 'pip' it to the right place (the default place for the-python-of-our-choice to find)
+
+1. There may be many versions of Python installed on a computer. E.g.,
+
+python2.7.16      # bundled with MacOS
+/System/Library/Frameworks/Python.framework/Versions/2.7/bin/python2.7
+
+python3.8.9       # bundled with MacOS
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.8/bin/python3.8
+
+python3.9.13      # installed by ananconda
+~/opt/anaconda3/bin/python3.9
+
+python3.10.9      # the one used by PyCharm
+/Library/Frameworks/Python.framework/Versions/3.10/bin/python3.10
+
+python3.11.1      # the one installed by homebrew
+/opt/homebrew/Cellar/python@3.11/3.11.1/Frameworks/Python.framework/Versions/3.11/bin/python3.11
+
+2. This may lead to the phenomenon of
+   "pipED the relevant package but python says something to the effect that there is no such module"
+
+3. What is the situation?
+
+   Theoretically ...
+
+   Each version of python comes with a version of 'pip', which is located under 'bin/'
+   (e.g., /Library/Frameworks/Python.framework/Versions/3.10/bin/)
+
+   whereas the corresponding ../lib/pythonX.Y/site-packages/pip/ contains the files needed by this particular version of 'pip'
+   (e.g., /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/pip/)
+
+# In the case of python3.9.13, the one installed by ananconda,
+
+> ls -al ~/opt/anaconda3/bin/ | grep python     # we use 'grep' here, because there are many items under this 'bin/'
+-rwxrwxr-x    2 hsia  staff       139 10  2  2021 .python.app-post-link.sh
+-rwxrwxr-x    2 hsia  staff        38 10  2  2021 .python.app-pre-unlink.sh
+-rwxrwxr-x    1 hsia  staff       248  1 16 16:48 ipython
+-rwxrwxr-x    1 hsia  staff       248  1 16 16:48 ipython3
+lrwxr-xr-x    1 hsia  staff         9  1 16 16:48 python -> python3.9
+-rwxrwxr-x    1 hsia  staff       137  1 16 16:48 python.app
+lrwxr-xr-x    1 hsia  staff         9  1 16 16:48 python3 -> python3.9
+lrwxr-xr-x    1 hsia  staff        16  1 16 16:48 python3-config -> python3.9-config
+-rwxrwxr-x    1 hsia  staff   4003360  1 16 16:48 python3.9
+-rwxrwxr-x    1 hsia  staff      2058  1 16 16:48 python3.9-config
+-rwxrwxr-x    1 hsia  staff       137  1 16 16:48 pythonw
+
+> ls -al ~/opt/anaconda3/bin | grep pip
+-rwxrwxr-x    1 hsia  staff       245  1 16 16:48 pip
+-rwxrwxr-x    1 hsia  staff       245  1 16 16:48 pip3
+
+> ls -al ~/opt/anaconda3/lib/python3.9/site-packages/pip
+total 32
+drwxr-xr-x    9 hsia  staff    288  1 16 16:48 .
+drwxr-xr-x  684 hsia  staff  21888  1 16 16:49 ..
+-rw-rw-r--    2 hsia  staff    357  8  4 02:55 __init__.py
+-rw-rw-r--    2 hsia  staff   1198  8  4 02:55 __main__.py
+-rw-rw-r--    2 hsia  staff   1037  8  4 02:55 __pip-runner__.py
+drwxr-xr-x    5 hsia  staff    160  1 16 16:48 __pycache__
+drwxr-xr-x   25 hsia  staff    800  1 16 16:48 _internal
+drwxr-xr-x   28 hsia  staff    896  1 16 16:48 _vendor
+-rw-rw-r--    2 hsia  staff    286  8  4 02:55 py.typed
+
+
+   Seems that whenever a pip (located under '<somePath>/bin/') installs a package,
+   it will put the being installed package under '../lib/pythonX.Y/site-packages/',
+   i.e., under '../../' as far as, e.g., '__pip-runner__.py', is concerned
+
+4. Therefore, here is how it should work whenever we want to 'pip install' a module (or package).
+
+   Go to the "right" directory (e.g., '~/opt/anaconda3/bin/' )
+
+   Run the 'pip install ...' command as >>./pip3 install ...<<
+
+   Another way of doing it :
+
+   > pythonX.Y -m pip install <packageName>        # should install the named package under .../lib/pythonX.Y/site-packages/
+                                                   # assuming that 'pythonX.Y' does call .../bin/pythonX.Y
+
+   May want it to be
+
+   > pythonX.Y -m pip install -user <packageName>  # if there is a 'sudo' requirement
+
+   (may even want to >>python3 -m pip install --upgrade pip setuptools wheel<<
+                     or, perhaps better yet, just >>python -m ensurepip --upgrade<<
+    beforehand)
+
+   (snsurepip can be found under /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10
+                           and   ~/opt/anaconda3/lib/python3.9
+   )
+
+   # https://stackoverflow.com/questions/14295680/unable-to-import-a-module-that-is-definitely-installed
+
+註 # It is strange that python3.8 (the one bundled with MacOS) does not have .../bin/pip,
+   # but it does have .../lib/python3.8/site-packages/pip/
+
+   # python2, on the other hand, does not come with a 'pip'
+   # (while there is no /System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/,
+   #        there is a /Library/Python/2.7/site-packages)
+   # (but there is nothing, not to mention 'pip/', under /Library/Python/2.7/site-packages/ )
+   # (python2.7 seems to be placing what should be under 'site-packages' under
+   # '/System/Library/Frameworks/Python.framework/Versions/2.7/Extras/lib/python/' )
+
+   # python3.11 (the one installed by homebrew ;
+   #             /opt/homebrew/Cellar/python\@3.11/3.11.1/Frameworks/Python.framework/Versions/3.11/bin/python3.11)
+   # does not come with a version of 'pip' ;
+   # nor does its corresponding .../lib/python3.11/site-packages/ contains a 'pip/' directory
+   # (its corresponding 'site-packages' is actually located under '/opt/homebrew/lib/python3.11/', but this appears to be irrelevant)
+   # however, there IS a 'ensurepip/' located under the corresponding .../lib/python3.11/
+   # (The basic idea seems to be that we run >>python3.11 -m ensurepip --upgrade<<
+   #                                 or just >>python3.11 -m ensurepip<<)
+   #################
+   # python3.11 comes with even less binaries (under the same 'bin/') as compared to python3.10 (the one installed by PyCharm)
+   #################
+   # the date now is 2023-02-04
+   #################
+   > python3.11 -m ensurepip --upgrade
+   Looking in links: /var/folders/qz/04v1bmgs13l2v22k490vwr6r0000gn/T/tmpzc8f68ch
+   Processing /private/var/folders/qz/04v1bmgs13l2v22k490vwr6r0000gn/T/tmpzc8f68ch/setuptools-65.6.3-py3-none-any.whl
+   Processing /private/var/folders/qz/04v1bmgs13l2v22k490vwr6r0000gn/T/tmpzc8f68ch/pip-22.3.1-py3-none-any.whl
+   Installing collected packages: setuptools, pip
+     WARNING: The scripts pip3 and pip3.11 are installed in '/opt/homebrew/opt/python@3.11/Frameworks/Python.framework/Versions/3.11/bin' which is not on PATH.
+     Consider adding this directory to PATH or, if you prefer to suppress this warning, use --no-warn-script-location.
+   Successfully installed pip-22.3.1 setuptools-65.6.3
+   #################
+   > ls -al /opt/homebrew/Cellar/python\@3.11/3.11.1/Frameworks/Python.framework/Versions/3.11/bin/
+   total 184
+   drwxr-xr-x   9 hsia  admin    288  2  4 14:50 .
+   drwxr-xr-x  10 hsia  admin    320  1 22 14:52 ..
+   -rwxr-xr-x   1 hsia  admin    173  1 22 14:52 2to3-3.11
+   -rwxr-xr-x   1 hsia  admin    171  1 22 14:52 idle3.11
+   -rwxr-xr-x   1 hsia  admin    249  2  4 14:50 pip3
+   -rwxr-xr-x   1 hsia  admin    249  2  4 14:50 pip3.11
+   -rwxr-xr-x   1 hsia  admin    156  1 22 14:52 pydoc3.11
+   -rwxr-xr-x   1 hsia  admin  69168  1 22 14:52 python3.11
+   -rwxr-xr-x   1 hsia  admin   2115  1 22 14:52 python3.11-config
+   #################
+   > ls -al /opt/homebrew/lib/python3.11/site-packages/
+   total 8
+   drwxr-xr-x   9 hsia  admin   288  2  4 14:50 .
+   drwxr-xr-x   3 hsia  admin    96  1 22 14:52 ..
+   drwxr-xr-x   5 hsia  admin   160  2  4 14:50 _distutils_hack
+   -rw-r--r--   1 hsia  admin   151  2  4 14:50 distutils-precedence.pth
+   drwxr-xr-x   9 hsia  admin   288  2  4 14:50 pip
+   drwxr-xr-x  10 hsia  admin   320  2  4 14:50 pip-22.3.1.dist-info
+   drwxr-xr-x   6 hsia  admin   192  2  4 14:50 pkg_resources
+   drwxr-xr-x  48 hsia  admin  1536  2  4 14:50 setuptools
+   drwxr-xr-x  10 hsia  admin   320  2  4 14:50 setuptools-65.6.3.dist-info
+   #################
+
+
+------------------
+
+Solving the problem of "pipED the relevant package but python gives a ModuleNotFoundError and says there is no such module".
+
+Approach 2 : Telling the-python-of-our-choice where the package is located
+             (if we think 'pip' (almost) the same thing more than once is a waste of precious resources)
+
+   In general, if we run a python interpreter and we want it to search a particular directory for packages,
+   we could do something like the following :
+
+   > export PYTHONPATH=$PYTHONPATH:~/opt/anaconda3/lib/python3.9/site-packages/ ; python-of-our-choice
+
+   Alternatively, we could also do the something like following :
+
+   >>> import sys
+   >>> sys.path.extend( [ '<HOME-DIR>/opt/anaconda3/lib/python3.9/site-packages' ] )
+
+------------------
+
+PyCharm小插曲：the above method did not work ; 搞了半天是OS要upgrade(因為所下載的package (cv2) is built for the new OS (with a new version number))
+
+應該用PyCharm error message(的重點)去Google，但一直都是用'install' 'cv2' 'MacOS' 'python3.10' ('cannot install cv2 in python3.10')去Google ...
+
+------------------
+
+註：The situation with PyCharm is somewhat complicated.
+
+   PyCharm runs python3.10 ('/Library/Frameworks/Python.framework/Versions/3.10/bin/python3.10') and
+   initializes 'sys.path' to contain
+   '~/Library/Caches/JetBrains/PyCharmCE2022.3/demo/PyCharmLearningProject/venv/lib/python3.10/site-packages',
+   (and '~/PycharmProjects/TheBeingRunPyCharmProject')
+   and NOT '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages'.
+
+sys.path   # for python3.10.9 run within PyCharm
+[
+'/Applications/PyCharm CE.app/Contents/plugins/python-ce/helpers/pydev',
+'/Applications/PyCharm CE.app/Contents/plugins/python-ce/helpers/third_party/thriftpy',
+'/Applications/PyCharm CE.app/Contents/plugins/python-ce/helpers/pydev',
+'/Users/hsia/PycharmProjects/Testing',
+'/Library/Frameworks/Python.framework/Versions/3.10/lib/python310.zip',
+'/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10',
+'/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/lib-dynload',
+'<HOME-DIR>/Library/Caches/JetBrains/PyCharmCE2022.3/demo/PyCharmLearningProject/venv/lib/python3.10/site-packages',
+'<HOME-DIR>/PycharmProjects/Testing'   # the PyCharm project we are working with right now
+]
+
+   It seems that when we run our PyCharm project, we should
+   >>sys.path.append( '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages' )<<
+   in order to successfully import the packages we previously installed using the associated 'pip'
+   (/Library/Frameworks/Python.framework/Versions/3.10/bin/pip3)
+
+   However, the 'venv' design of PyCharm is such that it will copy the contents of "normal" site-packages to the "venv" site-packages.
+   One "problem" though : we do not know WHEN PyCharm will do the necessary copying.
+   One added "problem" : PyCharm does this copying (from "normal" site-packages) for the 'venv' of EVERY PyCharm project.
+
+If python3.10.9 is run in a normal terminal, there will be no such problem.
+
+sys.path   # for python3.10.9 run in a normal terminal
+['',       # path[0] is the directory containing the script that was used to invoke the Python interpreter. If the script directory is not available (e.g. if the interpreter is invoked interactively or if the script is read from standard input), path[0] is the empty string (reference.pdf, p. 1638)
+'...',     # the value of EXPORTed PYTHONPATH, if this environment variable is present (and is also exported) when python3.10.9 is run
+'/Library/Frameworks/Python.framework/Versions/3.10/lib/python310.zip',
+'/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10',
+'/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/lib-dynload',
+'/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages'
+]
+
+Here is how I deal with the import "problem" of PyCharm :
+
+
+
+PyCharm | Settings | Build, Execution, Deployment | Console | Python Console
+(Also : File | New Projects Setup | Settings for New Projects ... |
+
+Under 「Starting script」, there are two lines :
+
+# no indentation please
+import sys; print('Python %s on %s' % (sys.version, sys.platform))
+sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])
+
+I add two extra lines :
+
+# no indentation please
+sys.path.append( '/Users/hsia/bin' )
+from StartUpScript import *
+
+Under <HOME-DIR>/bin/, I put
+  StartUpScript.py
+
+In all .py that are to be run in PyCharm,
+
+I change
+
+if __name__ == "__main__" :
+  main()
+
+to
+
+if __name__ == "__main__" :
+  import sys ; sys.path.append( '<HOME-DIR>/bin' ) ; from StartUpScript import *
+  main()
+
+
+
+-------------------------------------------------------------------------------------------------------------
+
+> ls ~/bin  # just to show that we have StartUpScript.py under the bin of our home directory
+... StartUpScript.py ...
+
+> python3.9 -i ~/bin/StartUpScript.py   # interative session ; 基本上應等於 >> from StartUpScript import * <<，但不用受sys.path值的束縛
+
+Python 3.9.13 (main, Aug 25 2022, 18:29:29)
+[Clang 12.0.0 ] on darwin
+
+--- StartUpScript.py loaded ---
+
+>>> pprint( sys.path )
+['/Users/hsia/bin',              # <----- due to "-i ~/bin/StartUpScript.py"
+ '/Users/hsia/opt/anaconda3/lib/python39.zip',
+ '/Users/hsia/opt/anaconda3/lib/python3.9',
+ '/Users/hsia/opt/anaconda3/lib/python3.9/lib-dynload',
+ '/Users/hsia/opt/anaconda3/lib/python3.9/site-packages',
+ '/Users/hsia/opt/anaconda3/lib/python3.9/site-packages/aeosa']
+
+>>> B( 'pwd' )
+<SomeDir>/PythonProj/Testing
+
+>>> os.chdir( '..' )
+
+>>> B( 'pwd' )
+<SomeDir>/PythonProj
+
+>>> B( 'cd /' )
+
+>>> B( 'pwd' )
+<SomeDir>/PythonProj           # Why?
+
+----------------------------------------------
+
+To run a Python-script
+
+> ls ~/bin     # just to show that we have StartUpScript.py under <HOME-DIR>/bin/
+... StartUpScript.py ...
+
+> export PYTHONPATH=$PYTHONPATH:~/bin       # Must write the 'export' !!!      # where do I specify PYTHONPATH in PyCharm???
+
+# Put whatever extra path we want the-python-we-run to search in $PYTHONPATH (and 'export' it)
+
+# 注意： # Seems that below is true only if we have defined (and also exported) PYTHONPATH ... Not clear why.
+#   不管我們在run python時要import什麼module，必須要make sure我們在invoke python interpreter時所在的working directory之下  不能  有同名的py檔。
+#
+#   例：假設現在我們的working directory是/home/wang/，而我們現在要run python3.9，且我們在啟動python3.9之後也打算import StartUpScript，
+#      而相關的StartUpScript.py事實上是位於/home/wang/bin/之下。那麼current working directory (即/home/wang/)之下就不能有StartUpScript.py檔。
+#      因為python interpreter的設計是在一啟動之後就把目前所在的working directory放入sys.path之中作為第一個，導致它所找到的StartUpScript.py是啟動
+#      python interpreter時所在的working directory之下的StartUpScript.py、而不是我們希望它找到的/home/wang/bin/StartUpScript.py。
+#      ($PYTHONPATH的內容是會放進sys.path之中，不過將會是放在current working directory的緊後面)
+
+(1) Content of the script file (fileName) # assume that the path of 'python3.9' is within $PATH
+
+#!/usr/bin/env python3.9
+...  # python code
+
+### Alternative content of the script file (fileName) ###
+
+#!<full path of python3.9>
+... # python code
+
+(2) chmod u+x fileName
+
+(3) ./fileName
+
+### An alternative for executing fileName ###
+
+> cp fileName ~/bin
+> fileName   # assuming that '~/bin/' is "in" $PATH
+
+----------------------------------------------
+
+To compile python script into byte code :   # said to be so, but never tried ...
+
+python3.11 -m py_compile python_shell.py
+
+# Q : what is the file name that we get, and how do we run the file?
+
+--------------------------------------------------------------------------------------------------------------------------------------
+
+> echo $PYTHONPATH
+:<HOME-DIR>/bin
+
+> cat argParseProg03Out
+#!/usr/bin/env python3.9
+# #!/Users/hsia/opt/anaconda3/bin/python3.9
+
+from StartUpScript import *
+
+import argparse
+from pprint import pprint
+
+parser = argparse.ArgumentParser()
+
+# parser.add_argument( "echo", help = "to echo the parameter here" ) # this is for positional argument
+
+parser.add_argument( '-of', '--outfile', type = str, help = 'the file to print to' ) # for keyword argument (options)
+parser.add_argument( '-ov', '--outputVar', type = str, help = 'name of the variable to assign to in the output file' )
+
+args = parser.parse_args()
+
+a = ( (10, 20), 30, 40, ((50,), 60), 70)
+
+if args.outfile != None :
+
+  print( '\n' + 'outfile : ' + args.outfile )
+
+  if args.outputVar != None :
+    print( 'outputVar : ' + args.outputVar )
+
+  outfile = open( args.outfile, mode = 'w' )
+
+  if args.outputVar != None :
+    print( '\n' + args.outputVar + ' = \\' + '\n\\', file = outfile ) # can have no '\n' at the end ; 'print' will print one
+  else :
+    print( file = outfile )
+
+  pprint( a, stream = outfile, width = 10, indent = 2 )
+  print( file = outfile )
+
+  B( 'echo Testing of executing shell command \'ls\' : ' )
+  B( 'ls' )
+
+if args.outputVar != None :
+  print( '\n' + args.outputVar + ' = ' + '\n' )
+else :
+  print()
+
+pprint( a, width = 10, indent = 2 )
+print()
+
+> ./argParseProg03Out
+
+( ( 10,
+    20),
+  30,
+  40,
+  ( (50,),
+    60),
+  70)
+
+> ./argParseProg03Out -of Result357.py
+
+outfile : Result357.py
+Testing of executing shell command ls :
+AnyScript		Result357.py		argParseProg		argParseProg03Out	pyCommand-02
+Result123.py		Result456.py		argParseProg02		bashScript-01.sh	pyScript-01.py
+Result135.py		Result789.py		argParseProg02In	prog.py			pyScript-02.py
+Result246.py		__pycache__		argParseProg03In	pyCommand-01		typeChecking.py
+
+( ( 10,
+    20),
+  30,
+  40,
+  ( (50,),
+    60),
+  70)
+
+> cat Result357.py
+
+( ( 10,
+    20),
+  30,
+  40,
+  ( (50,),
+    60),
+  70)
+
+> ./argParseProg03Out -of Result357.py -ov list357
+
+outfile : Result357.py
+outputVar : list357
+Testing of executing shell command ls :
+AnyScript		Result357.py		argParseProg		argParseProg03Out	pyCommand-02
+Result123.py		Result456.py		argParseProg02		bashScript-01.sh	pyScript-01.py
+Result135.py		Result789.py		argParseProg02In	prog.py			pyScript-02.py
+Result246.py		__pycache__		argParseProg03In	pyCommand-01		typeChecking.py
+
+list357 =
+
+( ( 10,
+    20),
+  30,
+  40,
+  ( (50,),
+    60),
+  70)
+
+> cat Result357.py
+
+list357 = \
+\
+( ( 10,
+    20),
+  30,
+  40,
+  ( (50,),
+    60),
+  70)
+
+--------------------------------------------------------------------------------------------------------------------------------------
+
+> cat argParseProg03In
+#!/usr/bin/env python3.9
+# #!/Users/hsia/opt/anaconda3/bin/python3.9
+
+from StartUpScript import *
+
+import argparse
+from pprint import pprint
+
+parser = argparse.ArgumentParser()
+
+# parser.add_argument( "echo", help = "to echo the parameter here" ) # this is for positional argument
+
+parser.add_argument( '-if', '--infile', type = str, help = 'the file to input from' ) # for keyword argument (options)
+parser.add_argument( '-iv', '--inputVar', type = str, help = 'name of the variable that is assigned a value in the input file' )
+
+args = parser.parse_args()
+
+if args.infile != None :
+  print( '\n' + 'infile : ' + args.infile )
+
+if args.inputVar != None :
+  print( 'inputVar : ' + args.inputVar )
+
+if args.infile != None :
+
+  infile = open( args.infile, mode = 'r' )
+
+  # either
+  # from Result246 import *
+  # or
+  inputStr = infile.read()
+
+else :
+
+  inputStr = sys.stdin.read()
+
+a = eval( inputStr )
+a = a[0:2] + a       # <----- extra code
+pprint( a, width = 10, indent = 2 )
+pprint( inputStr, width = 10, indent = 2 )
+
+B( 'echo Testing of executing shell command \'ls\' : ' )
+B( 'ls' )
+
+
+
+> rm -f Result357.py
+
+> ls
+AnyScript		Result456.py		argParseProg02		bashScript-01.sh	pyScript-01.py
+Result123.py		Result789.py		argParseProg02In	prog.py			pyScript-02.py
+Result135.py		__pycache__		argParseProg03In	pyCommand-01		typeChecking.py
+Result246.py		argParseProg		argParseProg03Out	pyCommand-02
+
+> echo $PYTHONPATH
+:/Users/hsia/bin
+
+> ./argParseProg03Out
+
+( ( 10,
+    20),
+  30,
+  40,
+  ( (50,),
+    60),
+  70)
+
+> ls
+AnyScript		Result456.py		argParseProg02		bashScript-01.sh	pyScript-01.py
+Result123.py		Result789.py		argParseProg02In	prog.py			pyScript-02.py
+Result135.py		__pycache__		argParseProg03In	pyCommand-01		typeChecking.py
+Result246.py		argParseProg		argParseProg03Out	pyCommand-02
+
+> ./argParseProg03Out | ./argParseProg03In
+( ( 10,
+    20),
+  30,
+  ( 10,
+    20),
+  30,
+  40,
+  ( (50,),
+    60),
+  70)
+('\n'
+ '( ( '
+ '10,\n'
+ '    '
+ '20),\n'
+ '  30,\n'
+ '  40,\n'
+ '  ( '
+ '(50,),\n'
+ '    '
+ '60),\n'
+ '  70)\n'
+ '\n')
+Testing of executing shell command ls :
+AnyScript		Result456.py		argParseProg02		bashScript-01.sh	pyScript-01.py
+Result123.py		Result789.py		argParseProg02In	prog.py			pyScript-02.py
+Result135.py		__pycache__		argParseProg03In	pyCommand-01		typeChecking.py
+Result246.py		argParseProg		argParseProg03Out	pyCommand-02
+
+--------------------------------------------------------------------------------------------------------------------------------------
+
+> ls
+AnyScript		Result456.py		argParseProg02		bashScript-01.sh	pyScript-01.py
+Result123.py		Result789.py		argParseProg02In	prog.py			pyScript-02.py
+Result135.py		__pycache__		argParseProg03In	pyCommand-01		typeChecking.py
+Result246.py		argParseProg		argParseProg03Out	pyCommand-02
+
+> ./argParseProg03Out -of Result357.py
+
+outfile : Result357.py
+Testing of executing shell command ls :
+AnyScript		Result357.py		argParseProg		argParseProg03Out	pyCommand-02
+Result123.py		Result456.py		argParseProg02		bashScript-01.sh	pyScript-01.py
+Result135.py		Result789.py		argParseProg02In	prog.py			pyScript-02.py
+Result246.py		__pycache__		argParseProg03In	pyCommand-01		typeChecking.py
+
+( ( 10,
+    20),
+  30,
+  40,
+  ( (50,),
+    60),
+  70)
+
+> cat Result357.py
+
+( ( 10,
+    20),
+  30,
+  40,
+  ( (50,),
+    60),
+  70)
+
+> rm -f Result357.py
+
+> ls
+AnyScript		Result456.py		argParseProg02		bashScript-01.sh	pyScript-01.py
+Result123.py		Result789.py		argParseProg02In	prog.py			pyScript-02.py
+Result135.py		__pycache__		argParseProg03In	pyCommand-01		typeChecking.py
+Result246.py		argParseProg		argParseProg03Out	pyCommand-02
+
+> ./argParseProg03Out -of Result357.py && ./argParseProg03In -if Result357.py
+
+outfile : Result357.py
+Testing of executing shell command ls :
+AnyScript		Result357.py		argParseProg		argParseProg03Out	pyCommand-02
+Result123.py		Result456.py		argParseProg02		bashScript-01.sh	pyScript-01.py
+Result135.py		Result789.py		argParseProg02In	prog.py			pyScript-02.py
+Result246.py		__pycache__		argParseProg03In	pyCommand-01		typeChecking.py
+
+( ( 10,
+    20),
+  30,
+  40,
+  ( (50,),
+    60),
+  70)
+
+
+infile : Result357.py
+( ( 10,
+    20),
+  30,
+  ( 10,
+    20),
+  30,
+  40,
+  ( (50,),
+    60),
+  70)
+('\n'
+ '( ( '
+ '10,\n'
+ '    '
+ '20),\n'
+ '  30,\n'
+ '  40,\n'
+ '  ( '
+ '(50,),\n'
+ '    '
+ '60),\n'
+ '  70)\n'
+ '\n')
+Testing of executing shell command ls :
+AnyScript		Result357.py		argParseProg		argParseProg03Out	pyCommand-02
+Result123.py		Result456.py		argParseProg02		bashScript-01.sh	pyScript-01.py
+Result135.py		Result789.py		argParseProg02In	prog.py			pyScript-02.py
+Result246.py		__pycache__		argParseProg03In	pyCommand-01		typeChecking.py
+
+-------------------------------------------------------------------------------------------------------------------------
+
+> cp argParseProg03Out ~/bin/
+
+> cp argParseProg03In ~/bin/
+
+> ls ~/bin/
+PyCharmCommon.py	PyTest01.py		StartUpScript.py	__pycache__		argParseProg03In	argParseProg03Out
+
+> argParseProg03Out -of Result579.py && argParseProg03In -if Result579.py      ####################
+
+outfile : Result579.py
+Testing of executing shell command ls :
+AnyScript		Result357.py		__pycache__		argParseProg03In	pyCommand-01		typeChecking.py
+Result123.py		Result456.py		argParseProg		argParseProg03Out	pyCommand-02
+Result135.py		Result579.py		argParseProg02		bashScript-01.sh	pyScript-01.py
+Result246.py		Result789.py		argParseProg02In	prog.py			pyScript-02.py
+
+( ( 10,
+    20),
+  30,
+  40,
+  ( (50,),
+    60),
+  70)
+
+
+infile : Result579.py
+( ( 10,
+    20),
+  30,
+  ( 10,
+    20),
+  30,
+  40,
+  ( (50,),
+    60),
+  70)
+('\n'
+ '( ( '
+ '10,\n'
+ '    '
+ '20),\n'
+ '  30,\n'
+ '  40,\n'
+ '  ( '
+ '(50,),\n'
+ '    '
+ '60),\n'
+ '  70)\n'
+ '\n')
+Testing of executing shell command ls :
+AnyScript		Result357.py		__pycache__		argParseProg03In	pyCommand-01		typeChecking.py
+Result123.py		Result456.py		argParseProg		argParseProg03Out	pyCommand-02
+Result135.py		Result579.py		argParseProg02		bashScript-01.sh	pyScript-01.py
+Result246.py		Result789.py		argParseProg02In	prog.py			pyScript-02.py
+
+> ls
+AnyScript		Result357.py		__pycache__		argParseProg03In	pyCommand-01		typeChecking.py
+Result123.py		Result456.py		argParseProg		argParseProg03Out	pyCommand-02
+Result135.py		Result579.py		argParseProg02		bashScript-01.sh	pyScript-01.py
+Result246.py		Result789.py		argParseProg02In	prog.py			pyScript-02.py
+
+-------------------------------------------------------------------------------------------------------------------------
+
+> echo $PYTHONPATH
+:<HOME-DIR>/bin
+
+> pwd
+<CURRENT WD>
+
+> python3.9 -i ~/bin/StartUpScript.py
+>>> pprint( sys.path )
+['<HOME-DIR>/bin',              # <----- due to "-i ~/bin/StartUpScript.py"
+ '<CURRENT WD>',                # <----- due to invoking pathon3.9 at <CURRENT WD> (with PYTHONPATH defined and exported)
+ '<HOME-DIR>/bin',              # <----- due to $PYTHONPATH (exported)
+ '<HOME-DIR>/opt/anaconda3/lib/python39.zip',
+ '<HOME-DIR>/opt/anaconda3/lib/python3.9',
+ '<HOME-DIR>/opt/anaconda3/lib/python3.9/lib-dynload',
+ '<HOME-DIR>/opt/anaconda3/lib/python3.9/site-packages',
+ '<HOME-DIR>/opt/anaconda3/lib/python3.9/site-packages/aeosa']
+
+>>> B( 'pwd' )
+<CURRENT WD>
+
+>>> B( 'ls' )
+AnyScript		Result357.py		__pycache__		argParseProg03In	pyCommand-01		typeChecking.py
+Result123.py		Result456.py		argParseProg		argParseProg03Out	pyCommand-02
+Result135.py		Result579.py		argParseProg02		bashScript-01.sh	pyScript-01.py
+Result246.py		Result789.py		argParseProg02In	prog.py			pyScript-02.py
+
+>>> B( 'argParseProg03Out -of Result999.py && argParseProg03In -if Result999.py' )   #################
+
+outfile : Result999.py
+Testing of executing shell command ls :
+AnyScript		Result357.py		Result999.py		argParseProg02In	prog.py			pyScript-02.py
+Result123.py		Result456.py		__pycache__		argParseProg03In	pyCommand-01		typeChecking.py
+Result135.py		Result579.py		argParseProg		argParseProg03Out	pyCommand-02
+Result246.py		Result789.py		argParseProg02		bashScript-01.sh	pyScript-01.py
+
+( ( 10,
+    20),
+  30,
+  40,
+  ( (50,),
+    60),
+  70)
+
+
+infile : Result999.py
+( ( 10,
+    20),
+  30,
+  ( 10,
+    20),
+  30,
+  40,
+  ( (50,),
+    60),
+  70)
+('\n'
+ '( ( '
+ '10,\n'
+ '    '
+ '20),\n'
+ '  30,\n'
+ '  40,\n'
+ '  ( '
+ '(50,),\n'
+ '    '
+ '60),\n'
+ '  70)\n'
+ '\n')
+Testing of executing shell command ls :
+AnyScript		Result357.py		Result999.py		argParseProg02In	prog.py			pyScript-02.py
+Result123.py		Result456.py		__pycache__		argParseProg03In	pyCommand-01		typeChecking.py
+Result135.py		Result579.py		argParseProg		argParseProg03Out	pyCommand-02
+Result246.py		Result789.py		argParseProg02		bashScript-01.sh	pyScript-01.py
+
+>>> B( 'ls' )
+AnyScript		Result357.py		Result999.py		argParseProg02In	prog.py			pyScript-02.py
+Result123.py		Result456.py		__pycache__		argParseProg03In	pyCommand-01		typeChecking.py
+Result135.py		Result579.py		argParseProg		argParseProg03Out	pyCommand-02
+Result246.py		Result789.py		argParseProg02		bashScript-01.sh	pyScript-01.py
+
+>>> infile = open( 'Result999.py', mode = 'r' ) ; a = eval( infile.read() )
+
+>>> a
+((10, 20), 30, 40, ((50,), 60), 70)
+
+--------------------------------------------------------------------------------------------------------------------------
+
+>>> # Actually, what we really need to do may be something like the following ...
+>>> #       B( 'argParseProg03Out -of Result999.py && argParseProg03In -if Result999.py -of Result100.py -ov list100' )
+>>> # Since I want to leave it to you regarding how argParseProg03In should be modified to do things like this,
+>>> # let me just use argParseProg03Out to demonstrate what I mean.
+
+>>> B( 'argParseProg03Out -of Result100.py -ov list100' )   ################# (OR : without '-ov list100' and do what we just shown in the above)
+
+outfile : Result100.py
+outputVar : list100
+Testing of executing shell command ls :
+AnyScript		Result246.py		Result789.py		argParseProg02		bashScript-01.sh	pyScript-01.py
+Result100.py		Result357.py		Result999.py		argParseProg02In	prog.py			pyScript-02.py
+Result123.py		Result456.py		__pycache__		argParseProg03In	pyCommand-01		typeChecking.py
+Result135.py		Result579.py		argParseProg		argParseProg03Out	pyCommand-02
+
+list100 =
+
+( ( 10,
+    20),
+  30,
+  40,
+  ( (50,),
+    60),
+  70)
+
+>>> from Result100 import *                  #################
+
+>>> list100
+((10, 20), 30, 40, ((50,), 60), 70)
+
+>>> B( 'cat Result100.py' )
+
+list100 = \
+\
+( ( 10,
+    20),
+  30,
+  40,
+  ( (50,),
+    60),
+  70)
+
+>>> # Why do we need to put the backslash ('\') in Result100.py ???
+
+--------------------------------------------------------------------------------------------------------------------------
+
+So much for the idea of "King of kings" ...
+
+Hope you can make good use of this idea for technology integration.  (How do you plan to do it ???)
+
+--------------------------------------------------------------------------------------------------------------------------
+
+Issues to discuss for Week 4 (Group-In-Charge : A) :
+
+Parameter passing schemes (why doing things this way ; pros and cons ; how to remember it)
+local variables and global variables (and block variables?)
+Polymorphism and variable declaration ; pros and cons (good and bad)
+When is a variable declared and how should we deal with this kind of doing things?
+
+--------------------------------------------------------------------------------------------------------------------------
+
+Q: why do we need to write if __name__ == "__main__" in Python
+
+Ans.
+In Short: It Allows You to Execute Code When the File Runs as a Script, but Not When It's Imported as a Module. For most practical purposes, you can think of the conditional block that you open with if __name__ == "__main__" as a way to store code that should only run when your file is executed as a script.
+
+--------------------------------------------------------------------------------------------------------------------------
+Extra-Question 1 : the venv approach of PyCharm
+--------------------------------------------------------------------------------------------------------------------------
+Extra-Question 2 : Do we need to indent a blank line in writing a Python script?
+--------------------------------------------------------------------------------------------------------------------------
+
+TicTacToe
+
+--------
+
+Original code :  https://code.activestate.com/recipes/578816-the-game-of-tic-tac-toe-in-python/?in=lang-python
+
+def print_board(board):
+
+	print "The board look like this: \n"
+
+	for i in range(3):
+		print " ",
+		for j in range(3):
+			if board[i*3+j] == 1:
+				print 'X',
+			elif board[i*3+j] == 0:
+				print 'O',
+			elif board[i*3+j] != -1:
+				print board[i*3+j]-1,
+			else:
+				print ' ',
+
+			if j != 2:
+				print " | ",
+		print
+
+		if i != 2:
+			print "-----------------"
+		else:
+			print
+
+def print_instruction():
+	print "Please use the following cell numbers to make your move"
+	print_board([2,3,4,5,6,7,8,9,10])
+
+
+def get_input(turn):
+
+	valid = False
+	while not valid:
+		try:
+			user = raw_input("Where would you like to place " + turn + " (1-9)? ")
+			user = int(user)
+			if user >= 1 and user <= 9:
+				return user-1
+			else:
+				print "That is not a valid move! Please try again.\n"
+				print_instruction()
+		except Exception as e:
+			print user + " is not a valid move! Please try again.\n"
+
+def check_win(board):
+	win_cond = ((1,2,3),(4,5,6),(7,8,9),(1,4,7),(2,5,8),(3,6,9),(1,5,9),(3,5,7))
+	for each in win_cond:
+		try:
+			if board[each[0]-1] == board[each[1]-1] and board[each[1]-1] == board[each[2]-1]:
+				return board[each[0]-1]
+		except:
+			pass
+	return -1
+
+def quit_game(board,msg):
+	print_board(board)
+	print msg
+	quit()
+
+def main():
+
+	# setup game
+	# alternate turns
+	# check if win or end
+	# quit and show the board
+
+	print_instruction()
+
+	board = []
+	for i in range(9):
+		board.append(-1)
+
+	win = False
+	move = 0
+	while not win:
+
+		# print board
+		print_board(board)
+		print "Turn number " + str(move+1)
+		if move % 2 == 0:
+			turn = 'X'
+		else:
+			turn = 'O'
+
+		# get user input
+		user = get_input(turn)
+		while board[user] != -1:
+			print "Invalid move! Cell already taken. Please try again.\n"
+			user = get_input(turn)
+		board[user] = 1 if turn == 'X' else 0
+
+		# advance move and check for end game
+		move += 1
+		if move > 4:
+			winner = check_win(board)
+			if winner != -1:
+				out = "The winner is "
+				out += "X" if winner == 1 else "O"
+				out += " :)"
+				quit_game(board,out)
+			elif move == 9:
+				quit_game(board,"No winner :(")
+
+if __name__ == "__main__":
+	main()
+
+---------------------------------------------------------------------------------------------
+
+Modified code (by hsia) :
+
+def print_board( board ) :
+
+  print( "The board looks like this: \n" )
+
+  for i in range(3) :
+    print( " ", end = '' )
+    for j in range(3):
+      if board[ i*3 + j ] == 1 :
+        print( 'X', end = '' )
+      elif board[ i*3 + j ] == 0 :
+        print( 'O', end = '' )
+      elif board[ i*3 + j ] != -1 :
+        print( board[ i*3 + j ]-1, end = '' )
+      else:
+        print( ' ', end = '' )
+
+      if j != 2 :
+        print( "|", end = '' )
+    print( )
+
+    if i != 2 :
+      print( "------" )
+    else:
+      print( )
+
+def print_instruction() :
+  print( "Please use the following cell numbers to make your move" )
+  print_board( [ 2,3,4,5,6,7,8,9,10 ] )
+
+def get_input( turn ) :
+
+  valid = False
+  while not valid :
+    try :
+      user = input( "Where would you like to place " + turn + " (1-9)? " )   # was 'raw_input'
+      user = int( user )
+      if user >= 1 and user <= 9 :
+        return user - 1
+      else :
+        print( "That is not a valid move! Please try again." )
+        print_instruction()
+    except Exception as e :
+      print( str( user ) + " is not a valid move! Please try again." )
+
+def check_win( board ) :
+
+  win_cond = ( (1,2,3), (4,5,6), (7,8,9), (1,4,7), (2,5,8), (3,6,9), (1,5,9), (3,5,7) )
+
+  for each in win_cond :
+    try :
+      if board[ each[0] - 1 ] == board[ each[1] - 1 ] and board[ each[1] - 1 ] == board[ each[2] - 1 ]:
+        return board[ each[0] - 1 ]
+    except :
+      pass
+
+  return -1
+
+def quit_game( board, msg ) :
+  print_board( board )
+  print( msg )
+  quit()
+
+def main():
+
+  # setup game
+  # alternate turns
+  # check if win or end
+  # quit and show the board
+
+  print_instruction()
+
+  board = []
+  for i in range(9):
+    board.append(-1)
+
+  win = False
+  move = 0
+  while not win:
+
+    # print board
+    print_board( board )
+    print( "Turn number " + str( move+1 ) )
+    if move % 2 == 0:
+      turn = 'X'
+    else:
+      turn = 'O'
+
+    # get user input
+    user = get_input(turn)
+    while board[user] != -1 :
+      print( "Invalid move! Cell already taken. Please try again." )
+      user = get_input( turn )
+    board[user] = 1 if turn == 'X' else 0
+
+    # advance move and check for end game
+    move += 1
+    if move > 4 :
+      winner = check_win( board )
+      if winner != -1 :
+        out = "The winner is "
+        out += "X" if winner == 1 else "O"
+        out += " :)"
+        quit_game(board,out)
+      elif move == 9 :
+        quit_game(board,"No winner :(")
+
+if __name__ == "__main__" :
+  main()
+
+----------------------------------------------------------------------------------------------
+
+Run result : # PyCharm
+
+<HOME-DIR>/PycharmProjects/PythonTheLang/venv/bin/python <HOME-DIR>/PycharmProjects/PythonTheLang/TicTacToe.py
+Please use the following cell numbers to make your move
+The board looks like this:
+
+ 1|2|3
+------
+ 4|5|6
+------
+ 7|8|9
+
+The board looks like this:
+
+  | |
+------
+  | |
+------
+  | |
+
+Turn number 1
+Where would you like to place X (1-9)? 3
+The board looks like this:
+
+  | |X
+------
+  | |
+------
+  | |
+
+Turn number 2
+Where would you like to place O (1-9)? 5
+The board looks like this:
+
+  | |X
+------
+  |O|
+------
+  | |
+
+Turn number 3
+Where would you like to place X (1-9)? 9
+The board looks like this:
+
+  | |X
+------
+  |O|
+------
+  | |X
+
+Turn number 4
+Where would you like to place O (1-9)? 23
+That is not a valid move! Please try again.
+Please use the following cell numbers to make your move
+The board looks like this:
+
+ 1|2|3
+------
+ 4|5|6
+------
+ 7|8|9
+
+Where would you like to place O (1-9)? 5
+Invalid move! Cell already taken. Please try again.
+Where would you like to place O (1-9)? 2
+The board looks like this:
+
+  |O|X
+------
+  |O|
+------
+  | |X
+
+Turn number 5
+Where would you like to place X (1-9)? 6
+The board looks like this:
+
+  |O|X
+------
+  |O|X
+------
+  | |X
+
+Turn number 6
+Where would you like to place O (1-9)? 8
+The board looks like this:
+
+  |O|X
+------
+  |O|X
+------
+  |O|X
+
+Turn number 7
+Where would you like to place X (1-9)? 1
+The board looks like this:
+
+ X|O|X
+------
+  |O|X
+------
+  |O|X
+
+The winner is O :)
+
+Process finished with exit code 0
+
+---------------------------------------------------------------------------------------------
+
+Let's debug ...
+
+1. The obvious bug
+
+2. The first char of board printout is extra. How to fix it.
+
+3. After printing "unacceptable move", should show the current board again. How to change the code so that it does it?
+
+---------------------------------------------------------------------------------------------
+
+Google : how do I print with no newline in Python
+Better : Python print without newline
+
+Ref. : library.pdf, p. 19    # Use 'print(' to search (Ctrl-f)
+---------------------------------------------------------------------------------------------
+
+
+
+
+
+---

@@ -1,0 +1,229 @@
+Week 4 - Part-I
+
+An extensive review of what has been learned so far
+
+  ＊ Whar are 'argc' and 'argv' for？ (Where do they appear? What do they mean? How to access what you want to access?)
+  ＊ When you run a UNIX/Linux command, what does the system (the shell in fact) do in executing this "command" of yours?
+  ＊ Describe in detail what the system do when you key in 'date<ENTER>' at the prompt.
+  ＊ What is the role of the environment variable 'PATH'? What is the difference between 'PATH' and '$PATH'?
+  ＊ What does 'PATH=${PATH}:~/bin' do? How does doing so affect the way the system works?
+  ＊ What is a "prompt"?
+  ＊ What are the English words for 'cd', 'ls', 'pwd', 'rm', 'cp'? What does '(the) working directory' mean?
+  ＊ What is the output for '> echo this       is an example'? Why is it so?
+  ＊ How would you write 'MyEcho' in C (in printf())？ # 'MyEcho' should work in exactly the same way as 'echo' does.
+  ＊ What should you do so that when you type 'MyE<TAB><ENTER>' at the prompt, your 'MyEcho' is executed? Why does what you just described work?
+  ＊ Describe the concept of 'stdin' and 'stdout'. What does it have to do with '>', '<', '>>', and '|'?
+  ＊ Describe what will happen in the case of 'ls -al /usr/include | less'?
+  ＊ Let's say 'ls' was written in C (which should be true) and it knows how to access the file structure as well as what your working directory is. How does it work when it is called to process 'ls -al /usr/include'？
+  ＊ In last week's homework (HW #1), you are asked to write a program, the executable of which is called 'MySort'. How, then, can you make this 'MySort' a Linux command? (i.e., Once you log in, you can 'cd' anywhere and key in 'MySort < file1' (or even just 'MySort -o des') at the prompt, the system will always do what you are asking for)?
+  ＊ How do you (declare and) define an environment variable?
+  ＊ Why can't it be >>abc = 15<< ???
+  ＊ How do you (declare and) define an "environment function"?   # 'environment function' is my own terminology
+  ＊ How do you access the value of an environment variable?
+  ＊ How do you call an environment function?
+
+～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
+
+Week 4 - Part II
+
+# Separation of basic commands ( ;   |   ||   &&   &   >   >>   < ) # I call it "command separation"
+
+> date ; date
+Sun Nov 27 14:39:42 CST 2022
+Sun Nov 27 14:39:42 CST 2022
+
+> date | date
+Sun Nov 27 14:39:59 CST 2022
+
+> cat file1
+How do you do.
+
+> date < file1
+五 12月  2 11:38:44 CST 2022
+
+> PrintPara < file1
+Total number of parameters : 1
+
+Parameter 0 : >>PrintPara<<
+
+> PrintPara > file2
+> cat file2
+Total number of parameters : 1
+
+Parameter 0 : >>PrintPara<<
+
+> PrintPara 123 456 < file1
+Total number of parameters : 3
+
+Parameter 0 : >>PrintPara<<
+Parameter 1 : >>123<<
+Parameter 2 : >>456<<
+
+> echo 123 456 < file1
+123 456
+
+> cat InfiniteLoop.cpp
+
+int main() {
+
+  while ( true ) ;
+
+} // main()
+
+> g++ -o InfiniteLoop InfiniteLoop.cpp
+
+> date;date
+五 12月  2 11:47:30 CST 2022
+五 12月  2 11:47:30 CST 2022
+
+# There is no need to put WS before or after a command separator
+
+> date>file1
+> PrintPara>file2
+
+> ./InfiniteLoop;date
+^C
+
+> ./InfiniteLoop&date
+[1] 25921
+五 12月  2 11:48:23 CST 2022
+
+> kill -9 25921
+[1]+  Killed                  ./InfiniteLoop
+
+> date&date
+[1] 25927
+五 12月  2 11:48:44 CST 2022
+五 12月  2 11:48:44 CST 2022
+[1]+  Done                    date
+
+>
+
+～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
+
+# Shell substitution (before the execution of a basic command)
+
+> abc=15
+
+> echo $abc
+15
+
+> PrintPara $abc
+Total number of parameters : 2
+
+Parameter 0 : >>PrintPara<<
+Parameter 1 : >>15<<
+
+> $abc
+15: command not found
+
+> abc=pwd
+
+> echo $abc
+pwd
+
+> $abc
+/home/hsia/Shell_Practice
+
+> echo This is a book.
+> echo 'This is a book.'
+> PrintPara This is a book.
+> PrintPara 'This is a book.'
+
+---------------------------
+
+> date
+> echo date
+> PrintPara date
+
+> echo `date`
+> PrintPara `date`
+
+> echo \`date\`
+> PrintPara \`date\`
+
+> echo '`date`'
+> PrintPara '`date`'
+
+> echo 'The date of today is `date`.'
+> PrintPara 'The date of today is `date`.'
+
+> echo "The date of today is `date`."
+> PrintPara "The date of today is `date`."
+
+---------------------------
+
+> abc=`pwd`
+
+> echo $abc
+/home/hsia/Shell_Practice
+
+> $abc
+bash: /home/hsia/Shell_Practice: Is a directory
+
+> abc='`pwd`'
+
+> $abc
+`pwd`: command not found
+
+> abc="`pwd`"
+> $abc
+bash: /home/hsia/Shell_Practice: Is a directory
+
+> abc="`date`"
+> $abc
+五: command not found
+
+> PrintPara -r red/green -r fat/'terribly small in size'
+Num of para : 5
+Arg 0 : PrintPara
+Arg 1 : -r
+Arg 2 : red/green
+Arg 3 : -r
+Arg 4 : fat/terribly small in size
+
+Shell substitution ($, `...` and '...' and "...")
+
+～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
+
+
+Linux Practices HW #2
+
+Please modify the C/C++ program you just wrote for HW #1 and call it 'Sort2-YourIDHere.cpp'.
+
+This program will be compiled using something similar to the following Linux cmd : g++ -o MySort Sort2-YourIDHere.cpp
+
+When 'MySort' is run, it reads from the standard input and may sort the lines it gets from the input (depending on what you specify on the command line). Then, it prints the result to the standard output. However, it does this sorting and printing only AFTER it has made the necessary replacements of words (strings separated by white spaces), as requested by the user.
+
+When running MySort, the user has the option of supplying N pairs of arguments.
+
+Among these pairs of arguments, there can be this pair which is either '-o asc' or '-o des', where 'asc' means that the lines should be printed in ascending order, while 'des' means that the lines should be printed in descending order. (What we mean here is that the user has the option of specifying the '-o' option. The user is not obliged to specify the '-o' option, however)
+
+The user can also specify N pairs of '-r' options. Each '-r' option should be something like >>-r String1/String2<< where String1 and String2 are strings such as >>No news is good news<< or >>Happy everyday<<. Neither String1 nor String2 contains the '/' character.
+
+Here is an example. Suppose a file named 'File1' is used as the input, and also suppose that the content of File1 is the following. (Note that we can use any text file with any name we want as the input. The content of the file can also be empty if we want.)
+
+Content of file starts below but does not include this line. >>
+Roses are red
+Violets are blue
+Pigs are fat
+And so are fools
+<< Content of file ends above and does not include this line (Note that there may be no LineReturn at the end; in this example, there is a LineReturn at the end)
+
+Note that to simplify your task of string processing, we purposely do not put punctuation marks such as '.' in the example.
+
+Example 1 : > ./MySort -o asc -r are/'must be' < File1
+And so must be fools
+Pigs must be fat
+Roses must be red
+Violets must be blue
+
+Example 2 : > ./MySort -r blue/red -r red/green -r fat/'terribly small in size' < File1.  # replacements are done in parallel
+Roses are green
+Violets are red
+Pigs are terribly small in size
+And so are fools
+
+------------- END of HW #2 spec. --------------
+
+# How can we make MySort a Linux command of our own??? (Write it, test it, and then make it a command of our own. How do we do it?)
