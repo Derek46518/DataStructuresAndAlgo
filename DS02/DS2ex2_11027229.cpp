@@ -95,9 +95,11 @@ class TwoThreeTree:public Tree {
 		}
 		
 		/**
-		Split
+		Split the node into two parts, and push the middle data into parent
+		@param current : The node that needs to split
 		*/
 		void split(Node * current) {
+			// no need to split, return
 			if(current==NULL || current -> data.size() <= 2) return;
 			Node * parent = current -> parent; // Get Parent
 			Node * left = new Node(current->data[0],current->ids[0],parent); // create new left node
@@ -153,8 +155,10 @@ class TwoThreeTree:public Tree {
 			}
 			if(parent->data.size()==3) split(parent);
 		}
-
+		
+		// insert the data into node
 		void insertIntoNode(Node * node, string value, int id) {
+			// check if data is equal, if is equal, push id
 			for(int i = 0 ; i< node->data.size(); i++) {
 				if(value == node->data[i]) {
 					// printf("equal\n");
@@ -216,6 +220,7 @@ class TwoThreeTree:public Tree {
 			}
 			return count;
 		}
+		
 		void insert(string value, int id) {
 			if (root == NULL) {
 				root = new Node(value, id);
@@ -224,6 +229,10 @@ class TwoThreeTree:public Tree {
 			Node * node = findInsertionNode(root, value);
 			insertIntoNode(node, value, id);
 		}
+		/**
+		Print Root
+		@param the original data
+		*/
 		void printRoot(vector<vector<string> > &originData ) {
 			printf("Tree height = %d\n",getHeight(root));
 			printf("Number of nodes = %d\n",countNodes(root));
@@ -255,6 +264,10 @@ class TwoThreeTree:public Tree {
 		}
 };
 
+/**
+This class is to build AVLTree
+Logic can be searched online
+*/
 class AVLTree:public Tree {
 	public:
 		AVLTree(){
