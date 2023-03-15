@@ -8,18 +8,20 @@
 #include<algorithm>
 using namespace std;
 
-
+// The Node of all Trees
 struct Node {
-	Node * parent;
-	vector<string> data;
-	vector<vector<int> > ids;
-	vector<Node *> children;
-	int value;
-	Node * left;
-	Node * right;
+	Node * parent; // The pointer pointed to the parent
+	vector<string> data; // Use to save data
+	vector<vector<int> > ids; // Use to save ids corresponding the data
+	vector<Node *> children; // Use to save children corresponding the node
+	int value; 
+	Node * left; // left pointer
+	Node * right; // right pointer
+	// Constructor without any args
 	Node() {
 		parent = NULL;
 	}
+	// Constructor when AVL Tree
 	Node(int val, int id,Node* par) {
 		parent = par;
 		value = val;
@@ -29,6 +31,7 @@ struct Node {
 		left = NULL;
 		right = NULL;
 	}
+	// Constructor when 2-3 tree without parent
 	Node(string value, int id) {
 		parent = NULL;
 		data.push_back(value);
@@ -36,6 +39,7 @@ struct Node {
 		temp.push_back(id);
 		ids.push_back(temp);
 	}
+	// Constructor when 2-3 tree with parent
 	Node(string value, vector<int> id,Node * par) {
 		parent = par;
 		data.push_back(value);
@@ -43,18 +47,29 @@ struct Node {
 	}
 };
 
+// Virtual class
 class Tree {
 	public:
 		virtual void insert(string value, int id) {}
-		// §Ç¸¹ ¡B ¾Ç®Õ¦WºÙ ¡B¬ì¨t¦WºÙ¡B¤é©]§O¡Bµ¥¯Å§O¡B¤W¾Ç¦~«×²¦·~¥Í¼Æ
+		// åºè™Ÿ ã€ å­¸æ ¡åç¨± ã€ç§‘ç³»åç¨±ã€æ—¥å¤œåˆ¥ã€ç­‰ç´šåˆ¥ã€ä¸Šå­¸å¹´åº¦ç•¢æ¥­ç”Ÿæ•¸
 		void printLine(vector<vector<string> > originData, int index) {
 			cout << "["<< originData[index][11]<<"] " <<originData[index][1] <<", "<<originData[index][3]<<", "<<originData[index][4]<<", "<<originData[index][5]<<", "<<originData[index][8]<<"\n";
 		}
 	protected:
 		Node* root;
 };
+
+/**
+This class is used to construct 2-3 tree
+The logic can be searched online
+
+*/
 class TwoThreeTree:public Tree {
 	private:
+		/**
+		Sort the data and id by string value inside the node
+		@param node : the node to sort
+		*/
 		void sort(Node * node) {
 			for(int i = 0 ; i < node -> data.size(); i++) {
 				for(int j = i; j < node-> data.size() ; j++) {
@@ -65,6 +80,10 @@ class TwoThreeTree:public Tree {
 				}
 			}
 		}
+		/**
+		Sort children of a node
+		@param node: the node to sort
+		*/
 		void sortChildren(Node * node) {
 			for(int i = 0 ; i < node->children.size(); i++) {
 				for(int j = i; j < node-> children.size() ; j++) {
@@ -74,15 +93,21 @@ class TwoThreeTree:public Tree {
 				}
 			}
 		}
+		
+		/**
+		Split
+		*/
 		void split(Node * current) {
 			if(current==NULL || current -> data.size() <= 2) return;
-			Node * parent = current -> parent;
-			Node * left = new Node(current->data[0],current->ids[0],parent);
-			Node * right = new Node(current->data[2],current->ids[2],parent);
-			string middleValue = current->data[1];
-			vector<int> middleIds = current->ids[1];
+			Node * parent = current -> parent; // Get Parent
+			Node * left = new Node(current->data[0],current->ids[0],parent); // create new left node
+			Node * right = new Node(current->data[2],current->ids[2],parent); // create new right node
+			string middleValue = current->data[1]; // get middle value used to push up
+			vector<int> middleIds = current->ids[1]; // get middle id used to push up
+			// if is leaf
 			if (parent!=NULL) {
-				int n = parent -> children.size()-1;
+				// get node position and save in n
+				int n = parent -> children.size()-1; 
 				while(current!=parent->children[n]) {
 					n--;
 				}
@@ -97,6 +122,7 @@ class TwoThreeTree:public Tree {
 					right->children.push_back(current->children[2]);
 					right->children.push_back(current->children[3]);
 				}
+				// spliting
 				parent->children.erase(parent->children.begin()+n);
 				parent->data.push_back(middleValue);
 				parent->ids.push_back(middleIds);
@@ -104,7 +130,9 @@ class TwoThreeTree:public Tree {
 				parent->children.push_back(left);
 				parent->children.push_back(right);
 				sortChildren(parent);
-			} else {
+			} 
+			// if node is root
+			else { 
 				parent = new Node(middleValue,middleIds,NULL);
 				root = parent;
 				if(current->children.size()!=0) {
@@ -327,30 +355,30 @@ class AVLTree:public Tree {
 };
 
 vector<string> split(string &str, string &b) {
-	int first, last; //°O¿ı²Ä¤@­Ó¦ì¸m©M²Ä¤G­Ó
-	int i = 0; // ­p¼Æ0
-	vector<string> answer; // µª®×
-	last = str.find(b); // ¥ı¥h´M§ä¦b­ş­Ó¦ì¸m­n¤À³Î
-	first = 0;// ¤@¶}©l
-	// ·ílastÁÙ¨S¶]¨ìµ²§ôªº¦ì¸m
+	int first, last; //è¨˜éŒ„ç¬¬ä¸€å€‹ä½ç½®å’Œç¬¬äºŒå€‹
+	int i = 0; // è¨ˆæ•¸0
+	vector<string> answer; // ç­”æ¡ˆ
+	last = str.find(b); // å…ˆå»å°‹æ‰¾åœ¨å“ªå€‹ä½ç½®è¦åˆ†å‰²
+	first = 0;// ä¸€é–‹å§‹
+	// ç•¶lasté‚„æ²’è·‘åˆ°çµæŸçš„ä½ç½®
 	while (last != string::npos) {
-		// §âsubstring±À¤Janswer
+		// æŠŠsubstringæ¨å…¥answer
 		answer.push_back(str.substr(first, last - first));
-		// first²¾¨ìlast¥[¤W¤À³Î¾¹ªº¤j¤p
+		// firstç§»åˆ°laståŠ ä¸Šåˆ†å‰²å™¨çš„å¤§å°
 		first = last + b.size();
-		// ¦AÄ~Äò´M§ä¤U­Ó­n¤À³ÎªºÂI
+		// å†ç¹¼çºŒå°‹æ‰¾ä¸‹å€‹è¦åˆ†å‰²çš„é»
 		last = str.find(b, first);
 		i++;
 	}
-	// ¦pªGfirstªº¦ì¸m¤£¬O³Ì«á¤@­Ó¦r¤¸ ´N§âfirst«á­±ªº¤º®e±À¨ìanswer¸Ì­±
+	// å¦‚æœfirstçš„ä½ç½®ä¸æ˜¯æœ€å¾Œä¸€å€‹å­—å…ƒ å°±æŠŠfirstå¾Œé¢çš„å…§å®¹æ¨åˆ°answerè£¡é¢
 	if (first != str.length()) {
 		answer.push_back(str.substr(first));
 	}
-	// ¦^¶Çanswer
+	// å›å‚³answer
 	return answer;
 }
 
-// ¥[¤WÀÉ®×¦WºÙ«eºó
+// åŠ ä¸Šæª”æ¡ˆåç¨±å‰ç¶´
 string addPrefix(string add, string s) {
 	stringstream ss;
 	ss << add;
@@ -359,7 +387,7 @@ string addPrefix(string add, string s) {
 	return ss.str();
 }
 
-// ÅªÀÉ
+// è®€æª”
 bool readData(Tree & data, vector<vector<string> > & originData, string dataName,bool isTwoThree) {
 	if(dataName.size()==3) dataName = addPrefix("input",dataName);
 	ifstream ifs;
@@ -374,7 +402,7 @@ bool readData(Tree & data, vector<vector<string> > & originData, string dataName
 	}
 	vector<string> temp;
 	string sp = "\t";
-	// ¶}©lÅªÄÒ ¼g¤Jheap¤º
+	// é–‹å§‹è®€é»¨ å¯«å…¥heapå…§
 	int i = 0;
 	while(getline(ifs,line)) {
 		temp = split(line,sp);
@@ -390,26 +418,26 @@ bool readData(Tree & data, vector<vector<string> > & originData, string dataName
 	ifs.close();
 	return true;
 }
-// ¨ú±o¨Ï¥ÎªÌ¿é¤Jªºint
+// å–å¾—ä½¿ç”¨è€…è¼¸å…¥çš„int
 int getInt() {
-	// ¥ıÅª¾ã¦æ
+	// å…ˆè®€æ•´è¡Œ
 	string s;
 	getline(cin,s);
 	int total = 0; // total
-	int a; // ¼È¦sªº¼Æ¦r
-	if(s.length()==0) return -1; // ¦pªG¨Ï¥ÎªÌª½±µ«ö¤Uenter ´N¦^¶Ç-1(°õ¦æmain®É·|³ø¨Ï¥ÎªÌ¿é¤J¿ù»~)
+	int a; // æš«å­˜çš„æ•¸å­—
+	if(s.length()==0) return -1; // å¦‚æœä½¿ç”¨è€…ç›´æ¥æŒ‰ä¸‹enter å°±å›å‚³-1(åŸ·è¡Œmainæ™‚æœƒå ±ä½¿ç”¨è€…è¼¸å…¥éŒ¯èª¤)
 	// string to integer
 	for(int i = 0 ; i < s.length(); i++) {
 		total *= 10;
 		a = s[i] - '0';
-		if (a < 0 || a > 9) return -1; // ¦pªG¤£¦b½d³ò¤º ´N¦^¶Ç-1 (°õ¦æmain®É·|³ø¨Ï¥ÎªÌ¿é¤J¿ù»~)
+		if (a < 0 || a > 9) return -1; // å¦‚æœä¸åœ¨ç¯„åœå…§ å°±å›å‚³-1 (åŸ·è¡Œmainæ™‚æœƒå ±ä½¿ç”¨è€…è¼¸å…¥éŒ¯èª¤)
 		total += a;
 	}
-	return total; //±N­È¦^¶Ç¦^¥h
+	return total; //å°‡å€¼å›å‚³å›å»
 }
 int main() {
 	vector<vector<string> > data;
-	printf("½Ğ¿é¤J:\n0:°h¥X\n1:«Ø¥ßmin heap\n2:«Ø¥ßmin-max heap\n");
+	printf("è«‹è¼¸å…¥:\n0:é€€å‡º\n1:å»ºç«‹min heap\n2:å»ºç«‹min-max heap\n");
 	int n = getInt();
 	string fileName;
 	TwoThreeTree twoThreeTree;
@@ -419,24 +447,24 @@ int main() {
 	while(n!=0) {
 		switch(n) {
 			case 1:
-				printf("½Ğ¿é¤JÀÉ®×¦WºÙ\n");
+				printf("è«‹è¼¸å…¥æª”æ¡ˆåç¨±\n");
 				getline(cin,fileName);
 				if(!readData(twoThreeTree,originData,fileName,true)) break;
 				twoThreeTree.printRoot(originData);
 				twoThreeTree.restore(originData);
 				break;
 			case 2:
-				printf("½Ğ¿é¤JÀÉ®×¦WºÙ\n");
+				printf("è«‹è¼¸å…¥æª”æ¡ˆåç¨±\n");
 				getline(cin,fileName);
 				if(!readData(avlTree,originData,fileName,false)) break;
 				avlTree.printRoot(originData);
 				avlTree.restore(originData);
 				break;
 			default:
-				printf("¿é¤J¿ù»~ ½Ğ­«·s¿é¤J\n");
+				printf("è¼¸å…¥éŒ¯èª¤ è«‹é‡æ–°è¼¸å…¥\n");
 		}
-		printf("½Ğ¿é¤J:\n0:°h¥X\n1:«Ø¥ßmin heap\n2:«Ø¥ßmin-max heap\n");
-		n = getInt(); // ­«·s¨ú¼Æ¦r
+		printf("è«‹è¼¸å…¥:\n0:é€€å‡º\n1:å»ºç«‹min heap\n2:å»ºç«‹min-max heap\n");
+		n = getInt(); // é‡æ–°å–æ•¸å­—
 	}
-	return 0; // ¦n²ßºD°O±o¾i¦¨
+	return 0; // å¥½ç¿’æ…£è¨˜å¾—é¤Šæˆ
 }
