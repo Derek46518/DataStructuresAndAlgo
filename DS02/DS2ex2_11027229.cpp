@@ -137,6 +137,7 @@ class TwoThreeTree:public Tree {
 			else { 
 				parent = new Node(middleValue,middleIds,NULL);
 				root = parent;
+				// need to split node
 				if(current->children.size()!=0) {
 					current->children[0]->parent = left;
 					current->children[1]->parent = left;
@@ -176,6 +177,11 @@ class TwoThreeTree:public Tree {
 				split(node);
 			}
 		}
+		/**
+		Find place to insert node
+		@param current : Current Node
+		@param value : the value to input
+		*/
 		Node * findInsertionNode(Node * current, string value) {
 			if (current->children.size()==0) return current; // leaf node
 			for(int i = 0 ; i < current->data.size(); i++) {
@@ -187,6 +193,10 @@ class TwoThreeTree:public Tree {
 			else return findInsertionNode(current->children[2],value);
 		}
 		
+		/**
+		Get the height of the tree
+		@param node : current node
+		*/
 		int getHeight(Node* node) {
 			if (node == NULL) {
 				return 0;
@@ -200,15 +210,23 @@ class TwoThreeTree:public Tree {
 			}
 			return maxHeight + 1;
 		}
-
+		
+		void restore(Node * current){
+			for(Node * a : current->children){
+				restore(a);
+			}
+			
+			delete current;
+		}
 
 	public:
 		TwoThreeTree() {
 			root = NULL;
 		}
 		void restore(vector<vector<string> > & originData) {
-			root = NULL;
+			restore(root);
 			originData.clear();
+			root = NULL;
 		}
 		int countNodes(Node * node) {
 			if (node == NULL) {
