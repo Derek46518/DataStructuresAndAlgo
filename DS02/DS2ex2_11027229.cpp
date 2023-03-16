@@ -468,7 +468,7 @@ int getInt() {
 }
 int main() {
 	vector<vector<string> > data;
-	printf("請輸入:\n0:退出\n1:建立min heap\n2:建立min-max heap\n");
+	printf("請輸入:\n0:退出\n1:建立23樹\n2:建立AVL Tree\n");
 	int n = getInt();
 	string fileName;
 	TwoThreeTree twoThreeTree;
@@ -494,7 +494,7 @@ int main() {
 			default:
 				printf("輸入錯誤 請重新輸入\n");
 		}
-		printf("請輸入:\n0:退出\n1:建立min heap\n2:建立min-max heap\n");
+		printf("請輸入:\n0:退出\n1:建立23樹\n2:建立AVL Tree\n");
 		n = getInt(); // 重新取數字
 	}
 	return 0; // 好習慣記得養成
