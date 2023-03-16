@@ -24,18 +24,18 @@ class Data {
 		string system ; 					// Åé¨t§O 
 
 		void Init() { 						// Init Data
-	  	school_code.clear() ;
-	  	school_name.clear() ;
-	  	department_code.clear() ;
-	  	department_name.clear() ;
-	  	day.clear() ;
-	  	education.clear() ;
-	  	student = 0 ;
+	  		school_code.clear() ;
+	  		school_name.clear() ;
+	  		department_code.clear() ;
+	  		department_name.clear() ;
+	  		day.clear() ;
+	  		education.clear() ;
+	  		student = 0 ;
 	 		teacher = 0 ;
 	 		graduate = 0 ;
 	 		city.clear() ; 
-	  	system.clear() ;
-  	} // void  Init
+	  		system.clear() ;
+  		} // void  Init
 } ; // class Data
 
 class InNode {               // Index of node
@@ -59,7 +59,6 @@ class AvlNode{
 	public :
 		vector<Data> node ;
 		AvlNode *child[2] ;
-		
 		AvlNode() {
 			child[0] = NULL ;
 			child[1] = NULL ;
