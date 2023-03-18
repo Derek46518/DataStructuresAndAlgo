@@ -47,7 +47,10 @@ struct Node {
 	}
 };
 
-// Virtual class
+/**
+ * @brief Abstract class of tree
+ * 
+ */
 class Tree {
 	public:
 		virtual void insert(string value, int id) {}
@@ -59,11 +62,13 @@ class Tree {
 		Node* root;
 };
 
-/**
-This class is used to construct 2-3 tree
-The logic can be searched online
 
-*/
+/**
+ * 
+ * This class is used to construct 2-3 tree
+ * The logic can be searched online
+ * 
+ */
 class TwoThreeTree:public Tree {
 	private:
 		/**
@@ -157,7 +162,13 @@ class TwoThreeTree:public Tree {
 			if(parent->data.size()==3) split(parent);
 		}
 		
-		// insert the data into node
+		/**
+		 * @brief insert the data into the specific node
+		 * 
+		 * @param node the node to input
+		 * @param value 
+		 * @param id 
+		 */
 		void insertIntoNode(Node * node, string value, int id) {
 			// check if data is equal, if is equal, push id
 			for(int i = 0 ; i< node->data.size(); i++) {
@@ -220,14 +231,29 @@ class TwoThreeTree:public Tree {
 		}
 
 	public:
+	/**
+	 * @brief Construct a new Two Three Tree object
+	 * 
+	 */
 		TwoThreeTree() {
 			root = NULL;
 		}
+		/**
+		 * @brief 復原原始數據，清空根節點指針
+		 * 
+		 * @param originData 
+		 */
 		void restore(vector<vector<string> > & originData) {
 			restore(root);
 			originData.clear();
 			root = NULL;
 		}
+		/**
+		 * @brief 計算nodes的數量
+		 * 
+		 * @param node 
+		 * @return int 
+		 */
 		int countNodes(Node * node) {
 			if (node == NULL) {
 				return 0;
@@ -238,7 +264,12 @@ class TwoThreeTree:public Tree {
 			}
 			return count;
 		}
-		
+		/**
+		 * @brief public insert
+		 * 
+		 * @param value 
+		 * @param id 
+		 */
 		void insert(string value, int id) {
 			if (root == NULL) {
 				root = new Node(value, id);
@@ -288,15 +319,30 @@ Logic can be searched online
 */
 class AVLTree:public Tree {
 	public:
+	/**
+	 * @brief Construct a new AVLTree object
+	 * 
+	 */
 		AVLTree(){
 			root = NULL;
 		}
+		/**
+		 * @brief AVL Tree public insert
+		 * 
+		 * @param value the value to insert
+		 * @param id the id corresponding the data
+		 */
 		void insert(string value,int id) {
 			value.erase(remove_if(value.begin(),value.end(),static_cast<int(*)(int)>(&ispunct)),value.end());
 			value.erase(remove(value.begin(),value.end(),','),value.end());
 			root = insert(root,stoi(value),id,NULL);
 		}
 		
+		/**
+		 * @brief print out the answer of the root
+		 * 
+		 * @param originData the original input data
+		 */
 		void printRoot(vector<vector<string> > & originData) {
 			printf("Tree height = %d\n",height(root));
 			printf("Number of nodes = %d\n",numNodes(root));
@@ -308,15 +354,35 @@ class AVLTree:public Tree {
 				i++;
 			}
 		}
+		/**
+		 * @brief restore data
+		 * 
+		 * @param originData the original input data
+		 */
 		void restore(vector<vector<string> > & originData) {
 			root = NULL;
 			originData.clear();
 		}
 	private:
+		/**
+		 * @brief 
+		 * 
+		 * @param cur current node
+		 * @return int the number of nodes below current node
+		 */
 		int numNodes(Node* cur){
 			if(cur==NULL) return 0;
 			else return 1+numNodes(cur->left)+numNodes(cur->right);
 		}
+		/**
+		 * @brief inner insert
+		 * 
+		 * @param node current node
+		 * @param value the value
+		 * @param id the id corresponding the value
+		 * @param parent current parent
+		 * @return Node* inserted node
+		 */
 		Node* insert(Node* node,int value,int id, Node* parent) {
 			if(node==NULL) {
 				return new Node(value,id,parent);
@@ -334,8 +400,9 @@ class AVLTree:public Tree {
 				node->right = insert(node->right,value,id,node);
 			}
 			int balance = getBalance(node);
-
+			// right rotate case
 			if (balance > 1 && value < node->left->value) return rightRotate(node);
+			// left rotate case
 			if (balance < -1 && value > node->right->value) return leftRotate(node);
 			// Left Right Case
 			if (balance > 1 && value > node->left->value) {
@@ -351,33 +418,52 @@ class AVLTree:public Tree {
 			
 			return node;
 		}
-		// right rotate
-		Node* rightRotate(Node * y) {
-			Node *x = y->left;
-			Node *T2 = x->right;
+		/**
+		 * @brief right rotation
+		 * 
+		 * @param current current node
+		 * @return Node* node after rotation
+		 */
+		Node* rightRotate(Node * current) {
+			Node *temp = current->left;
+			Node *temp2 = temp->right;
 			// Perform rotation
-			x->right = y;
-			y->left = T2;
+			temp->right = current;
+			current->left = temp2;
 			// Return new root
-			return x;
+			return temp;
 
 		}
-		Node *leftRotate(Node *x) {
-			Node *y = x->right;
-			Node *T2 = y->left;
-
-			// Perform rotation
-			y->left = x;
-			x->right = T2;
-
-			// Return new root
-			return y;
+		/**
+		 * @brief left rotation
+		 * 
+		 * @param current current node
+		 * @return Node* node after rotation
+		 */
+		Node *leftRotate(Node *current) {
+			Node *temp = current->right; // temp equals current right
+			Node *temp2 = temp->left; // temp2 equals temp left
+			temp->left = current;  // temp left is current
+			current->right = temp2; // current right is temp2
+			return temp; // return temp
 		}
-		// Get Balance factor of node N
+		/**
+		 * @brief Get the Balance of the current node,
+		 * if positive number, left is higher than right,
+		 * vice versa
+		 * @param N current node
+		 * @return int balance
+		 */
 		int getBalance(Node *N) {
 			if (N == NULL) return 0;
 			return height(N->left) - height(N->right);
 		}
+		/**
+		 * @brief get height from current node
+		 * 
+		 * @param current current node
+		 * @return int height
+		 */
 		int height(Node* current) {
 			if(current==NULL) return 0;
 			else return 1+ max(height(current->left),height(current->right));
@@ -385,6 +471,13 @@ class AVLTree:public Tree {
 
 };
 
+/**
+ * @brief split string to vector
+ * 
+ * @param str original string
+ * @param b split
+ * @return vector<string> splited string
+ */
 vector<string> split(string &str, string &b) {
 	int first, last; //記錄第一個位置和第二個
 	int i = 0; // 計數0
@@ -409,7 +502,13 @@ vector<string> split(string &str, string &b) {
 	return answer;
 }
 
-// 加上檔案名稱前綴
+/**
+ * @brief 加上檔案名稱前綴
+ * 
+ * @param add 檔案名稱
+ * @param s 前綴
+ * @return string full name
+ */
 string addPrefix(string add, string s) {
 	stringstream ss;
 	ss << add;
@@ -418,7 +517,16 @@ string addPrefix(string add, string s) {
 	return ss.str();
 }
 
-// 讀檔
+/**
+ * @brief read data
+ * 
+ * @param data The tree to input
+ * @param originData the original data
+ * @param dataName 
+ * @param isTwoThree 
+ * @return true 
+ * @return false 
+ */
 bool readData(Tree & data, vector<vector<string> > & originData, string dataName,bool isTwoThree) {
 	if(dataName.size()==3) dataName = addPrefix("input",dataName);
 	ifstream ifs;
@@ -449,7 +557,11 @@ bool readData(Tree & data, vector<vector<string> > & originData, string dataName
 	ifs.close();
 	return true;
 }
-// 取得使用者輸入的int
+/**
+ * @brief Get the Int from input
+ * 
+ * @return int input data
+ */
 int getInt() {
 	// 先讀整行
 	string s;

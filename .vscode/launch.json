@@ -47,6 +47,17 @@
                 }
             ],
             "preLaunchTask": "C/C++: cpp.exe 建置使用中檔案"
+        },
+        {
+            "name": "(Windows) Launch",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "輸入程式名稱，例如 ${workspaceFolder}/a.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "console": "externalTerminal"
         }
     ]
 }
