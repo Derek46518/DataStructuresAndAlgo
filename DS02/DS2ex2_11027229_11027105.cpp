@@ -1,3 +1,15 @@
+/**
+ * @file DS2ex2_11027229_11027105.cpp
+ * @author Derek and Nier (you@domain.com)
+ * @brief This is the Data Stucture homework 2
+ * About 2-3 Tree and AVL Tree implementation
+ * 
+ * @version 1.0
+ * @date 2023-03-19
+ * 
+ * @copyright Copyright (c) 2023
+ * @warning please use C++ 11 to compile
+ */
 #include<iostream>
 #include<vector>
 #include<sstream>
@@ -8,7 +20,10 @@
 #include<algorithm>
 using namespace std;
 
-// The Node of all Trees
+/**
+ * @brief The node of all trees below
+ * 
+ */
 struct Node {
 	Node * parent; // The pointer pointed to the parent
 	vector<string> data; // Use to save data
@@ -222,6 +237,11 @@ class TwoThreeTree:public Tree {
 			return maxHeight + 1;
 		}
 		
+    /**
+     * @brief restore
+     * 
+     * @param current 
+     */
 		void restore(Node * current){
 			for(Node * a : current->children){
 				restore(a);
@@ -360,9 +380,13 @@ class AVLTree:public Tree {
 		 * @param originData the original input data
 		 */
 		void restore(vector<vector<string> > & originData) {
-			root = NULL;
+			restore(root->left);
+      restore(root->right);
+      delete root;
+      root = NULL;
 			originData.clear();
 		}
+    
 	private:
 		/**
 		 * @brief 
@@ -374,6 +398,20 @@ class AVLTree:public Tree {
 			if(cur==NULL) return 0;
 			else return 1+numNodes(cur->left)+numNodes(cur->right);
 		}
+    /**
+     * @brief inner restore
+     * 
+     * @param current current node
+     */
+    void restore(Node * current){
+      if(current==NULL) return;
+      restore(current->left);
+      current->left = NULL;
+      restore(current->right);
+      current->right = NULL;
+      delete current;
+      current = NULL;
+    }
 		/**
 		 * @brief inner insert
 		 * 
