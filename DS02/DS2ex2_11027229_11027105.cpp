@@ -1,6 +1,6 @@
 /**
  * @file DS2ex2_11027229_11027105.cpp
- * @author Derek and Nier (you@domain.com)
+ * @author Derek and Nier (11027229 11027205)
  * @brief This is the Data Stucture homework 2
  * About 2-3 Tree and AVL Tree implementation
  *
