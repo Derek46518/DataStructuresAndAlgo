@@ -719,7 +719,7 @@ int getInt()
 int main()
 {
   vector<vector<string>> data;
-  printf("請輸入:\n0:退出\n1:建立23樹\n2:建立AVL Tree\n");
+  cout << "*** Search Tree Utilities **\n* 0. QUIT                  *\n* 1. Build 2-3 tree        *\n* 2. Build AVL tree        *\n*************************************\n";
   int n = getInt();
   string fileName;
   TwoThreeTree twoThreeTree;
@@ -731,7 +731,7 @@ int main()
     switch (n)
     {
     case 1:
-      printf("請輸入檔案名稱\n");
+      printf("Please insert file number\n");
       getline(cin, fileName);
       if (!readData(twoThreeTree, originData, fileName, true))
         break;
@@ -739,7 +739,7 @@ int main()
       twoThreeTree.restore(originData);
       break;
     case 2:
-      printf("請輸入檔案名稱\n");
+      printf("Please insert file number\n");
       getline(cin, fileName);
       if (!readData(avlTree, originData, fileName, false))
         break;
@@ -749,7 +749,7 @@ int main()
     default:
       printf("輸入錯誤 請重新輸入\n");
     }
-    printf("請輸入:\n0:退出\n1:建立23樹\n2:建立AVL Tree\n");
+    cout << "*** Search Tree Utilities **\n* 0. QUIT                  *\n* 1. Build 2-3 tree        *\n* 2. Build AVL tree        *\n*************************************\n";
     n = getInt(); // 重新取數字
   }
   return 0; // 好習慣記得養成
