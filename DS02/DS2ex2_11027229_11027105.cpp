@@ -74,6 +74,12 @@ struct Node
 class Tree
 {
 public:
+/**
+ * @brief Virtual function of insert
+ * 
+ * @param value 
+ * @param id 
+ */
   virtual void insert(string value, int id) {}
   // 序號 、 學校名稱 、科系名稱、日夜別、等級別、上學年度畢業生數
   void printLine(vector<vector<string>> originData, int index)
@@ -129,7 +135,7 @@ private:
       }
     }
   }
-
+  
   /**
   Split the node into two parts, and push the middle data into parent
   @param current : The node that needs to split
@@ -747,7 +753,7 @@ int main()
       avlTree.restore(originData);
       break;
     default:
-      printf("輸入錯誤 請重新輸入\n");
+      printf("Error, please input again\n");
     }
     cout << "*** Search Tree Utilities **\n* 0. QUIT                  *\n* 1. Build 2-3 tree        *\n* 2. Build AVL tree        *\n*************************************\n";
     n = getInt(); // 重新取數字
