@@ -467,7 +467,7 @@ public:
     printf("Tree height = %d\n", height(root));
     printf("Number of nodes = %d\n", numNodes(root));
     int i = 1;
-    // printLine(vector<vector<string> > originData, int index)
+    
     for (int n : root->ids[0])
     {
       printf("%d: ", i);
@@ -552,25 +552,28 @@ private:
     }
     int balance = getBalance(node);
     // right rotate case
-    if (balance > 1 && value < node->left->value)
+    int balanceRight = getBalance(node->right);
+    int balanceLeft = getBalance(node->left);
+    
+    if (balance > 1 && balanceLeft>0)
       return rightRotate(node);
     // left rotate case
-    if (balance < -1 && value > node->right->value)
+    if (balance < -1 && balanceRight<0)
       return leftRotate(node);
     // Left Right Case
-    if (balance > 1 && value > node->left->value)
+    if (balance > 1 && balanceLeft<0)
     {
       node->left = leftRotate(node->left);
       return rightRotate(node);
     }
 
     // Right Left Case
-    if (balance < -1 && value < node->right->value)
+    if (balance < -1 && balanceRight>0)
     {
       node->right = rightRotate(node->right);
       return leftRotate(node);
     }
-
+	
     return node;
   }
   /**
