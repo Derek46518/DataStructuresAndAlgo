@@ -290,6 +290,7 @@ private:
    */
   void restore(Node *current)
   {
+  	if(current==NULL) return;
     for (Node *a : current->children)
     {
       restore(a);
@@ -414,6 +415,35 @@ public:
   {
     root = NULL;
   }
+  
+  void printCurrent(Node * current, int& count, vector<vector<string> > originData){
+  	for(int n : current -> ids[0]){
+  		printf("%d: ", count);
+        printLine(originData, n);
+  		count++;
+	  }
+  }
+  void getLargest(int n,vector<vector<string> > & originData){
+  	int count = 1;
+  	traverse(root,n,count,originData);
+  }
+  void traverse(Node * current,int & n,int & count,vector<vector<string> > & originData){
+  	
+  	if(current==NULL) return;
+  	traverse(current->right,n,count,originData);
+  	if(n==0) return;
+  	printCurrent(current,count,originData);
+  	n--;
+  	traverse(current->left,n,count,originData);
+  }
+  /**
+   * @brief Check if AVLtree is empty or not
+   * @return bool true is yes, false is not
+   */
+  bool isEmpty(){
+  	if(root==NULL) return true;
+  	return false;
+  }
   /**
    * @brief AVL Tree public insert
    *
@@ -452,6 +482,7 @@ public:
    */
   void restore(vector<vector<string>> &originData)
   {
+  	if(root==NULL) return;
     restore(root->left);
     restore(root->right);
     delete root;
@@ -737,21 +768,36 @@ int main()
     switch (n)
     {
     case 1:
+      twoThreeTree.restore(originData);
       printf("Please insert file number\n");
       getline(cin, fileName);
       if (!readData(twoThreeTree, originData, fileName, true))
         break;
       twoThreeTree.printRoot(originData);
-      twoThreeTree.restore(originData);
+      
       break;
     case 2:
+      avlTree.restore(originData);
       printf("Please insert file number\n");
       getline(cin, fileName);
       if (!readData(avlTree, originData, fileName, false))
         break;
       avlTree.printRoot(originData);
-      avlTree.restore(originData);
+      
       break;
+    case 3:
+      if(avlTree.isEmpty()){
+      	printf("Please do mission 2 first!\n");
+      	break;
+	  }
+      printf("Please input one number k\n");
+      t = getInt();
+      while(t<=0){
+      	printf("Error, please input again\n");
+      	t = getInt();
+	  }
+	  avlTree.getLargest(t,originData);
+	  break;
     default:
       printf("Error, please input again\n");
     }
