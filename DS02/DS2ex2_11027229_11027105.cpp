@@ -416,10 +416,11 @@ public:
     root = NULL;
   }
   
-  void printCurrent(Node * current, int& count, vector<vector<string> > originData){
-  	for(int n : current -> ids[0]){
+  void printCurrent(Node * current, int& count, vector<vector<string> > originData,int &n){
+  	for(int nt : current -> ids[0]){
   		printf("%d: ", count);
-        printLine(originData, n);
+        printLine(originData, nt);
+        n--;
   		count++;
 	  }
   }
@@ -431,9 +432,8 @@ public:
   	
   	if(current==NULL) return;
   	traverse(current->right,n,count,originData);
-  	if(n==0) return;
-  	printCurrent(current,count,originData);
-  	n--;
+  	if(n<=0) return;
+  	printCurrent(current,count,originData,n);
   	traverse(current->left,n,count,originData);
   }
   /**
@@ -759,7 +759,7 @@ int getInt()
 int main()
 {
   vector<vector<string>> data;
-  cout << "*** Search Tree Utilities **\n* 0. QUIT                  *\n* 1. Build 2-3 tree        *\n* 2. Build AVL tree        *\n*************************************\n";
+  cout << "*** Search Tree Utilities **\n* 0. QUIT                  *\n* 1. Build 2-3 tree        *\n* 2. Build AVL tree        *\n* 3. Top-K search on AVL tree*\n*************************************\n";
   int n = getInt();
   string fileName;
   TwoThreeTree twoThreeTree;
@@ -804,7 +804,7 @@ int main()
     default:
       printf("Error, please input again\n");
     }
-    cout << "*** Search Tree Utilities **\n* 0. QUIT                  *\n* 1. Build 2-3 tree        *\n* 2. Build AVL tree        *\n*************************************\n";
+    cout << "*** Search Tree Utilities **\n* 0. QUIT                  *\n* 1. Build 2-3 tree        *\n* 2. Build AVL tree        *\n* 3. Top-K search on AVL tree*\n*************************************\n";
     n = getInt(); // 重新取數字
   }
   return 0; // 好習慣記得養成
