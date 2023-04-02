@@ -308,6 +308,15 @@ public:
   {
     root = NULL;
   }
+  
+  /**
+  * @brief Check is empty or not
+  * @return bool
+  */
+  bool isEmpty(){
+  	if(root==NULL) return true;
+  	return false;
+  }
   /**
    * @brief 復原原始數據，清空根節點指針
    *
@@ -338,6 +347,44 @@ public:
     }
     return count;
   }
+  
+  bool findSchool(string schoolName,vector<vector<string> >originData){
+  	return findSchool(root,schoolName,originData);
+  }
+
+  bool findSchool(Node * current, string schoolName, vector<vector<string> >originData){
+    if(current==NULL) return false;
+    
+    if(current->data[0]<=schoolName){
+      
+      if(current->data[0]==schoolName){
+        // printCurrent();
+        return true;
+      }
+      else if(current->children.size()!=0) return findSchool(current->children[0],schoolName,originData);
+      else return false;
+    }
+    else if(current->data.size()==2 && current->data[1]<=schoolName){
+      if(current->data[1]==schoolName){
+        // printCurrent();
+        return true;
+      }
+      else if(current->children.size()>1) return findSchool(current->children[1],schoolName,originData);
+      else return false;
+    }
+    else if(current->data.size()==2 && current->data[1]>schoolName){
+      if(current->children.size()==3) return findSchool(current->children[2],schoolName,originData);
+      else return false;
+    }
+    else{
+      if(current->children.size()>1){
+        return findSchool(current->children[1],schoolName,originData);
+      }
+      return false;
+    }
+    
+  }
+  
   /**
    * @brief public insert
    *
@@ -762,6 +809,7 @@ int main()
   cout << "*** Search Tree Utilities **\n* 0. QUIT                  *\n* 1. Build 2-3 tree        *\n* 2. Build AVL tree        *\n* 3. Top-K search on AVL tree*\n*************************************\n";
   int n = getInt();
   string fileName;
+  string schoolName;
   TwoThreeTree twoThreeTree;
   AVLTree avlTree;
   vector<vector<string>> originData;
@@ -801,9 +849,22 @@ int main()
 	  }
 	  avlTree.getLargest(t,originData);
 	  break;
+	  case 4:
+    	if(twoThreeTree.isEmpty()){
+    	  printf("Please do mission 1 first!\n");
+    	  break;
+		}
+		printf("Please input a school name\n");
+		getline(cin,schoolName);
+		if(!twoThreeTree.findSchool(schoolName,originData)){
+			printf("Cannot find\n");
+		}
+    else printf("Found\n");
+		break;
     default:
       printf("Error, please input again\n");
     }
+    
     cout << "*** Search Tree Utilities **\n* 0. QUIT                  *\n* 1. Build 2-3 tree        *\n* 2. Build AVL tree        *\n* 3. Top-K search on AVL tree*\n*************************************\n";
     n = getInt(); // 重新取數字
   }

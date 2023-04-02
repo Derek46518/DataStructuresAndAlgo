@@ -1,0 +1,377 @@
+
+(1) 打仗與訓練 (因為罰站會暈眩所以教室上課、然後送戰場？？？因為體罰有害人權，所以輕鬆管教入社會？？？因為程式寫不出來所以不寫、然後出去當software engineer？？？)
+
+    (『就直接看或寫Python程式吧、管他去死！』？)
+
+(2) Understanding how Python works and what it is able to do from the perspective of interprter implementation (OurScheme or Our-C，尤其前者)
+
+###################################################################################################################
+
+本日進度
+
+1. Variables - 'global' and 'nonlocal'
+
+2. HowToMemorize-Revisited.txt
+
+3. NamesStartANew.txt
+
+###################################################################################################################
+
+Variables revisited - A more detailed examination of 'global' and 'nonlocal'
+
+###################################################################################################################
+
+Remember !!!
+ 
+  assign = declare 
+
+  Default : we are always declaring a variable in the "current namespace" ！！！
+
+'global' :
+
+1. global-var df= a variable that was/will-be delared(=assigned) on the top level (= outside of the definition of any function or class)
+
+2. A global-var (if it already exists) can be refrenced by any function (whatever its level is) without having to be declared to be 'global' by that function (IF the function does not have a local var. with the same name).
+
+3. To change the value of a global-var in a function (whatever its level is), we must use 'global' to declare that the var is global.
+
+4. To declare a var as 'global' (in a function), the var does not have to exist when the system accepts the definition of that function.
+
+'nonlocal' :
+
+1. non-loca-var df= a variable that is declared (whether by using an assignment or a 'nonlocal' declaration) in the IMMEDIATE enclosing function (of the current function).
+
+2. If a var. is only referenced and not declared (whether by using an assignment or a 'nonlocal' declaration) in a function, that var must be either a global variable (second priority) or a variable that is declared (whether by using an assignment or a 'nonlocal' declaration) in the immediate enclosing function (first priority).
+
+3. To declare a var as 'nonlocal', it has to be the case that there is a declaration (whether by using an assignment or a 'nonlocal' declaration) of that var in the immediate enclosing function.
+
+###################################################################################################################
+  
+def F1() :
+  
+  def F12( b12 ) :      # b12  df= whether to define 'a0319_1348' before calling F123()
+    
+    def F123( b123 ) :  # b123 df= whether to define 'a0319_1348' before calling F1234()
+      
+      def F1234() :     # just to print the value of 'a0319_1348'
+        nonlocal a0319_1348  # 'a0319_1348' is the-local-with-this-name of the IMMEDIATE enclosing function
+        print( a0319_1348 )  # so, which one is it
+      # END - F1234()
+      
+      # we are now properly within F123()
+      
+      if b123 : # I am asked to define 'a0319_1348' before calling F1234()
+        a0319_1348 = 'Defined in F123()'
+      
+      F1234()  # calling F1234() no matter what
+      
+    # END - F123()
+    
+    # we are now properly within F12()
+    
+    if b12 :  # we are asked to define 'a0319_1348' before calling F123( )
+      a0319_1348 = 'Defined in F12()'
+      print( "F12() now calls F123() with a 'True' argument" )
+      F123( True )   # "Please also define 'a0319_1348' before calling F1234()"
+      print( "F12() now calls F123() again with a 'False' argument" )
+      F123( False )  # "This time, please do not define 'a0319_1348' before calling F1234()"
+      
+    else :    # we are not asked to define 'a0319_1348' before calling F123( )
+     print( "F12() now calls F123() with a 'True' argument" )
+     F123( True ) # Please define 'a0319_1348' before calling F1234()
+    
+  # END - F12()
+  
+  # we are now properly within F1()
+  
+  print( "Calling F12( False ) " )
+  F12( False )  # Do not define 'a0319_1348' ; Let F123() defines it (before it calls F1234())
+  
+  print( "Calling F12( True ) " )
+  F12( True )   # Define 'a0319_1348' ; But see what will happen if F123() defines it (or not defines it) before it calls F1234()
+  
+# END - F1()
+
+>>> F1()
+Calling F12( False ) 
+F12() now calls F123() with a 'True' argument
+Defined in F123()
+Calling F12( True ) 
+F12() now calls F123() with a 'True' argument
+Defined in F123()
+F12() now calls F123() again with a 'False' argument
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "<stdin>", line 42, in F1
+  File "<stdin>", line 28, in F12
+  File "<stdin>", line 17, in F123
+  File "<stdin>", line 9, in F1234
+NameError: free variable 'a0319_1348' referenced before assignment in enclosing scope
+
+###################################################################################################################
+  
+>>> def F1() :
+...   
+...   def F12( b12 ) :      # b12  df= whether to define 'a0319_1348' before calling F123()
+...     
+...     def F123( b123 ) :  # b123 df= whether to define 'a0319_1348' before calling F1234()
+...       
+...       def F1234() :     # just to print the value of 'a0319_1348'
+...         nonlocal a0319_1348  # 'a0319_1348' is the-local-with-this-name of the IMMEDIATE enclosing function
+...         print( a0319_1348 )  # so, which one is it
+...       # END - F1234()
+...       
+...       # we are now properly within F123()
+...       
+...       if b123 : # I am asked to define 'a0319_1348' before calling F1234()
+...         a0319_1348 = 'Defined in F123()'    ##### Line 15 (of this script)
+...       
+...       else :                      ####### new #######
+...         nonlocal a0319_1348       ####### new ####### (Line 18)
+...      
+...       F1234()  # calling F1234() no matter what
+...       
+...     # END - F123()
+...     
+...     # we are now properly within F12()
+...     
+...     if b12 :  # we are asked to define 'a0319_1348' before calling F123( )
+...       a0319_1348 = 'Defined in F12()'
+...       print( "F12() now calls F123() with a 'True' argument" )
+...       F123( True )   # "Please also define 'a0319_1348' before calling F1234()"
+...       print( "F12() now calls F123() again with a 'False' argument" )
+...       F123( False )  # "This time, please do not define 'a0319_1348' before calling F1234()"
+...       
+...     else :    # we are not asked to define 'a0319_1348' before calling F123( )
+...      print( "F12() now calls F123() with a 'True' argument" )
+...      F123( True ) # Please define 'a0319_1348' before calling F1234()
+...     
+...   # END - F12()
+...   
+...   # we are now properly within F1()
+...   
+...   print( "Calling F12( False ) " )
+...   F12( False )  # Do not define 'a0319_1348' ; Let F123() defines it (before it calls F1234())
+...   
+...   print( "Calling F12( True ) " )
+...   F12( True )   # Define 'a0319_1348' ; But see what will happen if F123() defines it (or not defines it) before it calls F1234()
+...   
+... # END - F1()
+... 
+  File "<stdin>", line 18
+SyntaxError: name 'a0319_1348' is assigned to before nonlocal declaration
+
+###################################################################################################################
+  
+>>> def F1() :
+...   
+...   def F12( b12 ) :      # b12  df= whether to define 'a0319_1348' before calling F123()
+...     
+...     def F123( b123 ) :  # b123 df= whether to define 'a0319_1348' before calling F1234()
+...       
+...       def F1234() :     # just to print the value of 'a0319_1348'
+...         # global a                ####### new #######
+...         nonlocal a0319_1348  # 'a0319_1348' is the-local-with-this-name of the IMMEDIATE enclosing function
+...         print( a0319_1348 )  # so, which one is it
+...         print( 'Value of the global-var "a" :', a )       ####### new #######
+...       # END - F1234()
+...       
+...       # we are now properly within F123()
+...       
+...       nonlocal a0319_1348       ####### new #######
+...       
+...       if b123 : # I am asked to define 'a0319_1348' before calling F1234()
+...         a0319_1348 = 'Re-Assigned in F123()'
+...      
+...       F1234()  # calling F1234() no matter what
+...       
+...     # END - F123()
+...     
+...     # we are now properly within F12()
+...     
+...     if b12 :  # we are asked to define 'a0319_1348' before calling F123( )
+...       a0319_1348 = 'Defined in F12()'
+...       print( "F12() now calls F123() with a 'True' argument" )
+...       F123( True )   # "Please also define 'a0319_1348' before calling F1234()"
+...       print( 'Value of a0319_1348 is :', a0319_1348, '(printed in F12())' )
+...       
+...       a0319_1348 = 'Defined in F12() again'
+...       print( "F12() now calls F123() again with a 'False' argument" )
+...       F123( False )  # "This time, please do not define 'a0319_1348' before calling F1234()"
+...       print( 'Value of a0319_1348 is :', a0319_1348, '(printed in F12())' )
+...     
+...     else :    # we are not asked to define 'a0319_1348' before calling F123( )
+...       print( "F12() now calls F123() with a 'True' argument" )
+...       F123( True ) # Please define 'a0319_1348' before calling F1234()
+...     
+...   # END - F12()
+...   
+...   # we are now properly within F1()
+...   
+...   print( "Calling F12( False ) " )
+...   F12( False )  # Do not define 'a0319_1348' ; Let F123() defines it (before it calls F1234())
+...   
+...   print( "Calling F12( True ) " )
+...   F12( True )   # Define 'a0319_1348' ; But see what will happen if F123() defines it (or not defines it) before it calls F1234()
+...   
+... # END - F1()
+... 
+>>> F1()
+Calling F12( False ) 
+F12() now calls F123() with a 'True' argument
+Re-Assigned in F123()
+Value of the global-var "a" : 12345
+Calling F12( True ) 
+F12() now calls F123() with a 'True' argument
+Re-Assigned in F123()
+Value of the global-var "a" : 12345
+Value of a0319_1348 is : Re-Assigned in F123() (printed in F12())
+F12() now calls F123() again with a 'False' argument
+Defined in F12() again
+Value of the global-var "a" : 12345
+Value of a0319_1348 is : Defined in F12() again (printed in F12())
+
+###################################################################################################################
+
+def F1() :
+  
+  def F12( b12 ) :      # b12  df= whether to define 'a0319_1348' before calling F123()
+    
+    def F123( b123 ) :  # b123 df= whether to define 'a0319_1348' before calling F1234()
+      
+      def F1234() :     # just to print the value of 'a0319_1348'
+        # nonlocal a0319_1348  # 'a0319_1348' is the-local-with-this-name of the IMMEDIATE enclosing function
+        print( a0319_1348 )  # so, which one is it
+      # END - F1234()
+      
+      # we are now properly within F123()
+      
+      a0319_1348 = 'Defined in F123()'
+      
+      F1234()
+      
+    # END - F123()
+    
+    # we are now properly within F12()
+    F123( True )
+    
+  # END - F12()
+  
+  # we are now properly within F1()
+  
+  print( "Calling F12( True ) " )
+  F12( True )   # Define 'a0319_1348' 
+  
+# END - F1()
+
+>>> F1()
+Calling F12( True ) 
+Defined in F123()
+
+###################################################################################################################
+
+>>> def F1() :
+...   
+...   def F12( b12 ) :      
+...     
+...     def F123( b123 ) :  
+...       
+...       def F1234() :     
+...         nonlocal a0319_1348    # 'a0319_1348' is the-local-with-this-name of the IMMEDIATE enclosing function
+...         # print( a0319_1348 )  # but no reference of 'a0319_1348' in this function
+...       # END - F1234()
+...       
+...       # we are now properly within F123()
+...       
+...       # a0319_1348 = 'Defined in F123()'   # no such var in the IMMEDIATE enclosing function
+...       
+...       F1234()
+...       
+...     # END - F123()
+...     
+...     # we are now properly within F12()
+...     F123( True )
+...     
+...   # END - F12()
+...   
+...   # we are now properly within F1()
+...   
+...   print( "Calling F12( True ) " )
+...   F12( True )    
+...   
+... # END - F1()
+... 
+  File "<stdin>", line 8
+SyntaxError: no binding for nonlocal 'a0319_1348' found
+
+###################################################################################################################
+
+>>> def F2023_0320() :
+...   global a2023_0320_1400 
+...   a = 10
+... 
+>>>
+
+###################################################################################################################
+
+def F1() :
+  
+  def F12( b12 ) :      
+    
+    def F123( b123 ) :  
+      
+      def F1234() :     # just to print the value of 'a'
+        print( a )      # so, which one is it (nonlocal or global)?
+      # END - F1234()
+      
+      # we are now properly within F123()
+      
+      a = 'Defined in F123()'
+      
+      F1234()
+      
+    # END - F123()
+    
+    # we are now properly within F12()
+    F123( True )
+    
+  # END - F12()
+  
+  # we are now properly within F1()
+  
+  print( "Calling F12( True ) " )
+  F12( True )   # Define 'a0319_1348' 
+  
+# END - F1()
+
+>>> a = 10
+>>> 
+>>> F1()
+Calling F12( True ) 
+Defined in F123()
+
+###################################################################################################################
+
+Summary about 'global' (again) :
+
+1. global-var df= a variable that was/will-be delared(=assigned) on the top level (= outside of the definition of any function or class)
+
+2. A global-var (if it already exists) can be refrenced by any function (whatever its level is) without having to be declared to be 'global' by that function (IF the function does not have a local var. with the same name).
+
+3. To change the value of a global-var in a function (whatever its level is), we must use 'global' to declare that the var is global.
+
+4. To declare a var as 'global' (in a function), the var does not have to exist when the system accepts the definition of that function.
+
+Summary about 'nonlocal' :
+
+1. non-loca-var df= a variable that is declared (whether by using an assignment or a 'nonlocal' declaration) in the IMMEDIATE enclosing function (of the current function).
+
+2. If a var. is only referenced and not declared (whether by using an assignment or a 'nonlocal' declaration) in a function, that var must be either a global variable (second priority) or a variable that is declared (whether by using an assignment or a 'nonlocal' declaration) in the immediate enclosing function (first priority).
+
+3. To declare a var as 'nonlocal', it has to be the case that there is a declaration (whether by using an assignment or a 'nonlocal' declaration) of that var in the immediate enclosing function.
+
+###################################################################################################################
+
+
+
+
