@@ -190,8 +190,8 @@ class QuadraticProbing : public Hash {
 				// table位置已被放置data 
 				while ( table[collisionNum].id[0] != '\0' ) {
 					// 初始碰撞位置 
-					collisionNum = key ;
-					// 平方數加1 (原本為0) 
+					// collisionNum = key ; 這行拿掉註解會無窮 
+					// 平方數加 1 (  原本為 0 ) 
 					quadraticNum++ ;
 					collisionNum = collisionNum + ( quadraticNum*quadraticNum ) ;
 					// 超過table 
