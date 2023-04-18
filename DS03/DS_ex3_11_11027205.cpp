@@ -180,12 +180,12 @@ class QuadraticProbing : public Hash {
 					temp = data[i].id[j] ;
 					key = key * temp ;
 					// ´î¤p¼Æ¦r 
-					if ( key > tableSize ) {
+					if ( key >= tableSize ) {
 						key = key % tableSize ;
 					} // if
 				} // for
 				
-				if ( key > tableSize ) {
+				if ( key >= tableSize ) {
 					key = key % tableSize ;
 				} // if
 
@@ -200,7 +200,7 @@ class QuadraticProbing : public Hash {
 					quadraticNum++ ;
 					collisionNum = collisionNum + ( quadraticNum*quadraticNum ) ;
 					// ¶W¹Ltable 
-					if ( collisionNum > tableSize ) {
+					if ( collisionNum >= tableSize ) {
 						collisionNum = collisionNum % tableSize ;
 					} // if
 				} // while
