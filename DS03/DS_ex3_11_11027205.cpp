@@ -170,27 +170,32 @@ class QuadraticProbing : public Hash {
 		void Bulid( Table table[], vector<Data> &data, int tableSize ) {
 			char chr = '\0' ; 
 			int key = 0 ; //健值 
+			int temp = 0 ;
 			int quadraticNum = 0 ; // 碰撞後要平方的值 
 			int collisionNum = 0 ; // 碰撞位置 
 			for( int i=0; i < data.size(); i++ ) {
 				// 學號 ascii 相乘 
-				chr = data[i].id[0] ;
+				key = data[i].id[0] ;
 				for ( int j=1; data[i].id[j] != '\0'; j++ ) {
-					chr = chr * ( data[i].id[j] ) ;
+					temp = data[i].id[j] ;
+					key = key * temp ;
 					// 減小數字 
-					if ( chr > tableSize ) {
-						chr = chr % tableSize ;
+					if ( key > tableSize ) {
+						key = key % tableSize ;
 					} // if
 				} // for
+				
+				if ( key > tableSize ) {
+					key = key % tableSize ;
+				} // if
 
 				// 設定健值與碰撞位置 
-				collisionNum = chr ;
-				key = chr ;
+				collisionNum = key ;
 				
 				// table位置已被放置data 
 				while ( table[collisionNum].id[0] != '\0' ) {
 					// 初始碰撞位置 
-					// collisionNum = key ; 這行拿掉註解會無窮 
+					collisionNum = key ;
 					// 平方數加 1 (  原本為 0 ) 
 					quadraticNum++ ;
 					collisionNum = collisionNum + ( quadraticNum*quadraticNum ) ;
