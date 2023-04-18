@@ -5,6 +5,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <cstring>
 
 using namespace std;
 
@@ -64,44 +65,36 @@ class File {
 		  		    filename = filename + ".txt" ;
 			} // else
 		} // string Cheak_filename
-		
+
 		string CreateBinName( string filename ) {
 			string binFilename = "\0" ;
 			binFilename = filename ;
 			binFilename = binFilename.erase( binFilename.size()-3, 3 ) + "bin" ;
 			return binFilename ;
 		} // string CreateBinFile
-		
+
+		// convert text to binary
 		void ConvertToBin( string filename, string binFilename ) {
+			Data data ;
 			ifstream in  ;
 			ofstream newFile ;
-			newFile.open( binFilename.c_str() ) ;
+			newFile.open( binFilename.c_str(), fstream::out|fstream::binary ) ;
 			in.open( filename.c_str() ) ;
-			
+
 			int score = 0 ;
 			float avg  = 0.0 ;
 			unsigned char chr ='\0' ;
+
 			string line =  "\0", temp = "\0" ;
 			getline(in, line) ; 
 			while( line != "\0" ) {
-				newFile << CheakDataName( line, temp ) + "\t" ;
-				newFile << CheakDataName( line, temp ) + "\t" ;
-				chr = stoi( CheakDataName( line, temp ) ) ;
-				newFile << chr ;
-				chr = stoi( CheakDataName( line, temp ) ) ;
-				newFile << chr ;
-				chr = stoi( CheakDataName( line, temp ) ) ;
-				newFile << chr ;
-				chr = stoi( CheakDataName( line, temp ) ) ;
-				newFile << chr ;
-				chr = stoi( CheakDataName( line, temp ) ) ;
-				newFile << chr ;
-				chr = stoi( CheakDataName( line, temp ) ) ;
-				newFile << chr ;
-				newFile << "\t" ;
-				avg = stof ( CheakDataName( line, temp ) ) ;
-				newFile << avg ;
-				newFile << "\n" ;
+				strcpy( data.id , CheakDataName( line, temp ).c_str() );
+				strcpy( data.name , CheakDataName( line, temp ).c_str() );
+				for ( int i=0; i < 6; i++ ) {
+					data.score[i] = stoi( CheakDataName( line, temp ).c_str() ) ;
+				} // for
+				data.avg = stof( CheakDataName( line, temp ).c_str() ) ;
+			    newFile.write( (char*)&data, sizeof(data) ) ;
 
 				line = "\0" ;
 				getline(in, line) ; 
@@ -110,13 +103,22 @@ class File {
 			newFile.close() ;
 			in.close() ;
 		} // void ConvertToBin()
-		
 }; // class File
+
+class QuadraticProbing {
+	public :
+		void quadraticProbing() {
+		
+		} // void quadraticProbing
+}; // class QuadraticProbing
 
 class Mission {
 	public :
 		void Mission1() {
 			File file ;
+			QuadraticProbing QP ;
+			vector<Data> data ; // store binary data
+			
 			ifstream in ;
 			ifstream in2  ;
 			string filename = "\0" ;
@@ -131,6 +133,7 @@ class Mission {
 				binFilename = file.CreateBinName( filename ) ;
 				in2.open( binFilename.c_str() ) ;
 				if ( !in2.is_open() ) {
+					// convert text to binary
 					file.ConvertToBin( filename, binFilename ) ;
 				} // if
 				
