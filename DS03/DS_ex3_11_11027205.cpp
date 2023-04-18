@@ -6,13 +6,21 @@
 #include <fstream>
 #include <sstream>
 #include <cstring>
+#include <cstdlib>
 
 using namespace std;
 
 struct Data {
-	char id[10] ;
-	char name[10] ;
+	char id[10] = {'\0'} ;
+	char name[10] = {'\0'};
 	unsigned char score[6] ;
+	float avg ;	
+};
+
+struct Table {
+	int key = 0 ;
+	char id[10] = {'\0'} ;
+	char name[10] = {'\0'};
 	float avg ;	
 };
 
@@ -65,7 +73,10 @@ class File {
 		  		    filename = filename + ".txt" ;
 			} // else
 		} // string Cheak_filename
+}; // class File
 
+class Hash {
+	public :
 		string CreateBinName( string filename ) {
 			string binFilename = "\0" ;
 			binFilename = filename ;
@@ -76,40 +87,153 @@ class File {
 		// convert text to binary
 		void ConvertToBin( string filename, string binFilename ) {
 			Data data ;
-			ifstream in  ;
+			File file ;
+			ifstream txtFile  ;
 			ofstream newFile ;
 			newFile.open( binFilename.c_str(), fstream::out|fstream::binary ) ;
-			in.open( filename.c_str() ) ;
-
-			int score = 0 ;
-			float avg  = 0.0 ;
-			unsigned char chr ='\0' ;
+			txtFile.open( filename.c_str() ) ;
 
 			string line =  "\0", temp = "\0" ;
-			getline(in, line) ; 
+			getline(txtFile, line) ; 
 			while( line != "\0" ) {
-				strcpy( data.id , CheakDataName( line, temp ).c_str() );
-				strcpy( data.name , CheakDataName( line, temp ).c_str() );
+				strcpy( data.id , file.CheakDataName( line, temp ).c_str() );
+				strcpy( data.name , file.CheakDataName( line, temp ).c_str() );
 				for ( int i=0; i < 6; i++ ) {
-					data.score[i] = stoi( CheakDataName( line, temp ).c_str() ) ;
+					data.score[i] = stoi( file.CheakDataName( line, temp ).c_str() ) ;
 				} // for
-				data.avg = stof( CheakDataName( line, temp ).c_str() ) ;
+				data.avg = stof( file.CheakDataName( line, temp ).c_str() ) ;
 			    newFile.write( (char*)&data, sizeof(data) ) ;
 
 				line = "\0" ;
-				getline(in, line) ; 
+				getline(txtFile, line) ; 
 			} // while
 			
 			newFile.close() ;
-			in.close() ;
+			txtFile.close() ;
 		} // void ConvertToBin()
-}; // class File
-
-class QuadraticProbing {
-	public :
-		void quadraticProbing() {
 		
-		} // void quadraticProbing
+		//  write binary to struct
+		void WriteToVec( string binFilename, vector<Data> &data ) {
+			Data tempData ;
+			int stNo = 0 ;
+			
+			fstream binFile ;
+			binFile.open( binFilename.c_str(), fstream::in|fstream::binary) ;
+			binFile.seekg( 0, binFile.end ) ;
+			stNo = binFile.tellg() / sizeof(tempData) ;
+			binFile.seekg( 0, binFile.beg ) ;
+
+			for ( int i=0 ; i < stNo ; i++ ) {
+				binFile.read( (char*)&tempData, sizeof(tempData) ) ;
+				data.push_back( tempData ) ;
+			} // for
+
+			binFile.close() ;
+		} // void WriteToVec
+		
+		int CreateTable( int num ) {
+			bool isPrime = false ;
+			int count = 0 ;
+			num  = num * (1.2) ;
+			while ( isPrime == false ) {
+				count = 0 ;
+				for ( int i = 1; i <= num/2; i++ ) {
+					if ( num % i == 0 ) {
+						count++ ; 
+					} // if
+					
+					if ( count > 1 ) {
+						count = 0 ;
+						break ;
+					} // if 
+				} // for
+				
+				if ( count == 1 ) isPrime = true ;
+				else num++ ;
+			} // while
+			return num ;
+		} // void CreateTable
+		
+		void WriteToTxt( Table table[], string fileName ) {}
+}; // class Hash
+
+class QuadraticProbing : public Hash {
+	public :
+		string CreateQuaName( string filename ) {
+			string quaFilename = "\0" ;
+			quaFilename = filename ;
+			quaFilename = quaFilename.erase( 0, 4 )  ;
+			quaFilename = "quadratic" + quaFilename ;
+			return quaFilename ;
+		} // string CreateBinFile
+		
+		void Bulid( Table table[], vector<Data> &data, int tableSize ) {
+			char chr = '\0' ; 
+			int key = 0 ; //健值 
+			int quadraticNum = 0 ; // 碰撞後要平方的值 
+			int collisionNum = 0 ; // 碰撞位置 
+			for( int i=0; i < data.size(); i++ ) {
+				// 學號 ascii 相乘 
+				chr = data[i].id[0] ;
+				for ( int j=1; data[i].id[j] != '\0'; j++ ) {
+					chr = chr * ( data[i].id[j] ) ;
+					// 減小數字 
+					if ( chr > tableSize ) {
+						chr = chr % tableSize ;
+					} // if
+				} // for
+
+				// 設定健值與碰撞位置 
+				collisionNum = chr ;
+				key = chr ;
+				
+				// table位置已被放置data 
+				while ( table[collisionNum].id[0] != '\0' ) {
+					// 初始碰撞位置 
+					collisionNum = key ;
+					// 平方數加1 (原本為0) 
+					quadraticNum++ ;
+					collisionNum = collisionNum + ( quadraticNum*quadraticNum ) ;
+					// 超過table 
+					if ( collisionNum > tableSize ) {
+						collisionNum = collisionNum % tableSize ;
+					} // if
+				} // while
+				
+				// 放入table 
+				table[collisionNum].key = key ;
+				strcpy( table[collisionNum].id, data[i].id ) ;
+				strcpy( table[collisionNum].name, data[i].name ) ;
+				table[collisionNum].avg = data[i].avg ;
+				
+				// 初始化碰撞位置與平方值 
+				collisionNum = 0 ;
+				quadraticNum = 0 ; 
+			} //  for
+		} // void Insert
+		
+		void WriteToTxt( Table table[], string quaFilename, int tableSize ) {
+			ofstream newFile ;
+			newFile.open( quaFilename.c_str() ) ;
+			newFile <<  "--- Hash table created by Quadratic probing ---\n" ;
+			for ( int i=0; i < tableSize; i++ ) {
+				newFile << "[" << i << "]\t" ;
+				if ( table[i].id[0] == '\0' ) {
+					newFile << "\n" ;
+				} // if
+				
+				else {
+					newFile << table[i].key  <<  ",\t" ;
+					newFile << table[i].id   <<  ",\t" ;
+					newFile << table[i].name <<  ",   \t" ;
+					newFile << table[i].avg  <<  "\n" ;
+				} // else
+			} // for
+			 
+			newFile <<  "-------------------------------------------------\n" ;
+			newFile.close() ;
+		} // void WriteToTxt()
+
 }; // class QuadraticProbing
 
 class Mission {
@@ -119,26 +243,41 @@ class Mission {
 			QuadraticProbing QP ;
 			vector<Data> data ; // store binary data
 			
-			ifstream in ;
-			ifstream in2  ;
+			ifstream txtFile ;
+			ifstream binFile  ;
 			string filename = "\0" ;
 			string binFilename = "\0" ;
+			string quaFilename = "\0" ;
 			
 			cout << "\nInput your files ( 301, input301.txt ) : " ;
 			cin >> filename ;
 			file.Cheak_filename( filename ) ; // modify fileName 
-			in.open( filename.c_str() ) ;
+			txtFile.open( filename.c_str() ) ;
 
-			if ( in.is_open() ) {
-				binFilename = file.CreateBinName( filename ) ;
-				in2.open( binFilename.c_str() ) ;
-				if ( !in2.is_open() ) {
+			if ( txtFile.is_open() ) {
+				binFilename = QP.CreateBinName( filename ) ;
+				binFile.open( binFilename.c_str() ) ;
+				if ( !binFile.is_open() ) {
 					// convert text to binary
-					file.ConvertToBin( filename, binFilename ) ;
+					QP.ConvertToBin( filename, binFilename ) ;
+					binFile.open( binFilename.c_str() ) ;
 				} // if
 				
-				in2.close() ;
-				in.close();
+				// write binary to vec
+				QP.WriteToVec( binFilename, data ) ;
+				int tableSize = 0 ;
+				// count table size
+				tableSize = QP.CreateTable( data.size() ) ;
+				// declare table
+				Table table[tableSize] ;
+				// bulid table
+				QP.Bulid( table, data, tableSize ) ;
+				quaFilename = QP.CreateQuaName( filename ) ;
+				// wrire table to txt
+				QP.WriteToTxt( table, quaFilename, tableSize ) ;
+				
+				binFile.close() ;
+				txtFile.close();
 			} // if
 
 			else
