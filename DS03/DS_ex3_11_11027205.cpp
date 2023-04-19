@@ -96,11 +96,15 @@ class Hash {
 			string line =  "\0", temp = "\0" ;
 			getline(txtFile, line) ; 
 			while( line != "\0" ) {
+				// insert id
 				strcpy( data.id , file.CheakDataName( line, temp ).c_str() );
+				// insert name
 				strcpy( data.name , file.CheakDataName( line, temp ).c_str() );
+				// insert 6 score
 				for ( int i=0; i < 6; i++ ) {
 					data.score[i] = stoi( file.CheakDataName( line, temp ).c_str() ) ;
 				} // for
+				// insert avg
 				data.avg = stof( file.CheakDataName( line, temp ).c_str() ) ;
 			    newFile.write( (char*)&data, sizeof(data) ) ;
 
@@ -123,6 +127,7 @@ class Hash {
 			stNo = binFile.tellg() / sizeof(tempData) ;
 			binFile.seekg( 0, binFile.beg ) ;
 
+			// push binary data to vec
 			for ( int i=0 ; i < stNo ; i++ ) {
 				binFile.read( (char*)&tempData, sizeof(tempData) ) ;
 				data.push_back( tempData ) ;
@@ -138,8 +143,10 @@ class Hash {
 			
 			num = num * (1.2) ;
 			tableSize  = tableSize * (1.2) ;
+			// 整數乘 1.2 如有小數點 需進位 
 			if ( tableSize - (int)tableSize != 0 ) num = num + 1 ;
 			
+			// count prime num 
 			while ( isPrime == false ) {
 				count = 0 ;
 				for ( int i = 1; i <= num/2; i++ ) {
@@ -159,6 +166,7 @@ class Hash {
 			return num ;
 		} // void CreateTable
 		
+		void Bulid( Table table[], vector<Data> &data, int tableSize ) {}
 		void WriteToTxt( Table table[], string fileName ) {}
 }; // class Hash
 
@@ -220,7 +228,7 @@ class QuadraticProbing : public Hash {
 				collisionNum = 0 ;
 				quadraticNum = 0 ; 
 			} //  for
-		} // void Insert
+		} // void Build
 		
 		void WriteToTxt( Table table[], string quaFilename, int tableSize ) {
 			ofstream newFile ;
@@ -245,6 +253,43 @@ class QuadraticProbing : public Hash {
 		} // void WriteToTxt()
 
 }; // class QuadraticProbing
+
+class DoubleHash : public Hash{
+	public :
+		string CreateDouName( string filename ) {
+			string douFilename = "\0" ;
+			douFilename = filename ;
+			douFilename = douFilename.erase( 0, 4 )  ;
+			douFilename = "double" + douFilename ;
+			return douFilename ;
+		} // string CreateBinFile
+		
+		void Bulid( Table table[], vector<Data> &data, int tableSize ) {
+			cout << "\n### Double hash build is not finish  yet... please wait 5 min... ###\n"  ;
+		} // void Bulid
+		
+		void WriteToTxt( Table table[], string douFilename, int tableSize ) {
+			ofstream newFile ;
+			newFile.open( douFilename.c_str() ) ;
+			newFile <<  "--- Hash table created by Double hash ---\n" ;
+			for ( int i=0; i < tableSize; i++ ) {
+				newFile << "[" << i << "]\t" ;
+				if ( table[i].id[0] == '\0' ) {
+					newFile << "\n" ;
+				} // if
+				
+				else {
+					newFile << table[i].key  <<  ",\t" ;
+					newFile << table[i].id   <<  ",\t" ;
+					newFile << table[i].name <<  ",   \t" ;
+					newFile << table[i].avg  <<  "\n" ;
+				} // else
+			} // for
+			 
+			newFile <<  "-------------------------------------------------\n" ;
+			newFile.close() ;
+		} // void WriteToTxt()
+}; // class DoubleHash
 
 class Mission {
 	public :
@@ -300,7 +345,54 @@ class Mission {
 		} // void Mission1
 
 		void Mission2() {
-            cout << "This is mission2\n" ;
+			File file ;
+			DoubleHash DH ;
+			vector<Data> data ; // store binary data
+			
+			ifstream txtFile ;
+			ifstream binFile  ;
+			string filename = "\0" ;
+			string binFilename = "\0" ;
+			string douFilename = "\0" ;
+			
+			cout << "\nInput your files ( 301, input301.txt ) : " ;
+			cin >> filename ;
+			file.Cheak_filename( filename ) ; // modify fileName 
+			txtFile.open( filename.c_str() ) ;
+
+			if ( txtFile.is_open() ) {
+				binFilename = DH.CreateBinName( filename ) ;
+				binFile.open( binFilename.c_str() ) ;
+				if ( !binFile.is_open() ) {
+					cout << "### " << binFilename << " does not exsit! ###\n" ;
+					// convert text to binary
+					DH.ConvertToBin( filename, binFilename ) ;
+					binFile.open( binFilename.c_str() ) ;
+				} // if
+				
+				// write binary to vec
+				DH.WriteToVec( binFilename, data ) ;
+				int tableSize = 0 ;
+				// count table size
+				tableSize = DH.CreateTable( data.size() ) ;
+				// declare table
+				Table table[tableSize] ;
+				// bulid table
+				DH.Bulid( table, data, tableSize ) ;
+				douFilename = DH.CreateDouName( filename ) ;
+				// wrire table to txt
+				DH.WriteToTxt( table, douFilename, tableSize ) ;
+				
+				cout << endl << "Hash table has been successfully created by Double hashing" ;
+				cout << endl << "unsuccessful search: " << "" << " comparisons on average" ;
+				cout << endl << "\nsuccessful search: " << "" << " comparisons on average\n" ;
+				
+				binFile.close() ;
+				txtFile.close();
+			} // if
+
+			else
+				cout << "\n\n### " << filename << " does not exist! ###\n" ; 
 		} // void Mission2
 }; // class Mission
 
