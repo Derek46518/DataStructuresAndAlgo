@@ -133,8 +133,13 @@ class Hash {
 		
 		int CreateTable( int num ) {
 			bool isPrime = false ;
+			float tableSize = num ;
 			int count = 0 ;
-			num  = num * (1.2) ;
+			
+			num = num * (1.2) ;
+			tableSize  = tableSize * (1.2) ;
+			if ( tableSize - (int)tableSize != 0 ) num = num + 1 ;
+			
 			while ( isPrime == false ) {
 				count = 0 ;
 				for ( int i = 1; i <= num/2; i++ ) {
@@ -263,6 +268,7 @@ class Mission {
 				binFilename = QP.CreateBinName( filename ) ;
 				binFile.open( binFilename.c_str() ) ;
 				if ( !binFile.is_open() ) {
+					cout << "### " << binFilename << " does not exsit! ###\n" ;
 					// convert text to binary
 					QP.ConvertToBin( filename, binFilename ) ;
 					binFile.open( binFilename.c_str() ) ;
@@ -281,12 +287,16 @@ class Mission {
 				// wrire table to txt
 				QP.WriteToTxt( table, quaFilename, tableSize ) ;
 				
+				cout << endl << "Hash table has been successfully created by Quadratic probing" ;
+				cout << endl << "unsuccessful search: " << "" << " comparisons on average" ;
+				cout << endl << "\nsuccessful search: " << "" << " comparisons on average\n" ;
+				
 				binFile.close() ;
 				txtFile.close();
 			} // if
 
 			else
-				cout << "\n### " << filename << " does not exist! ###\n" ; 
+				cout << "\n\n### " << filename << " does not exist! ###\n" ; 
 		} // void Mission1
 
 		void Mission2() {
