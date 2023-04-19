@@ -300,7 +300,7 @@ class DoubleHash : public Hash{
 		void Bulid( Table table[], vector<Data> &data, int tableSize ) {
 			char chr = '\0' ; 
 			/* @parem key : 雜湊值
-			   @parem h2key : h2 function 計算碰撞用
+			   @parem h2key : h2 function 雜湊值
 			*/
 			long long key = 0, h2key = 0 ;
 			int  temp = 0,  insertPos = 0, highStep = 0 ;
@@ -324,9 +324,25 @@ class DoubleHash : public Hash{
 				cout << "name : " << data[i].name << " key : " << key << endl ;
 				
 				// table位置已被放置data 
-				if ( table[key].id[0] != '\0' ) {
+				if ( table[insertPos].id[0] != '\0' ) {
 					h2key = highStep - ( h2key % highStep ) ;
-					insertPos = h2key ;
+					insertPos = key  + h2key ;
+					
+					if ( insertPos >= tableSize )
+						insertPos = insertPos % tableSize ;
+						
+						
+					if ( table[insertPos].id[0] != '\0' ) {
+						int cycle = 0 ;
+						cycle = insertPos + ( tableSize - key ) ;
+						cout << "insertPos : " << insertPos << endl ;
+						while ( table[insertPos].id[0] != '\0' ) {
+							insertPos = insertPos + cycle ;
+							if ( insertPos >= tableSize )
+								insertPos = insertPos % tableSize ;
+						} // while
+					} // if
+
 					cout << "insertPos : " << insertPos << endl ; 
 				} // if
 				
@@ -336,6 +352,9 @@ class DoubleHash : public Hash{
 				strcpy( table[insertPos].name, data[i].name ) ;
 				table[insertPos].avg = data[i].avg ;
 				
+				key = 0 ;
+				h2key = 0 ;
+				
 			} // for
 
 		} // void Bulid
@@ -343,7 +362,7 @@ class DoubleHash : public Hash{
 		void WriteToTxt( Table table[], string douFilename, int tableSize ) {
 			ofstream newFile ;
 			newFile.open( douFilename.c_str() ) ;
-			newFile <<  "--- Hash table created by Double hash ---\n" ;
+			newFile <<  "--- Hash table created by Double hashing ---\n" ;
 			for ( int i=0; i < tableSize; i++ ) {
 				newFile << "[" << i << "]\t" ;
 				if ( table[i].id[0] == '\0' ) {
