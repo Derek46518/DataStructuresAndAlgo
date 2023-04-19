@@ -1,4 +1,4 @@
-// ��T�G�A 11027205 ���v��
+// DSG11 11027205 ���v�� 
 
 #include <iostream>
 #include <string>
@@ -8,6 +8,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <cmath>
+
 using namespace std;
 
 struct Data {
@@ -27,7 +28,7 @@ struct Table {
 class File {
 	public :
 
-        // �T�{�ɦW�O�_���Ʀr 
+        // cheak string is number
 		bool IsNumber( string filename ) {
 			for ( int i = 0; i < filename.length(); i++ ) {
 				if ( filename[i]-'0' < 0 || filename[i]-'0' > 9 )
@@ -36,8 +37,7 @@ class File {
 			return true ;
 		} // bool IsNumber
 
-        // ���X�ɮשһݪ����e �çR���w���Ϊ� Data 
-		string CheakDataName( string &str, string &temp ) {
+		string GetData( string &str, string &temp ) {
 			temp = "\0" ;
 			int i = 0 ;
 			int size = str.length() ;
@@ -49,26 +49,25 @@ class File {
 			for( int j=size-i-1; j<size; j++ ) // str last word + \0
 				str[j] = '\0' ;
 			return temp ;
-		} // CheakDataName()
+		} // string GetData()
 
-        // �ק��ɦW 
+        // modify filename
 		void Cheak_filename( string &filename ) {
 			bool hasPoint = false ;
-            // �ɦW���O�Ʀr
+            // cheak filename is or not all int
 			if ( IsNumber( filename ) ) 
 				filename = "input" + filename + ".txt" ;
 
-            // �ɦW�]�t�Ʀr�H�~���r�� 
 			else {
 				for ( int i = 0; i < filename.length(); i++ ) {
-                    // �ɦW�]�t '.'
+                    // filename has '.'
 					if ( filename[i] == '.') {
 						hasPoint = true ;
 						break ;
 					} // if ( hasPoint == true ) 
 				} // for
 
-                // �ɦW���]�t '.'
+                // filename has not '.'
 	  		    if ( !hasPoint )
 		  		    filename = filename + ".txt" ;
 			} // else
@@ -79,23 +78,19 @@ class Hash {
 	public :
 		
 		bool is_prime(int n) {
-    		if (n <= 1) {
-        		return false;
-    		}
+    		if (n <= 1) return false;
     		for (int i = 2; i*i <= n; i++) {
-        		if (n % i == 0) {
-            		return false;
-        		}
-    		}
+        		if (n % i == 0) return false;
+    		} // for
     		return true;
-		}
+		} // bool is_prime
 
-		int prime( int num){
-			while (!is_prime(num)) {
+		int prime( int num) {
+			while ( !is_prime(num) ) {
         		num++;
-    		}
+    		} // while
 			return num;
-		}
+		} // int prime
 
 		string CreateBinName( string filename ) {
 			string binFilename = "\0" ;
@@ -117,15 +112,15 @@ class Hash {
 			getline(txtFile, line) ; 
 			while( line != "\0" ) {
 				// insert id
-				strcpy( data.id , file.CheakDataName( line, temp ).c_str() );
+				strcpy( data.id , file.GetData( line, temp ).c_str() );
 				// insert name
-				strcpy( data.name , file.CheakDataName( line, temp ).c_str() );
+				strcpy( data.name , file.GetData( line, temp ).c_str() );
 				// insert 6 score
 				for ( int i=0; i < 6; i++ ) {
-					data.score[i] = stoi( file.CheakDataName( line, temp ).c_str() ) ;
+					data.score[i] = stoi( file.GetData( line, temp ).c_str() ) ;
 				} // for
 				// insert avg
-				data.avg = stof( file.CheakDataName( line, temp ).c_str() ) ;
+				data.avg = stof( file.GetData( line, temp ).c_str() ) ;
 			    newFile.write( (char*)&data, sizeof(data) ) ;
 
 				line = "\0" ;
@@ -160,30 +155,8 @@ class Hash {
 			bool isPrime = false ;
 			float tableSize = num ;
 			int count = 0 ;
-			
-			
-			
-			num = (int)ceil((double)num*1.2);
+			num = (int)ceil( (double)num*1.2 );
 			num = prime(num);
-			/*
-			// count prime num 
-			while ( isPrime == false ) {
-				count = 0 ;
-				for ( int i = 1; i <= num/2; i++ ) {
-					if ( num % i == 0 ) {
-						count++ ; 
-					} // if
-					
-					if ( count > 1 ) {
-						count = 0 ;
-						break ;
-					} // if 
-				} // for
-				
-				if ( count == 1 ) isPrime = true ;
-				else num++ ;
-			} // while
-			*/
 			return num ;
 		} // void CreateTable
 		
@@ -203,23 +176,20 @@ class QuadraticProbing : public Hash {
 		
 		void Bulid( Table table[], vector<Data> &data, int tableSize ) {
 			char chr = '\0' ; 
-			/* @parem key : �����
-			   @parem h2key : h2 function �p��I���� 
-			   @parem quadraticNum : �I����n���誺��
+			/* @parem key : hash value
+			   @parem h2key : h2 function hash value
+			   @parem quadraticNum : squares number
 			   @parem insertPos : insert position
 			*/
-			int key = 0, temp = 0 ;
+			long long key = 0 ;
+			int temp = 0 ;
 			int quadraticNum = 0, insertPos = 0 ; 
 			for( int i=0; i < data.size(); i++ ) {
-				// �Ǹ� ascii �ۭ� 
+				// id ascii multiplied 
 				key = data[i].id[0] ;
 				for ( int j=1; data[i].id[j] != '\0'; j++ ) {
 					temp = data[i].id[j] ;
 					key = key * temp ;
-					// ��p�Ʀr 
-					
-					key = key % tableSize ;
-					
 				} // for
 				
 				key = key % tableSize ;
@@ -227,26 +197,23 @@ class QuadraticProbing : public Hash {
 				// set insert position
 				insertPos = key ;
 				
-				// table��m�w�Q��mdata 
+				// insert position has data
 				while ( table[insertPos].id[0] != '\0' ) {
 					// init insert position 
 					insertPos = key ;
-					// ����ƥ[ 1 (  �쥻�� 0 ) 
+					// squares number + 1 
 					quadraticNum++ ;
 					insertPos = insertPos + ( quadraticNum*quadraticNum ) ;
-					// �W�Ltable 
-					if ( insertPos >= tableSize ) {
-						insertPos = insertPos % tableSize ;
-					} // if
+					insertPos = insertPos % tableSize ;
 				} // while
 				
-				// ��Jtable 
+				// insert data do table 
 				table[insertPos].key = key ;
 				strcpy( table[insertPos].id, data[i].id ) ;
 				strcpy( table[insertPos].name, data[i].name ) ;
 				table[insertPos].avg = data[i].avg ;
 				
-				// ��l�ƸI����m�P����� 
+				// init
 				insertPos = 0 ;
 				quadraticNum = 0 ; 
 			} //  for
@@ -278,6 +245,7 @@ class QuadraticProbing : public Hash {
 
 class DoubleHash : public Hash{
 	public :
+		
 		string CreateDouName( string filename ) {
 			string douFilename = "\0" ;
 			douFilename = filename ;
@@ -286,69 +254,60 @@ class DoubleHash : public Hash{
 			return douFilename ;
 		} // string CreateBinFile
 		
-		
-		
-		
 		int HighStep( int num ) {
 			bool isPrime = false ;
-			float tableSize = num ;
 			int count = 0 ;
-			num = (int)ceil((double)num/3)+1;
-			// count prime num 
-			
+			num = num / 3 + 1 ;
 			num = prime(num);
 			return num ;
 		} // int HighStep
 		
 		void Bulid( Table table[], vector<Data> &data, int tableSize ) {
 			char chr = '\0' ; 
-			/* @parem key : �����
-			   @parem h2key : h2 function �����
+			/* @parem key : hash value
+			   @parem h2key : h2 function hash value
 			*/
 			long long key = 0, h2key = 0 ;
 			int  temp = 0,  insertPos = 0, highStep = 0 ;
 			highStep = HighStep( data.size() ) ;
+			cout << "highStep :" << highStep << endl ;
 			
 			for ( int i=0; i < data.size(); i++ ) {
-				// �Ǹ� ascii �ۭ� 
+				// id ascii multiplied  
 				key = data[i].id[0] ;
 				for ( int j=1; data[i].id[j] != '\0'; j++ ) {
 					temp = data[i].id[j] ;
 					key = key * temp ;
 				} // for
 				
+				// set h2 hash value
 				h2key = key ;
+				// set h1 hash value
 				key = key % tableSize ;
-				
-				
-				// �]�w�I����m 
+				// set insert position
 				insertPos = key ;
-				cout << "name : " << data[i].name << " key : " << key << endl ;
-				cout << "h2key : " << h2key << endl;
-				// table��m�w�Q��mdata 
+				cout << "name : " << data[i].name << " key :" << key << endl ;
+				// ( h2 function ) collision 
 				if ( table[insertPos].id[0] != '\0' ) {
 					h2key = highStep - ( h2key % highStep ) ;
 					insertPos = key  + h2key ;
-					
-					cout << "highstep : " << highStep << endl;
 					insertPos = insertPos % tableSize ;
-					cout << "insertPos : " << insertPos << endl;	
-						
+					cout << "second collision : " << insertPos << endl ;
+					// ( h3 function ) collision 
 					if ( table[insertPos].id[0] != '\0' ) {
 						int cycle = 0 ;
-						cycle = insertPos + ( tableSize - key ) ;
-						cout << "insertPos : " << insertPos << endl ;
+						if ( insertPos - key >= 0  ) cycle = insertPos - key ;
+						else cycle = insertPos + ( tableSize - key ) ;
 						while ( table[insertPos].id[0] != '\0' ) {
 							insertPos = insertPos + cycle ;
 							if ( insertPos >= tableSize )
 								insertPos = insertPos % tableSize ;
+							cout << "third collision : " << insertPos << endl ;
 						} // while
-					} // if
-
-					cout << "insertPos : " << insertPos << endl ; 
-				} // if
+					} // if ( h3 function )
+				} // if ( h2 function )
 				
-				// ��Jtable 
+				// insert data do table 
 				table[insertPos].key = key ;
 				strcpy( table[insertPos].id, data[i].id ) ;
 				strcpy( table[insertPos].name, data[i].name ) ;
@@ -356,9 +315,7 @@ class DoubleHash : public Hash{
 				
 				key = 0 ;
 				h2key = 0 ;
-				
 			} // for
-
 		} // void Bulid
 		
 		void WriteToTxt( Table table[], string douFilename, int tableSize ) {
