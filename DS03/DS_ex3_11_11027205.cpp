@@ -182,10 +182,13 @@ class QuadraticProbing : public Hash {
 		
 		void Bulid( Table table[], vector<Data> &data, int tableSize ) {
 			char chr = '\0' ; 
-			int key = 0 ; //健值 
-			int temp = 0 ;
-			int quadraticNum = 0 ; // 碰撞後要平方的值 
-			int collisionNum = 0 ; // 碰撞位置 
+			/* @parem key : 雜湊值
+			   @parem h2key : h2 function 計算碰撞用 
+			   @parem quadraticNum : 碰撞後要平方的值
+			   @parem insertPos : insert position
+			*/
+			int key = 0, temp = 0 ;
+			int quadraticNum = 0, insertPos = 0 ; 
 			for( int i=0; i < data.size(); i++ ) {
 				// 學號 ascii 相乘 
 				key = data[i].id[0] ;
@@ -202,30 +205,30 @@ class QuadraticProbing : public Hash {
 					key = key % tableSize ;
 				} // if
 
-				// 設定健值與碰撞位置 
-				collisionNum = key ;
+				// set insert position
+				insertPos = key ;
 				
 				// table位置已被放置data 
-				while ( table[collisionNum].id[0] != '\0' ) {
-					// 初始碰撞位置 
-					collisionNum = key ;
+				while ( table[insertPos].id[0] != '\0' ) {
+					// init insert position 
+					insertPos = key ;
 					// 平方數加 1 (  原本為 0 ) 
 					quadraticNum++ ;
-					collisionNum = collisionNum + ( quadraticNum*quadraticNum ) ;
+					insertPos = insertPos + ( quadraticNum*quadraticNum ) ;
 					// 超過table 
-					if ( collisionNum >= tableSize ) {
-						collisionNum = collisionNum % tableSize ;
+					if ( insertPos >= tableSize ) {
+						insertPos = insertPos % tableSize ;
 					} // if
 				} // while
 				
 				// 放入table 
-				table[collisionNum].key = key ;
-				strcpy( table[collisionNum].id, data[i].id ) ;
-				strcpy( table[collisionNum].name, data[i].name ) ;
-				table[collisionNum].avg = data[i].avg ;
+				table[insertPos].key = key ;
+				strcpy( table[insertPos].id, data[i].id ) ;
+				strcpy( table[insertPos].name, data[i].name ) ;
+				table[insertPos].avg = data[i].avg ;
 				
 				// 初始化碰撞位置與平方值 
-				collisionNum = 0 ;
+				insertPos = 0 ;
 				quadraticNum = 0 ; 
 			} //  for
 		} // void Build
@@ -264,8 +267,77 @@ class DoubleHash : public Hash{
 			return douFilename ;
 		} // string CreateBinFile
 		
+		int HighStep( int num ) {
+			bool isPrime = false ;
+			float tableSize = num ;
+			int count = 0 ;
+			
+			num = num / 3 ;
+			tableSize  = tableSize / 3 ;
+			// 整數除 3 如有小數點 需進位 
+			if ( tableSize - (int)tableSize != 0 ) num = num + 1 ;
+			
+			// count prime num 
+			while ( isPrime == false ) {
+				count = 0 ;
+				for ( int i = 1; i <= num/2; i++ ) {
+					if ( num % i == 0 ) {
+						count++ ; 
+					} // if
+					
+					if ( count > 1 ) {
+						count = 0 ;
+						break ;
+					} // if 
+				} // for
+				
+				if ( count == 1 ) isPrime = true ;
+				else num++ ;
+			} // while
+			return num ;
+		} // int HighStep
+		
 		void Bulid( Table table[], vector<Data> &data, int tableSize ) {
-			cout << "\n### Double hash build is not finish  yet... please wait 5 min... ###\n"  ;
+			char chr = '\0' ; 
+			/* @parem key : 雜湊值
+			   @parem h2key : h2 function 計算碰撞用
+			*/
+			long long key = 0, h2key = 0 ;
+			int  temp = 0,  insertPos = 0, highStep = 0 ;
+			highStep = HighStep( data.size() ) ;
+			
+			for ( int i=0; i < data.size(); i++ ) {
+				// 學號 ascii 相乘 
+				key = data[i].id[0] ;
+				for ( int j=1; data[i].id[j] != '\0'; j++ ) {
+					temp = data[i].id[j] ;
+					key = key * temp ;
+				} // for
+				
+				h2key = key ;
+				if ( key >= tableSize ) {
+					key = key % tableSize ;
+				} // if
+				
+				// 設定碰撞位置 
+				insertPos = key ;
+				cout << "name : " << data[i].name << " key : " << key << endl ;
+				
+				// table位置已被放置data 
+				if ( table[key].id[0] != '\0' ) {
+					h2key = highStep - ( h2key % highStep ) ;
+					insertPos = h2key ;
+					cout << "insertPos : " << insertPos << endl ; 
+				} // if
+				
+				// 放入table 
+				table[insertPos].key = key ;
+				strcpy( table[insertPos].id, data[i].id ) ;
+				strcpy( table[insertPos].name, data[i].name ) ;
+				table[insertPos].avg = data[i].avg ;
+				
+			} // for
+
 		} // void Bulid
 		
 		void WriteToTxt( Table table[], string douFilename, int tableSize ) {
