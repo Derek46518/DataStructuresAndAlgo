@@ -1,4 +1,4 @@
-// DSG11 11027205 ½²©v¾± 
+// DS G11 11027205 ½²©v¾± 
 
 #include <iostream>
 #include <string>
@@ -8,6 +8,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <cmath>
+#include <iomanip>
 
 using namespace std;
 
@@ -160,6 +161,48 @@ class Hash {
 			return num ;
 		} // void CreateTable
 		
+		void InsertToTable( Table table[], vector<Data> &data, int  key, int insertPos, int vecPos, int &existingData ) {
+			existingData += 1 ;
+			table[insertPos].key = key ;
+			strcpy( table[insertPos].id, data[vecPos].id ) ;
+			strcpy( table[insertPos].name, data[vecPos].name ) ;
+			table[insertPos].avg = data[vecPos].avg ;
+		} // void InsertToTable
+		
+		float UnSuccessAvg( float unSuccessNum, Table table[], int tableSize ) {
+			/* @parem step : how many step i do
+			   @parem quadraticNum : squares number
+			   @parem insertPos : insert position
+			*/
+			int step = 0 ;
+			int quadraticNum = 0, insertPos = 0 ;
+			for ( int i = 0; i < tableSize; i++ ) {
+				insertPos = i ;
+				while ( table[insertPos].id[0] != '\0' ) {
+					// init insert position 
+					insertPos = i ;
+					
+					step += 1 ;
+					quadraticNum += 1 ;
+					insertPos = ( insertPos + ( quadraticNum*quadraticNum ) ) % tableSize ;
+				} // while
+				
+				// update unSuccessNum
+				unSuccessNum = unSuccessNum + step ;
+				// init
+				step = 0 ;
+				quadraticNum = 0 ;
+			} // for
+			
+			unSuccessNum = unSuccessNum / tableSize ;
+			return unSuccessNum ;
+		} // float UnSuccess
+		
+		float SuccessAvg( float successNum, int existingData ) {
+			successNum = successNum / existingData ;
+			return successNum ;
+		} // float Success
+		
 		void Bulid( Table table[], vector<Data> &data, int tableSize ) {}
 		void WriteToTxt( Table table[], string fileName ) {}
 }; // class Hash
@@ -174,16 +217,18 @@ class QuadraticProbing : public Hash {
 			return quaFilename ;
 		} // string CreateBinFile
 		
-		void Bulid( Table table[], vector<Data> &data, int tableSize ) {
+		void Bulid( Table table[], vector<Data> &data, int tableSize, float &successNum, int &existingData ) {
 			char chr = '\0' ; 
 			/* @parem key : hash value
 			   @parem h2key : h2 function hash value
 			   @parem quadraticNum : squares number
 			   @parem insertPos : insert position
+			   @parem successStep : count unSuccess step
 			*/
 			long long key = 0 ;
 			int temp = 0 ;
-			int quadraticNum = 0, insertPos = 0 ; 
+			int quadraticNum = 0, insertPos = 0 ;
+			float successStep = 0.0 ; 
 			for( int i=0; i < data.size(); i++ ) {
 				// id ascii multiplied 
 				key = data[i].id[0] ;
@@ -196,26 +241,26 @@ class QuadraticProbing : public Hash {
 
 				// set insert position
 				insertPos = key ;
-				
+
 				// insert position has data
 				while ( table[insertPos].id[0] != '\0' ) {
+					successStep += 1 ;
 					// init insert position 
 					insertPos = key ;
 					// squares number + 1 
-					quadraticNum++ ;
-					insertPos = insertPos + ( quadraticNum*quadraticNum ) ;
-					insertPos = insertPos % tableSize ;
+					quadraticNum += 1 ;
+					insertPos = ( insertPos + ( quadraticNum*quadraticNum ) ) % tableSize ;
 				} // while
 				
-				// insert data do table 
-				table[insertPos].key = key ;
-				strcpy( table[insertPos].id, data[i].id ) ;
-				strcpy( table[insertPos].name, data[i].name ) ;
-				table[insertPos].avg = data[i].avg ;
-				
+				successStep += 1 ;
+				successNum = successNum + successStep ;
+
+				// insert data do table
+				InsertToTable( table, data, key ,insertPos, i, existingData ) ;
+
 				// init
-				insertPos = 0 ;
 				quadraticNum = 0 ; 
+				successStep = 0.0 ;
 			} //  for
 		} // void Build
 		
@@ -262,15 +307,16 @@ class DoubleHash : public Hash{
 			return num ;
 		} // int HighStep
 		
-		void Bulid( Table table[], vector<Data> &data, int tableSize ) {
+		void Bulid( Table table[], vector<Data> &data, int tableSize, float &successNum, int &existingData ) {
 			char chr = '\0' ; 
 			/* @parem key : hash value
 			   @parem h2key : h2 function hash value
+			   @parem successStep : count success step
 			*/
 			long long key = 0, h2key = 0 ;
 			int  temp = 0,  insertPos = 0, highStep = 0 ;
+			float successStep = 0.0 ;
 			highStep = HighStep( data.size() ) ;
-			cout << "highStep :" << highStep << endl ;
 			
 			for ( int i=0; i < data.size(); i++ ) {
 				// id ascii multiplied  
@@ -286,35 +332,26 @@ class DoubleHash : public Hash{
 				key = key % tableSize ;
 				// set insert position
 				insertPos = key ;
-				cout << "name : " << data[i].name << " key :" << key << endl ;
+
 				// ( h2 function ) collision 
 				if ( table[insertPos].id[0] != '\0' ) {
+					successStep += 1 ;
 					h2key = highStep - ( h2key % highStep ) ;
-					insertPos = key  + h2key ;
-					insertPos = insertPos % tableSize ;
-					cout << "second collision : " << insertPos << endl ;
+					insertPos = ( key  + h2key ) % tableSize ;
+
 					// ( h3 function ) collision 
-					if ( table[insertPos].id[0] != '\0' ) {
-						int cycle = 0 ;
-						if ( insertPos - key >= 0  ) cycle = insertPos - key ;
-						else cycle = insertPos + ( tableSize - key ) ;
-						while ( table[insertPos].id[0] != '\0' ) {
-							insertPos = insertPos + cycle ;
-							if ( insertPos >= tableSize )
-								insertPos = insertPos % tableSize ;
-							cout << "third collision : " << insertPos << endl ;
-						} // while
-					} // if ( h3 function )
+					while ( table[insertPos].id[0] != '\0' ) {
+						successStep += 1 ;
+						insertPos = ( insertPos + h2key ) % tableSize ;
+					} // while ( h3 function )
 				} // if ( h2 function )
 				
+				successStep += 1 ;
+				successNum = successNum + successStep ;
 				// insert data do table 
-				table[insertPos].key = key ;
-				strcpy( table[insertPos].id, data[i].id ) ;
-				strcpy( table[insertPos].name, data[i].name ) ;
-				table[insertPos].avg = data[i].avg ;
-				
-				key = 0 ;
-				h2key = 0 ;
+				InsertToTable( table, data, key ,insertPos, i, existingData ) ;
+				// init
+				successStep = 0.0 ;
 			} // for
 		} // void Bulid
 		
@@ -376,15 +413,25 @@ class Mission {
 				tableSize = QP.CreateTable( data.size() ) ;
 				// declare table
 				Table table[tableSize] ;
+				/* @ parem existingData : count insert to table data
+				   @ parem unSuccessNum : count unSuccess insert
+				   @ parem successNum : count success insert
+				*/
+				int existingData = 0 ;
+				float unSuccessNum = 0.0000 ;
+				float successNum = 0.0000 ;
 				// bulid table
-				QP.Bulid( table, data, tableSize ) ;
+				QP.Bulid( table, data, tableSize, successNum, existingData ) ;
 				quaFilename = QP.CreateQuaName( filename ) ;
 				// wrire table to txt
 				QP.WriteToTxt( table, quaFilename, tableSize ) ;
 				
+				unSuccessNum = QP.UnSuccessAvg( unSuccessNum, table, tableSize ) ;
+				successNum = QP.SuccessAvg( successNum, existingData ) ;
+				
 				cout << endl << "Hash table has been successfully created by Quadratic probing" ;
-				cout << endl << "unsuccessful search: " << "" << " comparisons on average" ;
-				cout << endl << "\nsuccessful search: " << "" << " comparisons on average\n" ;
+				cout << endl << "unsuccessful search: " << unSuccessNum << fixed << setprecision(4) << " comparisons on average" ;
+				cout << endl << "\nsuccessful search: " << successNum  << fixed << setprecision(4) << " comparisons on average\n" ;
 				
 				binFile.close() ;
 				txtFile.close();
@@ -427,15 +474,21 @@ class Mission {
 				tableSize = DH.CreateTable( data.size() ) ;
 				// declare table
 				Table table[tableSize] ;
+				/* @ parem existingData : count insert to table data
+				   @ parem successNum : count success insert
+				*/
+				int existingData = 0 ;
+				float successNum = 0.0000 ;
 				// bulid table
-				DH.Bulid( table, data, tableSize ) ;
+				DH.Bulid( table, data, tableSize, successNum,  existingData ) ;
 				douFilename = DH.CreateDouName( filename ) ;
 				// wrire table to txt
 				DH.WriteToTxt( table, douFilename, tableSize ) ;
 				
+				successNum = DH.SuccessAvg( successNum, existingData ) ;
+
 				cout << endl << "Hash table has been successfully created by Double hashing" ;
-				cout << endl << "unsuccessful search: " << "" << " comparisons on average" ;
-				cout << endl << "\nsuccessful search: " << "" << " comparisons on average\n" ;
+				cout << endl << "\nsuccessful search: " << successNum << fixed << setprecision(4) << " comparisons on average\n" ;
 				
 				binFile.close() ;
 				txtFile.close();
