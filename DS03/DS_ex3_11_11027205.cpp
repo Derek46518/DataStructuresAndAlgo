@@ -1,4 +1,4 @@
-// DS G11 11027205 ï¿½ï¿½ï¿½vï¿½ï¿½ 
+// DS G11 11027205 ½²©v¾± 
 
 #include <iostream>
 #include <string>
@@ -194,12 +194,12 @@ class Hash {
 				quadraticNum = 0 ;
 			} // for
 			
-			unSuccessNum = round(unSuccessNum / tableSize*10000)/10000 ;
+			unSuccessNum = unSuccessNum / tableSize ;
 			return unSuccessNum ;
 		} // float UnSuccess
 		
 		float SuccessAvg( float successNum, int existingData ) {
-			successNum = round(successNum / existingData*10000)/10000 ;
+			successNum = successNum / existingData ;
 			return successNum ;
 		} // float Success
 		
