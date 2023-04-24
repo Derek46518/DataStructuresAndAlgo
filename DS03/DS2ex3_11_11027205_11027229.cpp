@@ -1,5 +1,16 @@
-// DS G11 11027205 ½²©v¾± 
-
+/**
+ * @file DS2ex3_11027205_11027229.cpp
+ * @author Nier and Derek (11027205 11027229)
+ * @brief This is the Data Stucture homework 3
+ * About Quadratic Probing and Double Hash
+ *
+ * @version 1.0
+ * @date 2023-04-20
+ *
+ * @copyright Copyright (c) 2023
+ * @warning please use C++ 11 to compile
+ */
+ 
 #include <iostream>
 #include <string>
 #include <vector>
@@ -332,19 +343,13 @@ class DoubleHash : public Hash{
 				key = key % tableSize ;
 				// set insert position
 				insertPos = key ;
+				h2key = highStep - ( h2key % highStep ) ;
 
 				// ( h2 function ) collision 
-				if ( table[insertPos].id[0] != '\0' ) {
+				while ( table[insertPos].id[0] != '\0' ) {
 					successStep += 1 ;
-					h2key = highStep - ( h2key % highStep ) ;
-					insertPos = ( key  + h2key ) % tableSize ;
-
-					// ( h3 function ) collision 
-					while ( table[insertPos].id[0] != '\0' ) {
-						successStep += 1 ;
-						insertPos = ( insertPos + h2key ) % tableSize ;
-					} // while ( h3 function )
-				} // if ( h2 function )
+					insertPos = ( insertPos  + h2key ) % tableSize ;
+				} // while ( h2 function )
 				
 				successStep += 1 ;
 				successNum = successNum + successStep ;
@@ -430,8 +435,8 @@ class Mission {
 				successNum = QP.SuccessAvg( successNum, existingData ) ;
 				
 				cout << endl << "Hash table has been successfully created by Quadratic probing" ;
-				cout << endl << "unsuccessful search: " << unSuccessNum << fixed << setprecision(4) << " comparisons on average" ;
-				cout << endl << "\nsuccessful search: " << successNum  << fixed << setprecision(4) << " comparisons on average\n" ;
+				cout << endl << "unsuccessful search: " << fixed << setprecision(4) << unSuccessNum << " comparisons on average" ;
+				cout << endl << "\nsuccessful search: " << fixed << setprecision(4) << successNum << " comparisons on average\n" ;
 				
 				binFile.close() ;
 				txtFile.close();
