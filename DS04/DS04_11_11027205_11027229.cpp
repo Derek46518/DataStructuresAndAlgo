@@ -33,23 +33,22 @@ struct Data
 
 class Node{
     public:
-        Node(string id,string put, float weight){
-            currentID = put;
-            pairs.push_back(make_pair(id,weight));
+        
+        Node(string id){
+            currentID = id;
         }
 
-        void addPair(string pairp, float weight){
-            pair<string,float> temp = make_pair(pairp,weight);
-            pairs.push_back(temp);
+        void addPair(Node * in, float weight){
+            pairs.push_back(make_pair(in,weight));
         }
 
         void sort(){
-            std::sort(pairs.begin(), pairs.end());
+            std::sort(pairs.begin(),pairs.end(),[](const auto& n1, auto& n2){return n1.first->currentID <n2.first->currentID;});
         }
         
-        void printPairID(){
-            for(pair<string,float> p : pairs){
-                cout << p.first << ' ' << p.second <<'\t';
+        void printNodes(){
+            for(auto p : pairs){
+                cout << p.first ->currentID << '\t';
             }
             cout << '\n';
         }
@@ -57,7 +56,7 @@ class Node{
         
     private:
         
-        vector<pair<string,float> > pairs;
+        vector<pair<Node *,float> > pairs;
 };
 
 
@@ -68,42 +67,44 @@ class Graph{
             graph.clear();
         }
         
-        bool findAndInsert(string getID, string putID, float weight){
-            for(Node &node : graph){
-                if(node.currentID==putID){
-                    
-                    node.addPair(getID,weight);
-                    
-                    return true;
-                }
+        Node * find(string str){
+            for(Node *n : graph){
+                if (n->currentID==str) return n;
             }
-            return false;
+            return NULL;
         }
 
         
 
-        void sort(){
-            std::sort(graph.begin(),graph.end(),[](const Node& s1, const Node& s2){return s1.currentID<s2.currentID;});
-            for(Node node : graph){
-                node.sort();
-            }
-        }
+        
         void createGraph(vector<Data> data){
             for(Data d : data){
-                if(!findAndInsert(d.getID,d.putID,d.weight)){
-                    graph.push_back( Node(d.getID,d.putID,d.weight) );
+                Node * firstPair = find(d.getID);
+                Node * secondPair = find(d.putID);
+                if(firstPair==NULL) {
+                    firstPair = new Node(d.getID);
+                    graph.push_back(firstPair);
                 }
+                if(secondPair==NULL) {
+                    secondPair = new Node(d.putID);
+                    graph.push_back(secondPair);
+                }
+                firstPair->addPair(secondPair,d.weight);
             }
+            for(Node * n : graph){
+                n->sort();
+            }
+            std::sort(graph.begin(),graph.end(),[](auto &g1, auto& g2){return g1->currentID<g2->currentID;});
         }
         void printAll(){
-            for(Node n : graph){
-                cout << n.currentID << '\n';
-                n.printPairID();
+            for(Node * node : graph){
+                cout << node ->currentID << '\n';
+                node -> printNodes();
             }
         }
 
     private:
-        vector<Node> graph;
+        vector<Node*> graph;
         
 };
 
@@ -161,6 +162,5 @@ int main()
         cout << d.getID << ' ' << d.putID << ' ' << d.weight << '\n';
     }
     graph.createGraph(data);
-    graph.sort();
     graph.printAll();
 }
