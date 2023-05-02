@@ -536,7 +536,7 @@ public:
 		cin >> data;
 		long long int key, h2key;
 		int temp;
-		long long int insertPos = 0;
+		int insertPos = 0;
 		int probes = 1;
 		int quadraticNum = 0;
 		int highStep = HighStep(tableSize);
@@ -556,14 +556,15 @@ public:
 				key %= tableSize;
 				while (table[insertPos].id[0] != '\0')
 				{
-					insertPos = key;
+					
 					
 					if (strcmp(data.c_str(), table[insertPos].id))
 					{
+						insertPos = key;
 						quadraticNum += 1;
 						probes += 1;
 						insertPos = (insertPos + (quadraticNum * quadraticNum)) % tableSize;
-						// cout << insertPos << "\n";
+						cout << insertPos << "\n";
 					}
 					else
 					{
