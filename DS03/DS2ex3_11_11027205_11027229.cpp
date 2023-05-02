@@ -520,7 +520,7 @@ public:
 			cout << endl
 				 << "\nsuccessful search: " << fixed << setprecision(4) << successNum << " comparisons on average\n";
 
-			findItem(table, 1, tableSize);
+			findItem(table, data, 1, tableSize);
 			binFile.close();
 			txtFile.close();
 		} // if
@@ -529,7 +529,7 @@ public:
 			cout << "\n\n### " << filename << " does not exist! ###\n";
 	} // void Mission1
 
-	void findItem(Table table[], int code, int tableSize)
+	void findItem(Table table[], vector<Data> &dataVec, int code, int tableSize)
 	{
 		string data;
 		cout << "Input a student ID to search ([0] Quit):";
@@ -582,7 +582,7 @@ public:
 				h2key = key;
 				key = key % tableSize;
 				insertPos = key;
-				highStep = HighStep(tableSize);
+				highStep = HighStep(dataVec.size());
 				h2key = highStep - (h2key % highStep);
 				cout << insertPos << '\n';
 				while ( table[insertPos].id[0] != '\0' ) {
@@ -672,7 +672,7 @@ public:
 				 << "Hash table has been successfully created by Double hashing";
 			cout << endl
 				 << "\nsuccessful search: " << successNum << fixed << setprecision(4) << " comparisons on average\n";
-			findItem(table, 2, tableSize);
+			findItem(table, data, 2, tableSize);
 			binFile.close();
 			txtFile.close();
 		} // if
