@@ -30,8 +30,6 @@ struct Data
     float weight;
 };
 
-
-
 class Node{
     public:
         
@@ -57,29 +55,23 @@ class Node{
         vector<pair<Node *,float> > pairs;
 };
 
-
-
 class Graph{
     public:
         void clear(){
             graph.clear();
         }
-        
         Node * find(string str){
             for(Node *n : graph){
                 if (n->currentID==str) return n;
             }
             return NULL;
         }
-
         void writeFile(string fileName){
-            size_t pos = fileName.find_last_of('.');
-            
+            size_t pos = fileName.find_last_of('.');            
             if (pos != std::string::npos) {
                 // Replace the substring after the last '.' with "adj"
                 fileName.replace(pos + 1, std::string::npos, "adjt");
             }
-
             ofstream ofs(fileName);
             ofs << "<<< There are " << graph.size() << " IDs in total. >>>"<<endl;
             int i = 1;
@@ -94,7 +86,7 @@ class Graph{
                     else ofs << "\t("<<j<<") "<<p.first->currentID<<", "<<p.second;
                     j++;
                     count ++;
-                    if ((j-1)%10==0)ofs<<endl;
+                    if (j>1 && (j-1)%10==0)ofs<<endl;
                 }
                 ofs << endl;
                 i++;
@@ -103,10 +95,7 @@ class Graph{
             cout << "<<< There are " << i-1 << " IDs in total. >>>\n\n";
             cout << "<<< There are " << count << " nodes in total. >>>\n";
             ofs.close();
-            
         }
-
-        
         void createGraph(vector<Data> data){
             for(Data d : data){
                 Node * firstPair = find(d.putID);
@@ -132,7 +121,6 @@ class Graph{
                 node -> printNodes();
             }
         }
-        
         void traverse(string fileName){
         	size_t pos = fileName.find_last_of('.');
             if (pos != std::string::npos) {
@@ -142,36 +130,47 @@ class Graph{
             ofstream ofs(fileName);
         	ofs << "<<< There are " << graph.size() << " IDs in total. >>>" << endl;
         	unordered_set<Node*> visit;
+        	vector< std::pair<string, vector<Node*> > > list;
 			queue<Node *> q;
-			int i = 1;
+			// int i = 1;
         	for(Node * node : graph){
-        		
+        		// start travel
         		q.push(node);
         		innerTravel(node,visit,q);
+        		// end travel
         		
-        		visit.erase(node);
+        		visit.erase(node); // delete current
         		
-        		if(i<10) ofs << "  [" << i << "] " << node->currentID<<"("<< <<"):\n";
-        		else if(i<100) ofs << " [" << i << "] " << node->currentID<<"("<< <<"):\n";
-        		else ofs << "[" << i << "] " << node->currentID<<"("<< <<"):\n";
-        		vector<Node * > visited(visit.begin(),visit.end());
+        		vector<Node * > visited(visit.begin(),visit.end()); 
         		std::sort(visited.begin(),visited.end(),[](auto &g1, auto& g2){return g1->currentID<g2->currentID;});
-        		for(Node * n : visited){
-        			
-				}
-			
-        		
+        		list.push_back(make_pair(node->currentID,visited) ); // push back the visited list
         		visit.clear();
-        		i++;
+        		
 			}
+			std::stable_sort(list.begin(),list.end(),[](auto &g1, auto& g2){return g1.second.size()>g2.second.size();});
+			int i = 1;
+			for(pair<string, vector<Node*> >  a : list){
+				if(i<10) ofs << "[  " << i << "] " << a.first<<"("<< a.second.size()<<"):\n";
+        		else if(i<100) ofs << "[ " << i << "] " << a.first<<"("<< a.second.size() <<"):\n";
+        		else ofs << "[" << i << "] " << a.first<<"("<< a.second.size()<<"):\n";
+        		int j = 1;
+        		for(Node * n : a.second){
+        			if(j<10)ofs << "\t( " << j << ") " << n->currentID ;
+        			else ofs << "\t(" << j << ") " << n->currentID ;
+					if(j > 1 && j%10==0) ofs<<"\n"; 
+        			j++;
+				}
+				ofs << "\n";
+				i++;
+			}
+
+			cout << "<<< There are " << graph.size() << " IDs in total. >>>" << endl;
 		}
 		void innerTravel(Node* node, unordered_set<Node*>& visited, queue<Node*>& q) {
     		visited.insert(node);
-
     		while (!q.empty()) {
         		node = q.front();
         		q.pop();
-
         		for (auto& pair : node->pairs) {
             		if (visited.count(pair.first) == 0) {
                 		visited.insert(pair.first);
@@ -181,10 +180,8 @@ class Graph{
     		}
 		}
 		
-		
     private:
         vector<Node*> graph;
-        
 };
 
 //  write binary to struct
@@ -283,8 +280,6 @@ int main()
 					break;
 				}
 				graph.traverse(fileName);
-				
-				
             break;
         }
         cout << "*** Graph data manipulation **\n* 0. QUIT                  *\n* 1. Build adjancency lists        *\n* 2. Compute connection counts        *\n* *************************************\n";
