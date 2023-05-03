@@ -120,7 +120,7 @@ class Graph{
             size_t pos = fileName.find_last_of('.');            
             if (pos != std::string::npos) {
                 // Replace the substring after the last '.' with "adj"
-                fileName.replace(pos + 1, std::string::npos, "adjt");
+                fileName.replace(pos + 1, std::string::npos, "adj");
             }
             ofstream ofs(fileName);
             ofs << "<<< There are " << graph.size() << " IDs in total. >>>"<<endl;
@@ -192,7 +192,7 @@ class Graph{
         	size_t pos = fileName.find_last_of('.');
             if (pos != std::string::npos) {
                 // Replace the substring after the last '.' with "adj"
-                fileName.replace(pos + 1, std::string::npos, "cntt");
+                fileName.replace(pos + 1, std::string::npos, "cnt");
             }
             // open file
             ofstream ofs(fileName);
