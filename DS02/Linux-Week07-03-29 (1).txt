@@ -1,0 +1,498 @@
+Week 7 (Theme of the week : File permissions and inode - Part III (implementation of the inode architecture, with soft/hard links, pushd and popd) ; Shell script constructs, shell scripts and environment functions, with relation to PL projects )
+
+  inode, soft/hard link, pushd, popd, implementation
+  Shell script constructs - Part I
+  ---
+  Shell script constructs - Parts II and III
+  ---
+  Environment functions
+  Relating to PL project
+
+～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
+
+同學應預先讀與練習以下，上課時要問與練習。
+
+～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
+
+ls -il # to see i-node-number
+
+USER <-- file name --> program (executable) <-- i-node-number --> i-node manager <- physical addr. -> device manager
+                                                insert/create file i-node-struct
+                                                update file-content-or-attributes
+                                                delete i-node
+                                                select file-content-or-attributes
+
+directory stack : dirs, pushd, popd
+
+Each directory is a "path stack" of name-num pairs ("path stack" is my own term)
+
+pwd (top of the current path-stack (of name-num pairs), which is on the top of the current directory stack)
+
+The current file-name (a name-num pair on the top of the ) is file with the following file content
+  FileOrDirName1 inode-num1
+  FileOrDirName2 inode-num2
+  FileOrDirName3 inode-num3
+
+How can 'ls' be implemented?
+
+hard link : the new file-name associated with the same i-node-number
+  > ln originalFile  aHardLinkFile
+soft link : the new file-name associated with a different i-node-number, but the corresponding i-node refers to the original i-node
+  > ln -s originalFile aSoftLinkFile
+
+So, which one is more desirable???
+
+
+
+～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
+
+Ref. : https://tldp.org/LDP/abs/html/index.html
+# Advanced Bash-Scripting Guide # seems to be an excellent introduction to shell (bash in fact) scripting
+
+----------------------------------------------------------------------
+
+Standard format of a script file (initial spacing not required)
+
+  #!/bin/bash
+
+  <bash commands>
+
+----------------------------------------------------------------------
+
+(( put-ONE-AND-ONLY-ONE-C-arithmetic-EXPRESSION-here ))   # arithmetic evaluation # no '$' needed
+
+  e.g.,
+
+  > a=30
+  > (( a = a + 1, a = a + 40 )) ; echo $?  # SPACE not necessary  # must be ',' # Do not put ';' (';' is a shell-separator)
+  0
+  > echo $a
+  71
+  > (( a > 8 )) ; echo $?          # SPACE not necessary
+  0                                # "succeed" (i.e., true)
+  > (( a > 80 )) ; echo $?
+  1                                # "fail" (i.e., false)
+
+# 如果要取'(( ... ))'這個arithmetic expression的值，就用'$'
+# e.g.,
+> a=$(( abc + 15 ))   # 不過>>(( a = abc + 15 ))<<即可
+
+----------------------------------------------------------------------
+
+[[ put-LINUX-CONDITIONAL-here ]]   # Note that '[[' is actually a call to the 'test' executable
+                                   # therefore SPACE necessary ; '$' is also a MUST
+
+  e.g.,
+
+  > [[ -e aFileThatExists ]] ; echo $?
+  0
+  > [[ -e aFileThatDoesNotExist ]] ; echo $?
+  1
+  > [[ stringABC > stringXYZ ]] ; echo $?
+  1
+  > [[ stringABC < stringXYZ ]] ; echo $?
+  0
+  > [[ stringABC == stringXYZ ]] ; echo $?
+  1
+  > echo $xyz
+  stringABC
+  > [[ stringABC == $xyz ]] ; echo $?
+  0
+  > xyz=stringXYZ
+  > [[ stringABC == $xyz ]] ; echo $?
+  1
+  > [[ 500 -gt 85 ]] ; echo $?
+  0
+  > [[ 500 -lt 85 ]] ; echo $?
+  1
+  > [[ 500 -eq 85 ]] ; echo $?
+  1
+
+-------------------------------------------------------------------
+
+((...)), $((...))與[[ ... ]]的一些補充說明
+
+Use $(( ... ))與((...)) for ARITHMETIC evaluations
+Use [[ ... ]] for testing file attributes and making string comparisons
+
+使用方式：
+
+  abc=$(( 5 > 3 ))           # $abc is 1   # can do without the SPACEs
+  abc=$(( 3 > 30 ))          # $abc is 0
+  # OR
+  (( abc = 5 > 3 ))
+  (( abc = 3 > 30 ))
+
+  # But notice the difference
+  (( 5 > 3 )) ; abc=$?       # $abc is 0
+
+  has=400
+  cost=50
+  abc=$(( ( $has - $cost )* 12 ))          # can do without the SPACEs
+  echo $has $cost $abc
+
+  # OR
+
+  (( has = 400 ))
+  (( cost = 50 ))
+  (( abc = ( has - cost ) * 12 ))
+  echo $has $cost $abc
+
+  # Syntax error : $(( -d file1.txt ))
+  #                $(( -n $abc ))
+
+  IMPORTANT :
+
+    $(( <expr> )) ( and (( <expr> )) ) only support INTEGER expressions. Use 'bc' for floats.
+
+    # that is
+    > abc=$( echo "scale = 3 ; 345.5 / $abc ;" | bc ) # can do without SPACE
+
+  [[ -z $noSuchVar ]]; abc=$?              # SPACE needed for [[ and ]]
+  [[ -z $abc ]]      ; abc=$?
+  [[ -d file.txt ]]  ; abc=$?
+
+  # Both [...] and test ... fail the following test, only [[...]] works
+  #                                 -n $noSuchVar
+  # 因此，取exit value作assign之用，不能 [...]   必須要  [[...]]
+
+----------------------------------------------------------------------
+
+# set 'id' to each of $* and DO
+for id
+do
+  echo Hi $id
+done
+
+# set id to each of the being specified word and DO
+for id in 1 2 3
+do
+  echo $id
+  echo $(( $id * 2 ))
+done
+
+# combination of the above two
+for id in 1 2 3 "$@"
+do
+  echo $id
+  echo $(($id*2))
+done
+
+for (( i=1 ; i<3 ; i++ ))
+do
+  echo $(( $i*3 ))
+done
+
+-------------------------------------------------------------------
+
+# 'if'與'while'的條件判斷式事實上可以是任何compound command
+
+if (( 5 > 4 ))   # OR : if [[ -f temp.txt ]]  # OR : if date  # OR : if { date ; }
+then
+  echo Hi
+  echo $$
+fi
+
+if (( 5>4 ))
+then
+  echo Hi
+  echo $$
+else
+  echo Hello
+  echo $$
+fi
+
+if (( 5>4 ))
+then
+  echo Hi
+  echo $$
+elif (( 4 > 5 ))
+then
+  echo why
+else
+  echo Hello
+  echo $$
+fi
+
+if date
+then
+  echo Hi
+  echo $$
+else
+  echo Hello
+fi
+
+if date ; date | cat
+then
+  echo Hi
+  echo $$
+else
+  echo Hello
+fi
+
+# if (( 3+5 == 2 )) ;then { echo Hi; } ;else { echo Hello; } ;fi
+# if [[ -f none ]] ;then { echo Hi; } ;else { echo Hello; } ;fi
+# 小心： 0是true (then), 1是false (else)
+# if { date; } ;then { echo Hi; } ;else { echo Hello; } ;fi
+
+----------------------------------------------------------------------
+
+(( i = 1 ))          # 也可以是： i=1
+while (( i < 5 ))	   # 也可以是： (( $i < 5 ))
+do
+  (( i = i + 1 ))    # 也可以是： i=$(( $i + 1 ))
+  echo ${i}Hello
+done
+
+-------------------------------------------------------------------
+
+# system displays 3 choices
+
+select input in RED BLUE GREEN   # user enter '1' '2', or '3'
+do                    # 'do' means "looping"
+  case $input in
+  RED) echo REDD      # choice '1'
+	;;                  # exit 'case', but continue looping, since no 'break'
+  GREEN) echo GREEN	  # choice '3'
+    break             # exit 'do'
+  ;;
+  esac                # continue looping when user enters
+                      # some other string (including '2')
+  # break             # to exit a do-loop, must use 'break'
+done
+
+-------------------------------------------------
+
+# Below, there is no 'select'-'do'-'done', therefore, no interaction-plus-looping
+
+abc=123
+case $abc in        # below, '.*' and '*' are file-name-pattern-match
+  .*)	echo Hi       # '(' is optional; i.e., >>(.*<<)
+      echo $abc Hi
+      ;;
+  *) echo Hello     # or, >>(*)<<
+     echo abc$abc
+     ;;
+esac                # will do nothing if no match
+
+-------------------------------------------------------------------
+
+# Syntax
+
+# Below, ';' can be replaced by ENTER (newline) ; However, ';;' cannot be replaced by ENTER
+
+for name [ [ in [ word ... ] ] ; ] do list ; done
+
+for (( expr1 ; expr2 ; expr3 )) ; do list ; done   # no '$' needed in the three expressions
+
+select name [ in word ] ; do list ; done
+
+if list; then list; [ elif list; then list; ] ... [ else list; ] fi
+
+while list-1; do list-2; done
+
+until list-1; do list-2; done
+
+case word in [ [(] pattern [ | pattern ] ... ) list ;; ] ... esac
+
+# 以上case-construct中的';;'也可以是';&'或';;&'
+
+# ';;' :  exit the case-construct NOW
+# ';&' :  應該是類似C的「case without 'break'」 (when a case is matched, all statements from this 'case' are executed)
+# ';;&' : 應該是「以下的每個case都還是要test (and see if their related commands need to be executed)(而非現在就exit)」的意思
+
+Homework 3
+
+Use "pure" shell script (without any use of newly compiled gcc/g++ code) to write GuessNumber.
+
+(User must guess a number between 0 and 99 (inclusive))
+
+Give a shell script. Write it in a file. Name of the file : Guess-10927111
+
+Hint :
+
+> echo $RANDOM  # This will print a random number
+
+Usage :
+
+> ./Guess-10927111
+Please guess a number between 0 and 99 (inclusive) > 30
+Higher!
+Please guess again > 40
+Lower!
+Please guess again > 35
+You got it!
+>
+
+
+
+----------------------------------------------------------------------
+
+Calling a shell function
+
+        ID { WORD }
+
+說明：
+  When calling a function, parameter-passing is done via positional
+  parameters (of course). The basic idea is the same as running an executable.
+
+---------------
+
+wang > function Recurse() {
+> if [[ $1 > 0 ]]
+> then
+>   echo Value of ar is $1
+>   Recurse $(( $1 - 1 ))
+> else
+>   echo Value of arg is $1. No more recursion performed.
+> fi
+> } # Recurse()
+
+wang > Recurse 3
+Value of ar is 3
+Value of ar is 2
+Value of ar is 1
+Value of arg is 0. No more recursion performed.
+
+wang > ls
+3  31  32  PrintPara  PrintPara.cpp  PrintPara.txt
+
+wang > abcd=( `ls` )
+
+wang > echo ${!abcd[@]}       # 注意!與@ (all indices)
+0 1 2 3 4 5
+
+wang > echo ${#abcd[@]}       # 注意#與@ (array length)
+6
+
+wang > i=2
+
+wang > echo abcd'['$i']''='${abcd[$i]}
+abcd[2]=32
+
+wang > echo abcd\[$i\]\=${abcd[$i]}
+abcd[2]=32
+
+# Some tests for the use of escapes ('\')
+
+wang > echo \a\b\$i      # definitely escape
+ab$i
+
+wang > echo "\a\b\$i"    # conditionally escape
+\a\b$i
+
+wang > echo "\a\b$i"
+\a\b2
+
+wang > echo '\a\b$i'     # definitely no escape
+\a\b$i
+
+wang > for i in ${!abcd[@]}                    # has to be >>${!abcd[@]}<<
+> do
+>   echo Value of abcd\[$i\] is ${abcd[ $i ]}  # can only have space around '$i'
+> done
+Value of abcd[0] is 3
+Value of abcd[1] is 31
+Value of abcd[2] is 32
+Value of abcd[3] is PrintPara
+Value of abcd[4] is PrintPara.cpp
+Value of abcd[5] is PrintPara.txt
+
+wang > echo $i
+5
+
+wang > i=2
+
+wang > {
+> local i
+> for i in ${!abcd[@]}
+> do
+>   echo ${abcd[ $i ]}
+> done
+> }
+-bash: local: 只能用在一個函數
+3
+31
+32
+PrintPara
+PrintPara.cpp
+PrintPara.txt
+
+wang > echo $i
+5
+
+wang > i=2
+
+wang > (
+> for i in ${!abcd[@]}
+> do
+>   echo ${abcd[ $i ]}
+> done
+> )
+3
+31
+32
+PrintPara
+PrintPara.cpp
+PrintPara.txt
+
+wang > echo $i       # 'i'有沒有被export結果都一樣。所以我們就不試export i了
+2
+
+
+～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
+
+$ Relating PL project to how shell works (First choice : Our-C ; Second choice : OurScheme)
+
+   # A comparison between how-Our-C-works and how-shell-works
+
+   ＃ shell
+
+   > abc=15    # Why can't it be >>abc = 15<< ???
+   > echo $abc
+   > echo $(( $abc * 2 ))
+   > echo $(( $abc + $abc ))
+   > echo $(( 2 * $(( $abc + $abc )) ))
+   > echo $(( $(( 2 * $(( $abc + $abc )) )) * $(( 2 * $(( $abc + $abc )) )) ))
+
+   ＃ Our-C
+
+   > int abc ;                            # Definition of abc entered ...
+   > abc = 15 ;                           # Statement executed ...
+   > cout << abc ;                        # 15Statement executed ...
+   > cout << abc * 2 ;                    # 30Statement executed ...
+
+   ＃ shell
+
+   > MyEcho() {
+   $   echo $(( $abc * 2 ))
+   $ } # MyEcho()
+   > MyEcho
+   30
+   > MyDouble() {
+   $   echo $(( $1 * 2 ))
+   $ } # MyDouble()
+   > MyDouble $abc
+   30
+
+   ＃ Our-C
+
+   > int F( int y ) { return y + y ; }    # Definition of F() entered ...
+   > cout << F(abc) ;                     # 30Statement executed ...
+   > Done() ;                             # Our-C exited ...
+
+   ＃ More of shell
+
+   > MyDate() { date; date; }     # King of kings！ (a program that uses other programs as commands)
+   > MyDate                       # can use TAB to expand
+
+   > MyDateAgain() {
+   $ date
+   $ date
+   $ } # MyDateAgain()
+   > MyDateAgain                  # can use TAB to expand
+
+
+
+
+

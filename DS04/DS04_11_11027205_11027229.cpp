@@ -84,17 +84,22 @@ class Graph{
             int i = 1;
             int count = 0;
             for(Node * node : graph){
-                ofs << "[  " << i <<"] "<<node->currentID<<":"<<endl;
+                if(i<10)ofs << "[  " << i <<"] "<<node->currentID<<":"<<endl;
+                else if (1<100) ofs << "[ " << i <<"] "<<node->currentID<<":"<<endl;
+                else ofs << "[" << i <<"] "<<node->currentID<<":"<<endl;
                 int j = 1;
                 for(pair<Node *,float> p : node ->pairs){
-                    ofs << "\t( "<<j<<") "<<p.first->currentID<<", "<<p.second;
+                    if (j<10)ofs << "\t( "<<j<<") "<<p.first->currentID<<", "<<p.second;
+                    else ofs << "\t("<<j<<") "<<p.first->currentID<<", "<<p.second;
                     j++;
                     count ++;
+                    if ((j-1)%10==0)ofs<<endl;
                 }
                 ofs << endl;
                 i++;
             }
-            ofs << "<<< There are " << count << " nodes in total. >>>";
+            cout << "<<< There are " << i-1 << " IDs in total. >>>\n\n";
+            cout << "<<< There are " << count << " nodes in total. >>>\n";
             ofs.close();
             
         }
@@ -194,8 +199,10 @@ bool readData(Graph & graph,vector<Data> &data, string & fileName){
         printf("No File\n");
         return false;
     }
-    ifs.close();
     
+    ifs.close();
+    graph.clear();
+    data.clear();
     WriteToVec(fileName,data);
     graph.createGraph(data);
     return true;
@@ -217,22 +224,20 @@ int main()
             if(!readData(graph,data,fileName)){
                 break;
             }
-            // graph.printAll();
             graph.writeFile(fileName);
             break;
             
             case 2 :
+            	if(data.empty()){
+            		cout << "Please do mission 1 first\n";
+					break;
+				}
+				
+				
             break;
         }
         cout << "*** Graph data manipulation **\n* 0. QUIT                  *\n* 1. Build adjancency lists        *\n* 2. Compute connection counts        *\n* *************************************\n";
         n = getInt();
     }
-    /*
-    WriteToVec("pairs401.bin",data);
-    for(Data d : data){
-        cout << d.putID << ' ' << d.getID << ' ' << d.weight << '\n';
-    }
-    graph.createGraph(data);
-    graph.printAll();
-    */
+   
 }

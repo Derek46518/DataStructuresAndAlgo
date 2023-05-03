@@ -1,0 +1,478 @@
+～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
+
+"How can I let you see？？？"  - from the movie 'Hellen Keller'
+
+the case of "a system and an interpreter" (an interpreter acting as a system)
+
+～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
+
+===============================================================================================================================
+===============================================================================================================================
+===============================================================================================================================
+＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝  What you should have learned  ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+===============================================================================================================================
+===============================================================================================================================
+===============================================================================================================================
+
+Week 1 
+
+  學習的金字塔
+  ---
+  「字串是王道」(GUI/MUI只是textual interface的替代品)
+  Just what do we mean by a 'system' (call stack and time sharing, process and thread, just as an example)
+  ---
+  Another case in point : key type-and-echoing, ASCII, control-chars
+
+＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+
+Week 2 
+
+  資工系的“拼圖”遊戲
+  An example of a Linux "cmd" - ed // Case in point : you have already wrote one Linux cmd
+  ---
+  PS1='Ubuntu-1804 : `pwd`\n`whoami` > '
+  .bashrc
+  ---
+  'ls lib' vs. 'ls /lib'
+  PATH and $PATH
+  cp /usr/bin/echo ~/bin/Echo
+  /usr/bin/echo
+  echo
+  bin/Echo
+  ./bin/Echo
+  ~/bin/Echo
+  Echo
+  history -15
+
+＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+
+Week 3 
+
+  ----- How is a command executed and the basic SOP for writing a "command" (a C/C++ program in fact) -----
+
+  PrintPara
+  Emphasis of the close relation between Linux commands and PATH (and $PATH)
+  Demo of how echo and PrintPara work under shell
+  ---
+  I/O redirection (stdin, stdout, 還有stdout, <, >, >>, |) // 1>, 2>, 1>>, 2>>, &>, 2>&1
+                                                           // '1>/dev/null'與'2>/dev/null'與'&>/dev/null'(或'>/dev/null')
+                                                           // <<any-string ... ENTERany-string // temporary input file
+                                                           // &|
+  HW #1 : Sort -o asc < File1 (short discussion of how to do it)
+
+＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+
+Week 4
+
+  Introduction of command separation ( ;   |   ||   &&   &   >   >>   < ) and shell substitution ($ and `...` and '...' and "...")
+
+  # pipeline separation ( ;  ||  &&  & ), where the postfix of a pipleline is either | or > or < or >> or << or the like.
+
+  HW #2 : Sort -o asc -r are/'must be' < File1   (with a somewhat extensive discussion)
+
+＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+
+Week 5 
+
+  File permissions
+  Where is what and stdio.h and C-include
+  ---
+  Some useful commands : man, --help, whereis, locate, find
+  ---
+  系統啟動程序與rc.local
+
+===============================================================================================================================
+===============================================================================================================================
+===============================================================================================================================
+＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝  What you are about to learn for this week (Week 6)  ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+===============================================================================================================================
+===============================================================================================================================
+===============================================================================================================================
+
+Week 6 
+
+  Extended file permissions, fd and inode
+  ---
+  remote-login
+  ---
+  Touching the idea of environment variables/functions ( >>set | less<<    >>set | grep PATH<< )
+  Shell builtin variables ; Three versions of MyEcho (for introducing $<num>, $*, "$@" and "$*")
+  MyEcho again - the corresponding environment-function version (MyEcho())
+
+～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
+
+同學應預先讀與練習以下，上課時要問與練習。
+
+～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
+
+   事實上總共有12個permission bits，而不是9個
+   (Together with 4 file-type bits, there are 16 bits in fact)
+
+   另外三個permission bits只對executable有效
+
+   _ _ _ r w x r w x r w x
+
+   ^ setuid bit
+
+     ^ setgid bit
+
+       ^ sticky bit (if set, it tells the OS to try to keep this
+                     executable in memory at all times ; e.g., vi)
+
+   When an executable file F is being executed, the resulting process
+   F' has two pairs of UID/GID.
+
+   Pair 1 : F'的 "real UID" and "real GID". <- this cannot be changed
+
+   Pair 2 : F'的 "effective UID" and "effective GID". <- this depends
+
+   當一個parent process A 'exec' 此 executable file F 時，會產生一個
+   新的process B.
+
+   IF 此 executable file F 的 setuid-bit/setgid-bit 有 set，
+     B 的 effective UID/GID 就會是 F 的 UID/GID
+   ELSE
+     B 的 effective UID/GID 就是 A 的 effective UID/GID
+
+     (白話： 如果此file F的setuid/setgid是1, 以'exec'執行F所得的
+             process的effective UID/GID就會是F的UID/PID)
+
+※ How to set the setuid/setgid/sticky bit of a file?
+
+   Suppose the original mode is 755, such as below
+
+   chmod 755 temp.txt   OR  chmod 0755 temp.txt  // 是executable才有意義
+
+   > ls -l temp.txt
+   -rwxr-xr-x 1 hsia root 63 Jul 16 19:30 temp.txt // 注意三個 'x'
+
+   To set the setuid bit : chmod 4755 temp.txt
+
+   -rwsr-xr-x 1 hsia root 63 Jul 16 19:30 temp.txt // 注意user 'x' now 's'
+
+   To set the setgid bit : chmod 2755 temp.txt
+
+   -rwxr-sr-x 1 hsia root 63 Jul 16 19:30 temp.txt // 注意group 'x' now 's'
+
+   To set the sticky bit : chmod 1755 temp.txt
+
+   -rwxr-xr-t 1 hsia root 63 Jul 16 19:30 temp.txt // 注意other 'x' now 't'
+
+   注意：
+
+     如果原先的'x'沒有set，顯現出來的就會是'S'(而非's')或'T'(而非't')
+
+～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
+
+三、 remote login
+
+> service sshd status             # 'sshd' for others
+                                  # for ubuntu, can be 'ssh' or 'sshd'
+
+> apt-get install openssh-server  # if 'service' cannot find 'ssh'
+
+> service sshd status             # after the installation of sshd
+
+// =============================
+
+To find out about your IP
+
+// === Linux
+
+> ifconfig
+
+# Look for something like 'eth0' ; 'lo' means 'localhost' (127.0.0.1)
+
+netstat -ntlp    # or -tulp  # 't' : tcp ; 'u' : udp ; 'l' : listen ; 'p' : program
+
+// === Windows
+
+> ipconfig
+
+netstat -an    # or just 'a' ; use 'netstat /?' to find the options
+
+               # try 'net /?' also (but not of much help)
+
+// =============================
+
+Do the following from console (i.e., NOT from a terminal via ssh)
+
+> su          # to become root
+
+> vi /etc/ssh/sshd_config
+
+Change
+  Port 22
+to
+  #Port 22
+  Port 12345
+
+save and quit vi
+
+> service sshd restart
+
+Next time when you use ssh to log in, do something like the following
+
+> ssh -p 12345 <user>@<IP>
+
+Suppose you are still the root
+
+> vi /etc/ssh/sshd_config   # /etc/ssh/denyusers in some other system
+
+Add the following lines under 'Port 12345'
+
+  DenyUsers root
+  AllowUsers emily peter
+
+In the future, it should be something like
+
+  DenyUsers root other-user1 other-user2
+  AllowUsers emily peter
+
+# For some other systems, put the following three lines
+#   root
+#   other-user1
+#   other-user2
+# in the file '/etc/ssh/denyusers'
+
+save and quit vi
+
+  service sshd restart
+
+Now 'root', 'other-user1', 'other-user2' should be forbidden to log
+in from the outside. Try it out to make sure.
+
+// ===================================================================
+
+四、 Login-related commands
+
+// relevant cmds: useradd, userdel, usermod
+// To change login shell and group: usermod -s bash -g root <user>
+
+> su                     # become root
+
+> useradd -d /home/test-user1 -s /bin/bash test-user1
+> passwd test-user1      # 'CYCU-ICE'
+
+> useradd -d /home/test-user2 -s /bin/bash test-user2
+> passwd test-user2      # 'CYCU-ICE'
+
+// Do the following from an external terminal (to log in)
+> ssh -p 12345 test-user1@<IP>
+> exit
+
+# Now you are still the root
+
+> cat /etc/passwd        # to see the user accounts and details
+
+> su test-user1          # to do things as test-user1
+> mkdir C-Test1
+> cd C-Test1
+> vi test1.cpp
+# write an infinite loop, save and quit
+> g++ -o test1.out test1.cpp
+> ./test1.out &
+> ps
+> kill -9 <the pid of test.out>
+> exit                   # to become root again
+
+> vi /etc/ssh/sshd_config
+
+Change the DenyUsers-line to the following
+
+  DenyUsers root test-user1 test-user2
+
+save and quit vi
+
+> service sshd restart
+
+～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
+
+To check the IP of this machine,
+
+Linux : ifconfig
+
+# CentOS : check the 'inet' addr-value of 'eth0' (CentOS 6.5) or, e.g., 'enp0s31f6' (CentOS 7.9.2009)
+#          # 'enp0s31f6' is the name of the network card used in connecting to the internet
+#          # ref.: https://blog.gtwang.org/linux/centos-linux-static-network-configuration-tutorial/
+# Ubuntu : check the 'inet' addr-value of 'p2p1' (Ubuntu 15.04)
+
+Windows : ipconfig
+
+To change the IP of Ubuntu to fixed IP :
+
+https://linuxconfig.org/how-to-configure-static-ip-address-on-ubuntu-18-10-cosmic-cuttlefish-linux
+
+～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
+
+Shell variables (not exactly the so called "environment variables" )
+
+  set | less
+  set | grep HOME
+  cd /
+  set | grep HOME
+  cd
+  set | grep HOME
+  set | grep PATH    # What is >>PATH<< for？
+
+  set | less
+
+  $HOME default argument of 'cd'
+  $IFS list of characters that separate words in arguments   # >>COMP_WORDBREAKS<< in 18.04?
+  $MAIL file that, when changed, triggers "you have mail" message  # seems to have been removed
+  $PATH list of directories to search for commands
+  $PS1  prompt string.
+  $PS2  prompt string for continued command line, default '> '
+
+Environment variables
+
+  # Use 'env' (instead of 'set') to do the same things ( e.g., 'set | less' )
+
+An environment variable is a shell variable, but not vice versa.
+
+Shell built-in variables
+
+  // just to notice the existence of these '$.' as of now
+  $# number of arguments
+  $* all arguments to shell
+  $@ similar to $*, but ...
+  $- options supplied to the shell
+  $? return value of the last command executed
+  $$ Process-id of the shell
+  $! process-id of the last command started with '&'
+
+> vi MyEcho1  # Key in the following
+
+  echo
+
+  echo "Values of \$0 \$1 \$2 are : " $0 $1 $2
+  echo "Values of \$0 is : " $0
+  echo "Total number of arguments is : " $#
+
+  # '$-' doesn't seem to work
+  # echo "Options supplied are : " $-
+
+  echo "Here is the list of all arguments : " $*
+  echo "Process ID of this shell : " $$
+  echo "Return status of last executed command : " $?
+
+  ls /WhatIsThisAnyway
+  echo "Return status of last executed command : " $?
+
+  echo
+
+# Now Save and exit
+
+> ls -al
+
+> chmod u+x MyEcho1   # 這就是所謂的 "shell script (file)"
+                       # a shell script is, in effect, a program
+
+> ./MyEcho1 10 20 '30 40' 50
+
+> ./MyEcho1 `ls ~`    # 就像執行C程式的執行檔一樣，接受command line options
+
+> cp MyEcho1 ~/bin
+
+> MyEcho1 `ls -al ~`  # You just added 'MyEcho1' into your cmd-to-use
+
+> vi MyEcho2 # enter the following
+
+  for i in $* ; do echo $i ; done
+
+# 'w' (write) and quit vi
+
+> chmod u+x MyEcho2
+
+> ./MyEcho2 `ls ~`
+
+# Now, make MyEcho2 your cmd-to-use (What should you do to make it a cmd-to-use?)
+
+> MyDate(){ date;date;} # 要有SPACE與最後的';'
+
+> MyDate
+
+> MyDateAgain() {
+  date
+  date
+} # MyDateAgain()
+
+# 按「往上箭頭(↑)」即可看到上一個(剛輸入的)指令的“一行文”
+
+> MyDateAgain
+
+vi MyEcho3
+
+// enter the following as the content of MyEcho3
+
+  echo
+
+  echo 'Below is the echoing of each one in $*'
+  for i in $*
+  do
+    echo --- $i
+  done
+
+  echo $'\n'==================$'\n'
+
+  echo "Below is the echoing of each one in '\$*'"
+  for i in '$*'
+  do
+    echo --- $i
+  done
+
+  echo $'\n'==================$'\n'
+
+  echo 'Below is the echoing of each one in "$*"'
+  for i in "$*"
+  do
+    echo --- $i
+  done
+
+  echo $'\n'==================$'\n'
+
+  echo 'Below is the echoing of each one in "$@"'
+  for i in "$@"
+  do
+    echo --- $i
+  done
+
+  echo
+
+# END OF MyEcho3
+
+# Now make MyEcho3 executable (by emily)
+
+  PrintPara $myVar1 $myVar2 $myVar3 'How about it?' Is it OK?
+
+  ./MyEcho3 $myVar1 $myVar2 $myVar3 'How about it?' Is it OK?
+  # next, make MyEcho3 your cmd-to-use
+
+  ./MyEcho3 10 '20             30' "40
+  >              50"
+
+      # MyEcho3 10      '20 30'     '40 50'
+
+      Below is the echoing of each one in $*
+      --- 10
+      --- 20
+      --- 30
+      --- 40
+      --- 50
+
+      ==================
+
+      Below is the echoing of each one in '$*'
+      --- $*
+
+      ==================
+
+      Below is the echoing of each one in "$*"
+      --- 10 20 30 40 50
+
+      =================
+
+      Below is the echoing of each one in "$@"     # therefore, what we really want is >>"$@"<<
+      --- 10
+      --- 20 30
+      --- 40 50

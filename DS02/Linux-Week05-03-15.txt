@@ -1,0 +1,378 @@
+※ User, group, other, file owner, "file group", and file permissions
+
+1. 每個user都有一個所屬群組(group)
+
+   // try: cat /etc/passwd
+
+   root:x:0:0:root:/root:/bin/bash
+          ^ root 的 UID
+            ^ root 的(所屬group的) GID
+              ^^^^ description
+                   ^^^^^ root的"home"的所在地
+                         ^^^^^^^^^ root的shell (program)
+   ^^^^ user name是'root'
+        ^ 以前是把root的密碼放在此，現在已移到/etc/shadow去了
+
+// try: cat /etc/shadow     // what happened? why?
+su
+cat /etc/shadow
+exit
+
+二、 File owner, "file group", and file permissions
+
+ugo
+
+> ls -l temp.txt
+
+  -rw-r--r-- 1 hsia root    63 Jul 16 19:30 temp.txt
+               ^^^^ the owner of this file ("user")
+                    ^^^^ the group associated with this file
+                         (注意：此group不見得是owner所屬的group，
+                                雖然在一開始時是creator的group。)
+
+  -rw-r--r-- 1 hsia root    63 Jul 16 19:30 temp.txt
+
+   ^^^ user (CAN READ, CAN WRITE, CANNOT EXECUTE)
+      ^^^ group (CAN ONLY READ)
+         ^^^ other (CAN ONLY READ)
+
+   // other df= 「既非owner，所屬group也不是the group associated with
+   //             this file」的user
+
+   chmod: 改變 file/directory 的 permissions
+   chown: 改變 file/directory 的 owner
+   chgrp: 改變 file/directory 的 associated group
+
+   e.g.,
+
+   chmod o+rwx temp.txt     // 然後 ls -al temp.txt 看看
+   chmod uog+rwx temp.txt   // 然後 ls -al temp.txt 看看
+   chmod uog-x temp.txt     // 然後 ls -al temp.txt 看看
+   chmod a-x temp.txt       // 然後 ls -al temp.txt 看看
+   chmod 777 temp.txt       // 然後 ls -al temp.txt 看看
+   chmod 644 temp.txt       // 然後 ls -al temp.txt 看看
+
+   chown josh temp.txt      // Be careful! Do you know why?
+   chgrp josh temp.txt      // Be careful! Do you know why?
+
+   注意：
+
+     Unix philosophy :
+
+       A directory is, in effect, a file.
+
+     如果是directory， 'r' means, e.g., 'ls'是否會work
+                       'w' means, e.g., 此directory內的file/directory
+                                        是否能被'mv'或'rm'
+                       'x' means 是否能進入此directory (e.g., by using 'cd')
+
+～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
+
+何處放啥( /bin  /sbin  /usr/bin  /usr/sbin ) # 必須知道執行檔放哪些地方
+
+   ls /bin
+   ls /sbin
+   ls /usr/bin
+   ls /usr/sbin
+
+   ls /usr/include
+   ls /usr/include/c++
+   ............           # where is 'cstdio' ?
+
+   whereis cstdio         # why can't the system find it?
+
+  根據鳥哥第六章，
+
+    ### FHS(Filesystem Hierarchy Standard)規定
+
+    '/' : 是放(a) single-user時所用 (b)與開機有關    // 應愈小愈好
+                                                  // root home在'/'之下
+                                                  // try 'df'
+    '/usr' : 是用來放「安裝的軟體」
+                                                  // '/usr'是「安裝」之用
+    '/var' : 所放者應與(系統與一般軟體)運作過程有關     // '/var'是「運作」之用
+
+    ###
+
+    '/etc' : (系統與一般軟體)設定檔                  // '/etc'是放「設定檔 」
+
+    '/dev' : "Everything is a file" philosophy
+             (installed devices are files)
+
+    '/proc'與'/sys' : 兩個虛擬的file systems (目錄下的東西事實上在記憶體中)
+
+    '/tmp' 任何人皆可存取，開機時應該要先將內容清空     // Ubuntu好像會自動清空
+
+    '/home' : 一般使用者的home的所在地
+
+  其他
+
+    'bin'  是給使用者用的
+
+    'sbin' 所放者(應只)與設定系統(或所安裝軟體)有關
+
+  其他
+
+    '/usr/include' # 一切盡在不言中
+
+    '/usr/lib'     # 一切盡在不言中
+
+  其他
+
+    '/usr/local' : 安裝(新)軟體之處 # 有'/usr/local/bin','/usr/local/sbin'
+
+    '/usr/share' : 說明文件
+
+    '/usr/src'   : source code (起碼理論上src code該放這裡)
+
+So where is 'stdio.h' or 'iostream' or 'cstdio'?
+
+----------------------------------
+
+Proof of include.
+
+> vi testInOutChar.cpp
+
+# include <stdio.h>
+int main() {
+  char ch ;
+  while ( ( ch = getchar() ) != EOF ) {
+    putchar() ;   # we deliberately leave out 'ch' here
+} // main()
+
+> g++ -0 testInOutChar testInOutChar.cpp
+testInOutChar.cpp:8:14: 錯誤：too few arguments to function 「int putchar(int)」
+In file included from testInOutChar.cpp:1:0:
+/usr/include/stdio.h:580:12: 附註：declared here
+
+> cat /usr/include/stdio.h | less -N # To see what's on Line 580 (key in '540' and ENTER)
+
+> cat /user/include/stdio.h | grep extern  # What exactly are the functions we can use
+
+What happened?
+
+> vi testInOutChar.cpp
+
+# include <stdio.h>
+int main() {
+  char ch ;
+  while ( ( ch = getchar() ) != EOF ) { # How does this expression work?
+    putchar( ch ) ;
+} // main()
+
+> g++ -0 testInOutChar testInOutChar.cpp
+> ./testInOutChar
+Have a good time
+Have a good time
+Too bad.
+Too bad.
+ctrl-d
+> # Puzzlement : ctrl-d that is not the very first char of the line can only cause the input to be sent in directly (and no EOF) ...
+
+# DO : Question the students about the concept of stdin and stdout again. Make sure they all understand.
+
+Why?
+
+> vi testInfinite.cpp
+int main() {
+  for ( ; ; )
+    ;
+} // main()
+> g++ -o testInfinite testInfinite.cpp
+> ./testInfinite    # Note: the system has no response upon ENTERs
+
+
+ctrl-d ctr-c
+> # why is it the case that we must use ctrl-c to get back to the normal prompt
+
+> ./testInfinite & # explain why this works
+
+
+------------------ break --------------------
+
+～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
+
+Some useful commands :
+
+  To check the version of CentOS used : cat /etc/centos-release
+
+  To check the version of ubuntu used : lsb_release -a
+
+  To check the architecture of Linux : uname -m
+
+  find . -name dir-or-file-path
+    例
+    Ubuntu : /home/wang > find . -name '528*'
+    ./temp/528001_1.txt
+    ./temp/528008_1.txt
+  cat someFile | egrep -n "doc|report"      # NO space between '|' and string-to-search
+  less -N filePath
+  mkdir -p dir-path                                # '-p' means "no error if already exists"
+  useradd -d /home/user1 -g 0 -s /bin/bash user1   # same group as 'root' (same group id 0)
+  passwd user1
+  chown -R user1:root dir-or-file-path
+  chmod -R 755 dir-or-file-path
+  ln -s real-path path-of-the-symbolic-link
+  gcc -v
+  g++ -v
+
+  Also : man, --help, whereis, locate (if the use of 'whereis' fails)
+
+  man <name of a cmd>
+  cmd --help
+  whereis name-of-the-file-to-find        # the file can be an executable (i.e., a "command")
+  locate name-of-the-file-to-find         # use this only if the use of 'whereis' has failed to find the location of file
+
+  # But how to look for files with some very specific content? # Copy the whole sub-directory to Windows and use Windows Search???
+
+  > locale # what are the locales that are currently used
+  > locale -a # what are the locale setups that the system supports
+
+  # Put the following in ~/.bashrc ; then, 'source ~/.bashrc'
+
+  alias VIEW-BIG5='LANG=zh_TW.BIG5'
+  alias VIEW-UTF-8='LANG=zh_TW.UTF-8'
+
+～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
+
+一、系統啟動程序(鳥哥第十九章 開機流程)
+
+  BIOS
+  Boot loader (grub2, grub1, LILO, spfdisk？)
+  systemd
+    # .target files are under /lib/systemd/system/
+    sysinit.target
+    basic.target
+    multi-user.target
+    /etc/rc.d/rc.local
+    getty.target
+    GUI
+
+ls -al /etc/rc5.d # run level 5 is said to be the multi-user level
+
+# runlevel  what-it-is
+# 0         halt
+# 1         single-user-mode
+# 2         multi-user without NFS
+# 3         Full multi-user mode
+# 4         Unused
+# 5         runlevel 3 + X11
+# 6         reboot
+
+# Under /etc/rcN.d, we find LINKs ("捷徑") pointing to
+# shell programs under /etc/init.d/
+
+ls -al /etc/rc0.d
+ls -al /etc/rc6.d
+ls -al /etc/rc5.d
+
+ls /etc/init.d
+
+# if you want the system to run a daemon(常駐程式) when
+# it starts up, you first put something under /etc/init.d ;
+# then, you put a link under /etc/rc5.d, pointing to that
+# something. This will cause that something (a shell script
+# in fact) to be run when the system (a shell, which is in
+# effect a command interpreter) is up.
+
+// ============ 夏氏筆記 about 另類 system start up - START ============
+
+Linux booting background # 後註：這是System V時代的做法，/etc/inittab已被/lib/systemd/system/取代
+
+At startup, Linux runs the /etc/rc.d/rc script at the current runlevel
+(normally 3 or 5). All the Sxx scripts in /etc/rc.d/rc3.d/S* are
+started in order.
+
+  # Fragment of the rc script
+  for i in /etc/rc$runlevel.d/S*; do
+    $i start
+  done
+
+Some configurations boot up in runlevel 3 and others boot in
+runlevel 5. The actual boot order will then be {1,2,3} or {1,2,5}.
+A machine booting with runlevel 3 will have /etc/inittab with the
+following line:
+
+  # /etc/inittab fragment
+  id:3:initdefault
+
+On server shutdown, Linux calls the scripts in /etc/rc.d/rc2.d/K*
+in order.
+
+  for i in /etc/rc$runlevel.d/K*
+  do
+    $i stop
+  done
+
+// ===
+
+guest > cat /etc/rc.local
+#!/bin/sh
+#
+# This script will be executed *after* all the other init scripts.
+# You can put your own initialization stuff in here if you don't
+# want to do the full Sys V style init stuff.
+
+echo Below is done by contents of /etc/rc.local. # just as an
+date                                             # example
+
+// ===
+
+In other words, we can put whatever we want the system to do upon
+system start up in /etc/rc.local. This way, the system will execute
+those whatever-we-want-to-do as the last step of the booting sequence.
+
+Note: it is convenient ; but do not 100% count on it (sometimes it
+      won't work (even though this happens very rarely)).
+
+// ============ 夏氏筆記 about 另類 system start up - END =============
+
+// ============ 找無rc.local的解決之道 - START ============
+
+Solution出處：https://gist.github.com/cn27529/58e6d84550819740eac1dfe568ef9c09
+另一reference: https://www.itread01.com/content/1537549089.html
+
+# 1. sudo su 切換到root權限
+
+# 2. 以root身分, 進入lib/systemd/system/ 查看是否有rc.local.service檔案, 一般都會有
+若沒有就走2-1
+
+## 2-1. nano lib/systemd/system/rc.local.service
+在文件中最後加上
+[Install]
+WantedBy=multi-user.target
+Alias=rc.local.service
+
+將rc.local.service存檔離開
+
+# 3. 去etc/下建立 rc.local 檔
+
+cd /etc
+sudo touch rc.local
+
+nano rc.local
+填入內容如下
+#!/bin/sh -e
+#
+# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will “exit 0” on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# By default this script does nothing.
+
+exit 0
+
+4. 變更rc.local 執行權限
+sudo chmod +R 777 /etc/rc.local
+
+5. 啟用服務
+sudo systemctl enable rc.local.service
+
+此說明參考 https://www.webteach.tw/?p=2621
+
+// ============ 找無rc.local的解決之道 - END ============

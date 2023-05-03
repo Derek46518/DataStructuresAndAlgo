@@ -1,0 +1,3991 @@
+###################################################################################################################
+
+“(要)怎麼做都可以！問題是「(該)怎麼做？」。"  
+
+- 夏延德
+
+###################################################################################################################
+
+Original file name : Python-Week07-03-29.txt
+
+Now modified and used as Python-Week10-04-19.txt
+
+###################################################################################################################
+
+Part I : slice again
+
+Part II : 'global' vs. 'nonlocal' again
+
+Part III : private vs. protected vs. public ; static vs. non-static (again)
+
+Part IV : 有什麼變數與什麼functions、如何知道怎麼用
+
+###################################################################################################################
+
+Part I : Slice again
+
+###################################################################################################################
+
+>>> a = ( 10, 20, 30, 40, 50, 60, 70, 80, 90 )
+
+>>> #############################
+>>> a[ 2:5 ]
+(30, 40, 50)
+>>> a[ 2:-2 ]
+(30, 40, 50, 60, 70)
+>>> a[ -2:2 ]
+()
+>>> a[ -2:-1 ]
+(80,)
+>>> #####
+>>> a[ 2:5: ]
+(30, 40, 50)
+>>> a[ 2:-2: ]
+(30, 40, 50, 60, 70)
+>>> a[ -2:2: ]
+()
+>>> a[ -5:-2: ]
+(50, 60, 70)
+>>> #############################
+>>> a[ 2:7:2 ]
+(30, 50, 70)
+>>> a[ 7:2:2 ]
+()
+>>> a[ 2:7:-2 ]
+()
+>>> a[ 7:2:-2 ]
+(80, 60, 40)
+>>> a[ -2:-7:-2 ]
+(80, 60, 40)
+>>> a[ -7:-2:-2 ]
+()
+>>> a[ -2:-7:2 ]
+()
+>>> a[ -7:-2:2 ]
+(30, 50, 70)
+>>> a[ 2:-2:2 ]
+(30, 50, 70)
+>>> a[ -2:2:-2 ]
+(80, 60, 40)
+>>> a[ 2:-2:-2 ]
+()
+>>> a[ -2:2:2 ]
+()
+>>> #############################
+>>> a[ 2::2 ]
+(30, 50, 70, 90)
+>>> a[ 2::-2 ]
+(30, 10)
+>>> a[ -2::2 ]
+(80,)
+>>> a[ -2::-2 ]
+(80, 60, 40, 20)
+>>> a[ :2:2 ]
+(10,)
+>>> a[ :2:-2 ]
+(90, 70, 50)
+>>> a[ :-2:2 ]
+(10, 30, 50, 70)
+>>> a[ :-2:-2 ]
+(90,)
+>>> #############################
+>>> a[ 0: ]
+(10, 20, 30, 40, 50, 60, 70, 80, 90)
+>>> a[ -1: ]
+(90,)
+>>> #####
+>>> a[ :2 ]
+(10, 20)
+>>> a[ :-2 ]
+(10, 20, 30, 40, 50, 60, 70)
+>>> a[ 2: ]
+(30, 40, 50, 60, 70, 80, 90)
+>>> a[ -2: ]
+(80, 90)
+>>> #############################
+>>> a[ ::2 ]
+(10, 30, 50, 70, 90)
+>>> a[ ::-2 ]
+(90, 70, 50, 30, 10)
+>>> a[ :2: ]
+(10, 20)
+>>> a[ :-2: ]
+(10, 20, 30, 40, 50, 60, 70)
+>>> a[ 2:: ]
+(30, 40, 50, 60, 70, 80, 90)
+>>> a[ -2:: ]
+(80, 90)
+>>> #############################
+>>> a[ : ]
+(10, 20, 30, 40, 50, 60, 70, 80, 90)
+>>> a[ :: ]
+(10, 20, 30, 40, 50, 60, 70, 80, 90)
+>>> #############################
+
+How to memorize???
+
+a[ 起點：終點：increment ]
+
+# 'a' = 'a[:]' = 'a[::]'
+
+規矩：
+1. Default方向是 由左往右; increment的default為1(亦即由左往右)
+2. 欄位一與欄位二沒寫的要(依照欄位三所specify之方向或default的往右方向)尊重有寫的！(欄位三沒寫就是default的往右方向)
+3. 「欄位一+欄位二所explicitly specify之方向」與「欄位三所explicitly/implicitly specifies之方向」必須要一致！如果不一致，就印empty content
+   # 欄位一與欄位二只要有一個沒寫(不管欄位三有沒有寫)、方向性的一致性就沒有問題！因為欄位一與欄位二沒寫的必須(依照方向)尊重有寫的。
+4. 一旦方向決定了(一致性也OK)，欄位一與欄位二的defaults就是依照此方向而言的「extreme起點」與「extreme終點」(起點的極值與終點的極值)
+5. 印起點、依照increment印下一個、直至終點(如果終點是explicitly specifies者、就不含終點; 如果終點是implicitly specifies者、就包括終點)
+
+ＳＯＰ
+1. 先看欄位三所述之方向：正數是往右、負數是往左，沒寫就是(default的)往右。
+2. 方向一決定、就知道欄位一與欄位二「誰是起點、誰是終點」
+3. 起點如果沒寫，那就是依照此方向而言的「extreme起點」(此方向起點的極值)。終點如果沒寫，那就是依照此方向而言的「extreme終點」(此方向終點的極值)。
+4. 如果起點與終點的值都有specify，其所述之方向必須與欄位三所述之方向一致，否則就是empty。
+5. 印起點、依照increment(其default為1)印下一個、直至終點(如果終點是explicitly specify者、就不含終點; 如果終點是default的極值、就包括終點)
+
+###################################################################################################################
+
+# Meaning of "a slice is a genuine copy of the original"
+
+>>> a = [ 10, 20, 30, 40, 50, 60, 70, 80, 90 ]
+>>> b = a
+>>> c = a[ : ]
+
+>>> b
+[10, 20, 30, 40, 50, 60, 70, 80, 90]
+>>> c
+[10, 20, 30, 40, 50, 60, 70, 80, 90]
+
+>>> b[5] = 99
+
+>>> b
+[10, 20, 30, 40, 50, 99, 70, 80, 90]
+>>> a
+[10, 20, 30, 40, 50, 99, 70, 80, 90]
+>>> c
+[10, 20, 30, 40, 50, 60, 70, 80, 90]
+
+>>> #####
+
+>>> a = [ 10, 20, 30, [ 40, 50 ], 60, 70, 80, 90 ]
+>>> b = a
+>>> c = a[ : ]
+
+>>> a[3][1] = 99
+
+>>> a
+[10, 20, 30, [40, 99], 60, 70, 80, 90]
+>>> b
+[10, 20, 30, [40, 99], 60, 70, 80, 90]
+>>> c
+[10, 20, 30, [40, 99], 60, 70, 80, 90]
+
+>>> a[1] = 111
+
+>>> a
+[10, 111, 30, [40, 99], 60, 70, 80, 90]
+>>> b
+[10, 111, 30, [40, 99], 60, 70, 80, 90]
+>>> c
+[10, 20, 30, [40, 99], 60, 70, 80, 90]
+
+# Well, a slice is only a SHALLOW copy of the original !
+
+###################################################################################################################
+###################################################################################################################
+###################################################################################################################
+
+The burning question :
+
+    有什麼變數？ 有什麼functions/methods?
+    可以做什麼？不能做什麼？
+    如何知道怎麼用與怎麼做？
+    該怎麼做？
+
+“(要)怎麼做都可以！問題是「(該)怎麼做？」。"
+
+###################################################################################################################
+###################################################################################################################
+###################################################################################################################
+
+Part II : 
+
+    先 A more detailed understanding of 'global' and 'nonlocal' declarations (again)
+
+###################################################################################################################
+
+Remember !!!
+ 
+  assign = declare 
+
+  Default : we are always declaring a variable in the "current namespace" ！！！
+
+# Note : 
+#   The descriptioon of 'global' and 'nonlocal' below is now outdated; it is deliberately left here to show how things in Python could be so easily misunderstood.
+#   For an updated description, please see the one below all examples of 'global' and 'nonlocal' (right above Part III).
+
+'global' :
+
+1. global-var df= a variable that was/will-be delared(=assigned) on the top level (= outside of the definition of any function or class)
+
+2. A global-var (if it already exists) can be refrenced by any function (whatever its level is) without having to be declared to be 'global' by that function (IF the function does not have a local var. with the same name).
+
+3. To change the value of a global-var in a function (whatever its level is), we must use 'global' to declare that the var is global.
+
+4. To declare a var as 'global' (in a function), the var does not have to exist when the system accepts the definition of that function.
+
+'nonlocal' :
+
+1. non-loca-var df= a variable that is declared (whether by using an assignment or a 'nonlocal' declaration) in the IMMEDIATE enclosing function (of the current function).
+
+2. If a var. is only referenced and not declared (whether by using an assignment or a 'nonlocal' declaration) in a function, that var must be either a global variable (second priority) or a variable that is declared (whether by using an assignment or a 'nonlocal' declaration) in the immediate enclosing function (first priority).
+
+3. To declare a var as 'nonlocal', it has to be the case that there is a declaration (whether by using an assignment or a 'nonlocal' declaration) of that var in the immediate enclosing function.
+
+###################################################################################################################
+
+# Function calling sequence : F1() -> F12() -> F123() -> F1234(), with F1234() attempting to reference (and print) a 'nonlocal' variable 'a0319_1348'.
+
+#############################
+
+# Below shows that even when a local variable named a0319_1348 IS defined in F12() before F12() calls F123(), F1234() still cannot "see"
+# a nonlocal var. named a0319_1348 when there is NO local variable named a0319_1348 defined in F123().
+
+# But as long as there is a local var. named a0319_1348 defined in F123() when F123() calls F1234(), F1234() will always "see" 
+# a 'nonlocal' var. named a0319_1348.
+
+>>> def F1() :
+...   
+...   def F12( b12 ) :      # b12  df= whether to define 'a0319_1348' before calling F123()
+...     
+...     def F123( b123 ) :  # b123 df= whether to define 'a0319_1348' before calling F1234()
+...       
+...       def F1234() :     # just to print the value of 'a0319_1348'
+...         print( "Printing the value of a0319_1348 in F1234() :", a0319_1348 )  # so, is there such a local variable (in the IMMEDIATE enclosing function)
+...       # END - F1234()
+...       
+...       # we are now properly within F123()
+...       
+...       if b123 : # I am asked to define 'a0319_1348' before calling F1234()
+...         print( "F123() now defines a0319_1348." )
+...         a0319_1348 = 'Defined in F123()'
+...       else :    # I am asked not to define a0319_1348 before calling F1234()
+...         print( "F123() does not define a0319_1348." )
+...       
+...       print( "F123() now calls F1234()." )
+...       F1234()  # calling F1234() disregarding whether I have defined a local var. named a0319_1348
+...       
+...     # END - F123()
+...     
+...     # we are now properly within F12()
+...     
+...     if b12 :  # we are asked to define 'a0319_1348' before calling F123( )
+...       print( "F12() now defines a0319_1348." )
+...       a0319_1348 = 'Defined in F12()'
+...       print( "F12() now calls F123() with a 'True' argument" )
+...       F123( True )   # "Please also define 'a0319_1348' before calling F1234()"
+...       print( "F12() calls F123() again, but with a 'False' argument" )
+...       F123( False )  # "This time, please do not define 'a0319_1348' before calling F1234()"
+...       
+...     else :    # we are not asked to define 'a0319_1348' before calling F123( )
+...      print( "F12() does not define a0319_1348." )
+...      print( "F12() now calls F123() with a 'True' argument" )
+...      F123( True ) # Please define 'a0319_1348' before calling F1234()
+...     
+...   # END - F12()
+...   
+...   # we are now properly within F1()
+...   
+...   print( "F1() now calls F12( False ) " )
+...   F12( False )  # Do not define 'a0319_1348' ; Let F123() defines it (before it calls F1234())
+...   
+...   print( "F1() now calls F12( True ) " )
+...   F12( True )   # Define 'a0319_1348' ; But see what will happen if F123() defines it (or not defines it) before it calls F1234()
+...   
+... # END - F1()
+... 
+>>> 
+
+
+>>> F1()
+F1() now calls F12( False ) 
+F12() does not define a0319_1348.
+F12() now calls F123() with a 'True' argument
+F123() now defines a0319_1348.
+F123() now calls F1234().
+Printing the value of a0319_1348 in F1234() : Defined in F123()
+F1() now calls F12( True ) 
+F12() now defines a0319_1348.
+F12() now calls F123() with a 'True' argument
+F123() now defines a0319_1348.
+F123() now calls F1234().
+Printing the value of a0319_1348 in F1234() : Defined in F123()
+F12() calls F123() again, but with a 'False' argument
+F123() does not define a0319_1348.
+F123() now calls F1234().
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "<stdin>", line 47, in F1
+  File "<stdin>", line 32, in F12
+  File "<stdin>", line 20, in F123
+  File "<stdin>", line 8, in F1234
+NameError: cannot access free variable 'a0319_1348' where it is not associated with a value in enclosing scope
+
+#############################
+
+# Below shows that a 'nonlocal' declaration of a variable should not appear UNDER an assignment to a variable with the same name.
+# This is a restriction that is enforced by the syntax checker (of the Python interpreter).
+# hsia : what is the rationale underlying this syntax restriction?
+
+>>> def F1() :
+...   
+...   def F12( b12 ) :      # b12  df= whether to define 'a0319_1348' before calling F123()
+...     
+...     def F123( b123 ) :  # b123 df= whether to define 'a0319_1348' before calling F1234()
+...       
+...       def F1234() :     # just to print the value of 'a0319_1348'
+...         nonlocal a0319_1348  # 'a0319_1348' is the-local-with-this-name of the IMMEDIATE enclosing function
+...         print( a0319_1348 )  # so, which one is it
+...       # END - F1234()
+...       
+...       # we are now properly within F123()
+...       
+...       if b123 : # I am asked to define 'a0319_1348' before calling F1234()
+...         a0319_1348 = 'Defined in F123()'    ##### Line 15 (of this script)
+...       
+...       else :                      ####### new #######
+...         nonlocal a0319_1348       ####### new ####### (Line 18)
+...      
+...       F1234()  # calling F1234() no matter what
+...       
+...     # END - F123()
+...     
+...     # we are now properly within F12()
+...     
+...     if b12 :  # we are asked to define 'a0319_1348' before calling F123( )
+...       a0319_1348 = 'Defined in F12()'
+...       print( "F12() now calls F123() with a 'True' argument" )
+...       F123( True )   # "Please also define 'a0319_1348' before calling F1234()"
+...       print( "F12() now calls F123() again with a 'False' argument" )
+...       F123( False )  # "This time, please do not define 'a0319_1348' before calling F1234()"
+...       
+...     else :    # we are not asked to define 'a0319_1348' before calling F123( )
+...      print( "F12() now calls F123() with a 'True' argument" )
+...      F123( True ) # Please define 'a0319_1348' before calling F1234()
+...     
+...   # END - F12()
+...   
+...   # we are now properly within F1()
+...   
+...   print( "Calling F12( False ) " )
+...   F12( False )  # Do not define 'a0319_1348' ; Let F123() defines it (before it calls F1234())
+...   
+...   print( "Calling F12( True ) " )
+...   F12( True )   # Define 'a0319_1348' ; But see what will happen if F123() defines it (or not defines it) before it calls F1234()
+...   
+... # END - F1()
+... 
+  File "<stdin>", line 18
+SyntaxError: name 'a0319_1348' is assigned to before nonlocal declaration
+
+#############################
+
+# Below shows that when a local variable a0319_1348 is declared (via an assignment) in F12() and F123() declares such a
+# 'nonlocal' variable, F1234() will "see" this 'nonlocal' variable (which is actually not declared in the IMMEDIATE
+# enclosing scope).
+
+# In constrast, a global variable can be referenced anywhere (i.e., within any function with an arbitrary nesting level) though, 
+# as long as there is a corresponding 'global' declaration properly appearing in that function.
+
+>>> def F1() :
+...   
+...   def F12( b12 ) :      # b12  df= whether to define 'a0319_1348' before calling F123()
+...     
+...     def F123( b123 ) :  # b123 df= whether to define 'a0319_1348' before calling F1234()
+...       
+...       def F1234() :     # just to print the value of 'a0319_1348'
+...         # global a                ####### new #######
+...         nonlocal a0319_1348  # 'a0319_1348' is the-local-with-this-name of the IMMEDIATE enclosing function
+...         print( a0319_1348 )  # so, which one is it
+...         print( 'Value of the global-var "a" :', a )       ####### new #######
+...       # END - F1234()
+...       
+...       # we are now properly within F123()
+...       
+...       nonlocal a0319_1348       ####### new #######
+...       
+...       if b123 : # I am asked to define 'a0319_1348' before calling F1234()
+...         a0319_1348 = 'Re-Assigned in F123()'
+...      
+...       F1234()  # calling F1234() no matter what
+...       
+...     # END - F123()
+...     
+...     # we are now properly within F12()
+...     
+...     if b12 :  # we are asked to define 'a0319_1348' before calling F123( )
+...       a0319_1348 = 'Defined in F12()'
+...       print( "F12() now calls F123() with a 'True' argument" )
+...       F123( True )   # "Please also define 'a0319_1348' before calling F1234()"
+...       print( 'Value of a0319_1348 is :', a0319_1348, '(printed in F12())' )
+...       
+...       a0319_1348 = 'Defined in F12() again'
+...       print( "F12() now calls F123() again with a 'False' argument" )
+...       F123( False )  # "This time, please do not define 'a0319_1348' before calling F1234()"
+...       print( 'Value of a0319_1348 is :', a0319_1348, '(printed in F12())' )
+...     
+...     else :    # we are not asked to define 'a0319_1348' before calling F123( )
+...       print( "F12() now calls F123() with a 'True' argument" )
+...       F123( True ) # Please define 'a0319_1348' before calling F1234()
+...     
+...   # END - F12()
+...   
+...   # we are now properly within F1()
+...   
+...   print( "Calling F12( False ) " )
+...   F12( False )  # Do not define 'a0319_1348' ; Let F123() defines it (before it calls F1234())
+...   
+...   print( "Calling F12( True ) " )
+...   F12( True )   # Define 'a0319_1348' ; But see what will happen if F123() defines it (or not defines it) before it calls F1234()
+...   
+... # END - F1()
+... 
+>>> F1()
+Calling F12( False ) 
+F12() now calls F123() with a 'True' argument
+Re-Assigned in F123()
+Value of the global-var "a" : 12345
+Calling F12( True ) 
+F12() now calls F123() with a 'True' argument
+Re-Assigned in F123()
+Value of the global-var "a" : 12345
+Value of a0319_1348 is : Re-Assigned in F123() (printed in F12())
+F12() now calls F123() again with a 'False' argument
+Defined in F12() again
+Value of the global-var "a" : 12345
+Value of a0319_1348 is : Defined in F12() again (printed in F12())
+
+#############################
+
+# Below shows that even if there are NO 'nonlocal' declarations for a nonlocal variable (in F1234()), that nonlocal variable (declared
+# in the IMMEDIATE enclosing function F123()) can still be referenced (by F1234()). 
+
+def F1() :
+  
+  def F12( b12 ) :      # b12  df= whether to define 'a0319_1348' before calling F123()
+    
+    def F123( b123 ) :  # b123 df= whether to define 'a0319_1348' before calling F1234()
+      
+      def F1234() :     # just to print the value of 'a0319_1348'
+        # nonlocal a0319_1348  # 'a0319_1348' is the-local-with-this-name of the IMMEDIATE enclosing function
+        print( a0319_1348 )  # so, which one is it
+      # END - F1234()
+      
+      # we are now properly within F123()
+      
+      a0319_1348 = 'Defined in F123()'
+      
+      F1234()
+      
+    # END - F123()
+    
+    # we are now properly within F12()
+    F123( True )
+    
+  # END - F12()
+  
+  # we are now properly within F1()
+  
+  print( "Calling F12( True ) " )
+  F12( True )   # Define 'a0319_1348' 
+  
+# END - F1()
+
+>>> F1()
+Calling F12( True ) 
+Defined in F123()
+
+#############################
+
+# Below shows that if we declare a variable to be nonlocal (in F1234()), that variable has to be declared in the IMMEDIATE
+# enclosing function (F123()). Otherwise, it is a syntax error.
+
+>>> def F1() :
+...   
+...   def F12( b12 ) :      
+...     
+...     def F123( b123 ) :  
+...       
+...       def F1234() :     
+...         nonlocal a0319_1348    # 'a0319_1348' is the-local-with-this-name of the IMMEDIATE enclosing function
+...         # print( a0319_1348 )  # but no reference of 'a0319_1348' in this function
+...       # END - F1234()
+...       
+...       # we are now properly within F123()
+...       
+...       # a0319_1348 = 'Defined in F123()'   # no such var in the IMMEDIATE enclosing function
+...       
+...       F1234()
+...       
+...     # END - F123()
+...     
+...     # we are now properly within F12()
+...     F123( True )
+...     
+...   # END - F12()
+...   
+...   # we are now properly within F1()
+...   
+...   print( "Calling F12( True ) " )
+...   F12( True )    
+...   
+... # END - F1()
+... 
+  File "<stdin>", line 8
+SyntaxError: no binding for nonlocal 'a0319_1348' found
+
+#############################
+
+# Below shows that a variable CAN BE declared to be 'global' even when there are no such global variables.
+
+>>> def F2023_0320() :
+...   global a2023_0320_1400 
+...   a = 10
+... 
+>>>
+
+#############################
+
+# Below shows that when there is a name conflict between global variables and nonlocal variables, nonlocal variables
+# take precedence over global variables with the same name.
+
+def F1() :
+  
+  def F12( b12 ) :      
+    
+    def F123( b123 ) :  
+      
+      def F1234() :     # just to print the value of 'a'
+        print( a )      # so, which one is it (nonlocal or global)?
+      # END - F1234()
+      
+      # we are now properly within F123()
+      
+      a = 'Defined in F123()'
+      
+      F1234()
+      
+    # END - F123()
+    
+    # we are now properly within F12()
+    F123( True )
+    
+  # END - F12()
+  
+  # we are now properly within F1()
+  
+  print( "Calling F12( True ) " )
+  F12( True )   # Define 'a0319_1348' 
+  
+# END - F1()
+
+>>> a = 10
+>>> 
+>>> F1()
+Calling F12( True ) 
+Defined in F123()
+
+#############################
+
+# This example has been shown before. It was the very first example. We put it here again, because the next example modifies it in an important way.
+
+# Below shows that even when a local variable named a0319_1348 IS defined in F12() before F12() calls F123(), F1234() still cannot "see"
+# a nonlocal var. named a0319_1348 when there is NO local variable named a0319_1348 defined in F123().
+
+# But as long as there is a local var. named a0319_1348 defined in F123() when F123() calls F1234(), F1234() will always "see" 
+# a 'nonlocal' var. named a0319_1348.
+
+def F1() :
+  
+  def F12( b12 ) :      # b12  df= whether to define 'a0319_1348' before calling F123()
+    
+    def F123( b123 ) :  # b123 df= whether to define 'a0319_1348' before calling F1234()
+      
+      def F1234() :     # just to print the value of 'a0319_1348'
+        # nonlocal a0319_1348  # 'a0319_1348' is the-local-with-this-name of the IMMEDIATE enclosing function
+        print( "Printing the value of a0319_1348 in F1234() :", a0319_1348 ) 
+        print( "Also printing the value of the global-var 'a' in F1234() :", a )    
+      # END - F1234()
+      
+      # we are now properly within F123()
+      
+      if b123 : # I am asked to define 'a0319_1348' before calling F1234()
+        print( "F123() now defines a0319_1348." )
+        a0319_1348 = 'Re-Assigned in F123()'
+      else :    # I am not asked to define 'a0319_1348' before calling F1234()
+        print( "F123() does not define a0319_1348." )
+      
+      print( "F123() now calls F1234()." )
+      F1234()  # calling F1234() no matter what
+      
+    # END - F123()
+    
+    # we are now properly within F12()
+    
+    if b12 :  # we are asked to define 'a0319_1348' before calling F123( )
+      print( "F12() now defines a0319_1348" )
+      a0319_1348 = 'Defined in F12()'
+      print( 'Value of a0319_1348 is :', a0319_1348, '(printed in F12() before calling F123())' )
+      
+      print( "F12() now calls F123() with a 'True' argument" )
+      F123( True )   # "Please also define 'a0319_1348' before calling F1234()"
+      print( 'Value of a0319_1348 is :', a0319_1348, '(printed in F12() after calling F123())' )
+      
+      print( "F12() now calls F123() again with a 'False' argument" )
+      F123( False )  # "This time, please do not define 'a0319_1348' before calling F1234()"
+      print( 'Value of a0319_1348 is :', a0319_1348, '(printed in F12() after calling F123())' )
+    
+    else :    # we are not asked to define 'a0319_1348' before calling F123( )
+      print( "F12() does not define a0319_1348." )
+      print( "F12() now calls F123() with a 'True' argument" )
+      F123( True ) # Please define 'a0319_1348' before calling F1234()
+    
+  # END - F12()
+  
+  # we are now properly within F1()
+  
+  print( "Calling F12( False ) in F1() " )
+  F12( False )  # Do not define 'a0319_1348' ; Let F123() defines it (before it calls F1234())
+  
+  print( "Calling F12( True ) in F1() " )
+  F12( True )   # Define 'a0319_1348' ; But see what will happen if F123() defines it (or not defines it) before it calls F1234()
+  
+# END - F1()
+
+>>> F1()
+Calling F12( False ) in F1() 
+F12() does not define a0319_1348.
+F12() now calls F123() with a 'True' argument
+F123() now defines a0319_1348.
+F123() now calls F1234().
+Printing the value of a0319_1348 in F1234() : Re-Assigned in F123()
+Also printing the value of the global-var 'a' in F1234() : 10
+Calling F12( True ) in F1() 
+F12() now defines a0319_1348
+Value of a0319_1348 is : Defined in F12() (printed in F12() before calling F123())
+F12() now calls F123() with a 'True' argument
+F123() now defines a0319_1348.
+F123() now calls F1234().
+Printing the value of a0319_1348 in F1234() : Re-Assigned in F123()
+Also printing the value of the global-var 'a' in F1234() : 10
+Value of a0319_1348 is : Defined in F12() (printed in F12() after calling F123())
+F12() now calls F123() again with a 'False' argument
+F123() does not define a0319_1348.
+F123() now calls F1234().
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "<stdin>", line 54, in F1
+  File "<stdin>", line 38, in F12
+  File "<stdin>", line 22, in F123
+  File "<stdin>", line 9, in F1234
+NameError: cannot access free variable 'a0319_1348' where it is not associated with a value in enclosing scope
+
+
+#############################
+
+# The main difference between this example and the above example is 
+#   1. The 'nonlocal' declaration in F1234() is now enacted.
+#      (In the above example, the same 'nonlocal' declaration in F1234() was commented.)
+#   2. There is an assignment of 'a0319_1348' in F1234()
+# 
+# Things to note : 
+#   1. The system does not give any error msg. when 'a0319_1348' is said to be 'nonlocal' by F1234() and there is actually no 'a0319_1348' in F123().
+#   2. Furthermore, if F1234() assigns something to this supposedly non-existent nonlocal, F123() suddenly HAVE it!!!
+
+def F1() :
+  
+  def F12( b12 ) :      # b12  df= whether to define 'a0319_1348' before calling F123()
+    
+    def F123( b123 ) :  # b123 df= whether to define 'a0319_1348' before calling F1234()
+      
+      def F1234() :     # just to print the value of 'a0319_1348'
+        print( "a0319_1348 is declared to be nonlocal in F1234()." )
+        nonlocal a0319_1348  # 'a0319_1348' is the-local-with-this-name of the IMMEDIATE enclosing function
+        # print( "Printing the value of a0319_1348 in F1234() :", a0319_1348 )
+        print( "Printing the value of the global-var 'a' in F1234() :", a )
+        print( "F1234() now assigns something to a0319_1348." )
+        a0319_1348 = "Assigned in F1234()."
+      # END - F1234()
+      
+      # we are now properly within F123()
+      
+      if b123 : # I am asked to define 'a0319_1348' before calling F1234()
+        print( "F123() now defines a0319_1348." )
+        a0319_1348 = 'Assigned in F123()'
+        print( "Printing the value of a0319_1348 in F123() :", a0319_1348 )
+      else :    # I am not asked to define 'a0319_1348' before calling F1234()
+        print( "F123() does not define a0319_1348." )
+      
+      print( "F123() now calls F1234()." )
+      F1234()  # calling F1234() no matter what
+      print( "Printing the value of a0319_1348 in F123() (after calling F1234()) :", a0319_1348 )
+      
+    # END - F123()
+    
+    # we are now properly within F12()
+    
+    if b12 :  # we are asked to define 'a0319_1348' before calling F123( )
+      print( "F12() now defines a0319_1348" )
+      a0319_1348 = 'Defined in F12()'
+      print( 'Printing the value of a0319_1348 in F12() (before calling F123()) :', a0319_1348 )
+      
+      print( "F12() now calls F123() with a 'True' argument" )
+      F123( True )   # "Please also define 'a0319_1348' before calling F1234()"
+      print( 'Printing the value of a0319_1348 in F12() (after calling F123()) :', a0319_1348 )
+      
+      print( "F12() now calls F123() again with a 'False' argument" )
+      F123( False )  # "This time, please do not define 'a0319_1348' before calling F1234()"
+      print( 'Again printing the value of a0319_1348 in F12() (after calling F123()) :', a0319_1348 )
+    
+    else :    # we are not asked to define 'a0319_1348' before calling F123( )
+      print( "F12() does not define a0319_1348." )
+      print( "F12() now calls F123() with a 'True' argument" )
+      F123( True ) # Please define 'a0319_1348' before calling F1234()
+    
+  # END - F12()
+  
+  # we are now properly within F1()
+  
+  print( "Calling F12( False ) in F1() " )
+  F12( False )  # Do not define 'a0319_1348' ; Let F123() defines it (before it calls F1234())
+  
+  print( "Calling F12( True ) in F1() " )
+  F12( True )   # Define 'a0319_1348' ; But see what will happen if F123() defines it (or not defines it) before it calls F1234()
+  
+# END - F1()
+
+>>> F1()
+Calling F12( False ) in F1() 
+F12() does not define a0319_1348.
+F12() now calls F123() with a 'True' argument
+F123() now defines a0319_1348.
+Printing the value of a0319_1348 in F123() : Assigned in F123()
+F123() now calls F1234().
+a0319_1348 is declared to be nonlocal in F1234().
+Printing the value of the global-var 'a' in F1234() : 10
+F1234() now assigns something to a0319_1348.
+Printing the value of a0319_1348 in F123() (after calling F1234()) : Assigned in F1234().
+Calling F12( True ) in F1() 
+F12() now defines a0319_1348
+Printing the value of a0319_1348 in F12() (before calling F123()) : Defined in F12()
+F12() now calls F123() with a 'True' argument
+F123() now defines a0319_1348.
+Printing the value of a0319_1348 in F123() : Assigned in F123()
+F123() now calls F1234().
+a0319_1348 is declared to be nonlocal in F1234().
+Printing the value of the global-var 'a' in F1234() : 10
+F1234() now assigns something to a0319_1348.
+Printing the value of a0319_1348 in F123() (after calling F1234()) : Assigned in F1234().
+Printing the value of a0319_1348 in F12() (after calling F123()) : Defined in F12()
+F12() now calls F123() again with a 'False' argument
+F123() does not define a0319_1348.
+F123() now calls F1234().
+a0319_1348 is declared to be nonlocal in F1234().
+Printing the value of the global-var 'a' in F1234() : 10
+F1234() now assigns something to a0319_1348.
+Printing the value of a0319_1348 in F123() (after calling F1234()) : Assigned in F1234().
+Again printing the value of a0319_1348 in F12() (after calling F123()) : Defined in F12()
+
+#############################
+
+>>> def F0402_1435() :
+...   global a0402_1435
+...   a0402_1435 = 'Defined in F0402_1435()'
+... 
+>>> 
+
+
+>>> F0402_1435()
+
+>>> a0402_1435
+'Defined in F0402_1435()'
+
+###################################################################################################################
+
+Summary about 'global' (again) :
+
+1. global-var df= a variable that was/will-be delared(=assigned) on the top level (= outside of the definition of any function or class)
+
+2. A global-var (if it already exists) can be refrenced by any function (whatever its level is) without having to be declared to be 'global' by that function (IF the function does not have a local var. with the same name).
+
+3. To change the value of a global-var in a function (whatever its level is), we must use 'global' to declare that the var is global.
+
+4. To declare a var as 'global' (in a function), the var does not have to exist when the system accepts the definition of that function. 
+
+5. If the var declared as 'global' in a function F() does not exist before F() is called, then after F() defines (= assigns some something to) the presumed gloval var, the var starts to exist as a module-var on the top level.
+
+Summary about 'nonlocal' :
+
+1. non-loca-var df= a variable that is declared (whether by using an assignment or a 'nonlocal' declaration) in the IMMEDIATE enclosing function (of the current function).
+
+2. If a var. that is not a local var. is only referenced and not declared (whether by using an assignment or a 'nonlocal' declaration) in a function, that var must be either a global variable (second priority) or a variable that is declared (whether by using an assignment or a 'nonlocal' declaration) in the immediate enclosing function (first priority).
+
+3. To declare a var as 'nonlocal', it does NOT have to be the case that there is a declaration (whether by using an assignment or a 'nonlocal' declaration) of that var in the immediate enclosing function; it CAN BE the case that this var. is declared (= assigned) in the "being enclosed function" ; this, in turn, has the effect of making the 'nonlocal' var. a local var of the immediate enclosing function.
+
+# hsia : 比起"天書"(see p. 93, reference.pdf (version 3.7.4), 對'global'與'nonlocal'的描述)，此處的說明應清楚多了！
+
+###################################################################################################################
+
+-------------------------------------------- A Python bug ？？？？？？？ ------------------------------------------
+
+>>> sys.version       # just to make sure we are not working with, e.g., python3.9
+'3.11.1 (main, Dec 23 2022, 09:25:32) [Clang 13.0.0 (clang-1300.0.29.30)]'
+
+# An okay version
+
+def F3() :
+  def F31( b31 ) :
+    def F312( b312 ) :
+      def F3123() :
+        print( a333 )
+      # if b312 :
+      #   a333 = 335
+      print( a333 )
+      F3123()
+    # if b31 :
+    a333 = 333     # will go into the if-clause in the modified code below
+    F312( True )
+    F312( False )
+  F31( True )      # this 'True' has no effect (for the execution of F31()) for the moment
+
+>>> F3()
+333
+333
+333
+333
+
+---------------------------------------------------------------
+
+# A still okay version
+
+def F3() :
+  def F31( b31 ) :
+    def F312( b312 ) :
+      def F3123() :
+        print( a333 )
+      # if b312 :
+      #   a333 = 335
+      print( a333 )
+      F3123()
+    if b31 :
+      a333 = 333         # now go into the if-clause
+    F312( True )
+    F312( False )
+  F31( True )            # so that this 'True' has an effect (on the execution of F31())
+
+>>> F3()
+333
+333
+333
+333
+
+---------------------------------------------------------------
+
+# One more still okay version 
+
+def F3() :
+  def F31( b31 ) :
+    def F312( b312 ) :
+      def F3123() :
+        print( a333 )
+      # if b312 :
+      #   a333 = 335
+      print( a333 )
+      F3123()
+    if b31 :
+      a333 = 333
+    F312( True )
+    F312( False )
+  F31( True )
+  F31( False )    # <----- just to ask that no 'a333' be defined (in F31())
+
+>>> F3()
+333
+333
+333
+333
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "<stdin>", line 15, in F3
+  File "<stdin>", line 12, in F31
+  File "<stdin>", line 8, in F312
+NameError: cannot access free variable 'a333' where it is not associated with a value in enclosing scope
+>>> 
+---------------------------------------------------------------
+
+# 完蛋 version 
+
+def F3() :
+  def F31( b31 ) :
+    def F312( b312 ) :
+      def F3123() :
+        print( a333 )
+      if b312 :        ### <--- new
+        a333 = 335     ### <--- new
+      print( a333 )                          # Error occurs on this line ("there is no such thing as 'a333'")
+      F3123()
+    if b31 :
+      a333 = 333                             # this line HAS BEEN executed (since 'b31' is true)
+    F312( True )     # "Please define your own 'a333'
+    F312( False )    # "Please do not define your own 'a333'  # Error occurs on this call
+  F31( True )                                # Error occurs on this call
+  F31( False ) 
+
+>>> F3()
+335
+335
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "<stdin>", line 14, in F3
+  File "<stdin>", line 13, in F31
+  File "<stdin>", line 8, in F312
+UnboundLocalError: cannot access local variable 'a333' where it is not associated with a value
+
+###################################################################################################################
+
+Part III : private vs. protected vs. public ; static vs. non-static (again)
+
+###################################################################################################################
+
+1. Python只有public的概念, 沒有private 或 protected的概念 ＃ hsia: 可能是與沒有explicit declaration有關
+
+# hsia : 完全要靠naming convention 與 自我約束 來做到  private、protected、public  與  static、non-static (如果有此方面的考量的話)
+
+2. module (=file) 之中的 '_varName'（底線開頭。至於varName本身是否有底線開頭與底線結尾已與右方所述之module import規矩不相關）當 from module123 import * 時、不會被import進來。However, we can can always use 'Module123._varName' to access such variables/module-attributes。 我們在一般程式碼中不該去存或取這些變數或呼叫這些functions.   # hsia : 因為這是module-static的概念！
+
+3. class之中的 '_dataMember123'（單底線開頭者）是「希望能比照」一般OOP的'protected'的概念，與系統運作無關。這只是在提醒"外人"(＝非descendent-class者)不要去動它。系統並不強制控管此事。
+
+4. 同樣的，class之中的 '__dataMember456'或‘＿dataMember789_'（雙底線開頭，頂多一個底線結尾）是「希望能比照」一般OOP的'private'的概念，programmers自己應當要注意不要去動它。系統雖然也是一樣不強制控管此事，但有作name mangling。
+
+e.g., 。>> from SomeModule import SomeClass ; anObject = SomeClass() <<  之後， 原先應是anObject.__dataMember456或anObject.__dataMember789_或anObject.__memberFunction789()或anObject.__memberFunction999_()的，現在改名為anObject._SomeClass__dataMember456或anObject._SomeClass__dataMember789_或anObject._SomeClass__memberFunction789()或anObject._SomeClass__memberFunction999_()。
+
+5. 至於'__dataMember999__'與'__memberFunction888__()'（既雙底線開頭又雙底線結尾的名字-不管是變數名稱還是function/method名稱）這種名字是系統在用的，通常是「可能與系統的運作有關」(e.g., __le__()是系統在執行'<='時會呼叫者)。我們在一般程式碼中不該使用這樣的名字。
+
+6. 至於另外兩種static：(a) static local variables (of a function/method) (b) class static (used for declaring class methods/data-members)
+
+6(a) For class static, Python已用其獨特要求移除大部分障礙：
+
+       一個method在呼叫「自己或自己家的function」或是access「自己或自己家的變數(data member)」時一定要説   是ClassName.Func123()、還是self.Func123()、還是ClassName.var456、還是self.var456。(不像一般的OOP語言，可以不寫'ClassName'或'this'(='self'))
+
+       唯一的問題是： self.var456有可能是個class data member(如果instance不曾assign過任何值給self.var456的話)，而這是OOP的老問題。本來類似的狀況也可能會在呼叫「自己或自己家的function」時發生，但此部分已因「Python不接受function overload、而又要求必須在呼叫時寫清楚是ClassName.Func123()還是self.Func123()」而自動獲得解決。
+
+  (一) Class method (class member function)，只要在define method時  不放  'self' 這個parameter  即可
+       同樣的，instance method (instance member function)，只要在define method時  放  'self' 這個parameter  即可
+       Python不接受function overload(即不同的functions使用同一名字)，所以也不會有Class1.Func123()「既有可能是class method、也有可能是instance method」的問題。
+
+  (二) 若是class data member，必須保證所有的instance method都不會自行宣告(=assign)一個同名稱的變數才行！此時一個比較好的作法是
+            將此class data member宣告(=assign)為__dataMember123___(雙底線開頭三底線結尾)
+
+6(b) For static local variables (of a function/method), 我們可在module或class中宣告(=assign)一個變數，其名稱或為_funcName_varName(如果是module的話)、或為__methodName_varName___(如果是class的話)
+
+#############################
+
+如何在寫Python script時 實作 private、protected、public  與  static、non-static (如果有此方面的考量的話)  -  該怎麼做？？？
+
+### 一切要靠naming convention 與 寫程式人的良心 ！！！ 系統只提供了聊勝於無的小小幫助(不import '_'開頭者 與 name mangling for '__'開頭者) ### 
+
+# hsia : Below shows why syntax-restrictions in Python are necessary for different levels of software development.
+  
+Module (=file) 之中不想被別人動的變數或functions : 就 '_varName' 或 '_FuncName()' 或 '__varName' 或 '__FuncName()', etc.（底線開頭） # module-static
+
+Class之中不想被「非我族類」(＝非descendent-class者)動的變數或functions : 就 '_dataMember123' 或 '_FuncName()'（單底線開頭）。 # class-protected
+
+Class之中不想被任何「非我家人」(＝非本class者)動的變數或functions : 就 '__dataMember123' 或 '__FuncName()'（雙底線開頭）。 # class-private
+但注意頂多只能一個底線結尾。
+
+除非是自己的“自製系統”要用到，否則不准使用雙底線開頭又雙底線結尾的變數名稱或function/method名稱(e.g., __var123__ 與 __Func567__() )。
+
+Static local variables (of a function/method)的名稱必須是 __funcName_varName(如果是module的話) 或 __methodName_varName___(如果是class的話)
++
+__funcName_varName(如果是module的話) 或 __methodName_varName___(如果是class的話) 必須事先有在module/class中宣告(= assign)
+
+Class static method (即class member function) ： 在define method時  不放  'self'這個parameter # Python系統有支援此做法
+
+Class static data member (即class data member) ： 
+
+  將此class data member宣告(=assign)為  __dataMember123___  (雙底線開頭、三底線結尾)
+  +
+  Never write something like 'self.__varName___ = ...' (in an instance method)
+
+剩下的就只能靠禱告了：祈求寫程式的人能尊重這些不成文的規矩(否則一切完矣...)。  
+
+##### 能不reference最好！能不看更好！！但最最起碼也千萬不要update！！！ #####
+
+#############################
+
+A comprehensive example for private/protected/public and static/non-static
+
+#############################
+
+... # see below
+
+###################################################################################################################
+
+Part IV : 有什麼變數與什麼functions/methods？如何知道怎麼用？
+
+#############################
+
+Function之中可以用的names =  declared (= assigned) local var. + para.
+(假設function名為'F')      + 所屬module的namespace裏的所有names (即'dir()'所得之結果，應是與'sorted( dict( F.__globals__ ) )'所得之結果相同) 
+                            - 但若要update module-var、就必須要有作'global'宣告(否則同名之var以local var為優先)
+                          + 所屬class的(合乎規矩、可呼叫的)function names
+                          + 所屬class的class variable names(若與declared local var.同名則以local var為優先)
+                          + 所屬class (或所屬module)的IMMEDIATE enclosing function的local variable names (與para. names?)
+                            - 但若要update immediate enclosing function中的local variable names (與para. names?)、就必須要有作'nonlocal'宣告(否則同名之var以local var為優先)
+                          + if instance method, then 自己(即self)有declare (= assign)過的instance variable names (即：self.xyz)
+                          + sorted( dict( F.__builtins__ ) )之中所列出的names (應與'dir(__builtins__)'同。大家應都是一樣)
+                          + ModuleName.name, where 'ModuleName' is 所屬module所import的module and 'name' appears in dir( ModuleName )
+                            # 強烈建議除非with very good reasons、應該用'import ModuleName as abbreviation'而不要用'from ModuleName import *'
+
+########### Some preliminaries ###########
+
+# vars( anInstance )             OR    dict( vars( SomeClass ))   OR  vars( SomeModule )
+
+# sorted( vars( anInstance ) )   OR    sorted( vars( SomeClass )) OR  sorted( vars( SomeModule ))
+  vs.
+# dir( anInstance )              OR    dir( SomeClass )           OR  dir( SomeModule )
+
+# if 'vars()' or 'dir()' is called with no argument, then what is referred to is the current top-level "module"
+
+dir( <傢伙> ) : 這傢伙的namespace之中  有這些names存在  (尤其要注意雙底線開頭與雙底線結尾者、這些傢伙具有特殊意義者)
+
+vars( <傢伙> ) : 這傢伙的namespace之中  由它自己所宣告的names (亦即：這傢伙的symbol table的內容)
+                # vars( <傢伙> )只是列出此傢伙的__dict__ ( = 此傢伙的symbol table (用以儲存namespace之中目前真正有的(已宣告的) ) 的內容  而已
+
+亦即：  ( "傢伙" df= AnInstance 或 SomeClass 或 SomeModule )
+
+  此傢伙的"namespace" ( 此傢伙的dir()所得之結果 )     =  此傢伙可用之names (可呼叫的functions與可reference的data)
+
+  此傢伙的"symbol-table" ( 此傢伙的vars()所得之結果 ) =  此傢伙自己所宣告( '='或':='或'def' )之names = 專屬於此傢伙自己的names (存於其__dict__之中)
+
+  # vars( <傢伙> )  是  dir( <傢伙> ) 的子集合
+
+# 每個instance、class/type、module都有一個"symbol table" (存於其__dict__之中) 
+# "Symbol table"的內容是永久性的 (if it is not associated with an instance)  # Instance只要存在、其"symbol table"當然也是永久性
+# Function definition也有一個"symbol table"，但"instance of function call"沒有！  
+# "Instance of function call"有的    ---是---    activation record！
+
+# Note :
+#   A function-definition is an object in its own right. 
+#   Therefore, a function-definition's attributes (see 'dir( F )') may not have to do with 「此function(的code body)之中可以用的names」
+
+>>> dir(F3)
+['__annotations__', '__builtins__', '__call__', '__class__', '__closure__', '__code__', '__defaults__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__get__', '__getattribute__', '__getstate__', '__globals__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__kwdefaults__', '__le__', '__lt__', '__module__', '__name__', '__ne__', '__new__', '__qualname__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__']
+
+>>> sorted( vars( F3))
+[]
+
+>>> F3.__call__()
+335
+335
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "<stdin>", line 14, in F3
+  File "<stdin>", line 13, in F31
+  File "<stdin>", line 8, in F312
+UnboundLocalError: cannot access local variable 'a333' where it is not associated with a value
+
+
+
+
+# Note to the instructor :
+#   An introduction of the difference and relation between "symbol tables" (and their associated "namespaces") and activation-records in Python is appropriate/necessary at this point ！！！
+
+
+
+
+# Relevant system-level commands
+
+dir( x )
+help( x.whatever )
+
+type( x )
+help( TypeOfX.whatever )
+
+vars( x )    OR   sorted( dict( vars( x )))
+
+# Examples :
+
+>>> help( (5).bit_count )
+>>> help( x.index )        # 'x' is a list ; we know it has 'index' after we run 'dir(x)'
+>>> help( (4.3).__abs__ )
+
+>>> (4.3).__abs__( )
+>>> (4.3).__ceil__( )
+>>> (4.3).__ne__( 4.3 )
+
+###########################################
+########### Let out the beast！ ###########
+###########################################
+
+<HOME-DIR>/PythonProj/Testing
+> python3.11
+Python 3.11.1 (main, Dec 23 2022, 09:25:32) [Clang 13.0.0 (clang-1300.0.29.30)] on darwin
+Type "help", "copyright", "credits" or "license" for more information.
+>>> 
+>>> import os, sys
+>>> 
+>>> sys.path
+['', '<HOME-DIR>/bin', '<HOME-DIR>/PythonProj/Testing', '/opt/homebrew/Cellar/python@3.11/3.11.1/Frameworks/Python.framework/Versions/3.11/lib/python311.zip', '/opt/homebrew/Cellar/python@3.11/3.11.1/Frameworks/Python.framework/Versions/3.11/lib/python3.11', '/opt/homebrew/Cellar/python@3.11/3.11.1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/lib-dynload', '<HOME-DIR>/Library/Python/3.11/lib/python/site-packages', '/opt/homebrew/lib/python3.11/site-packages']
+>>> 
+>>> 
+>>> dir()     # names that exist in the "namespace" of this "top-level (module)"
+['__annotations__', '__builtins__', '__doc__', '__loader__', '__name__', '__package__', '__spec__', 'os', 'sys']
+>>> 
+>>> 
+>>> vars()    # symbole table of this top-level "module"
+{'__name__': '__main__', '__doc__': None, '__package__': None, '__loader__': <class '_frozen_importlib.BuiltinImporter'>, '__spec__': None, '__annotations__': {}, '__builtins__': <module 'builtins' (built-in)>, 'os': <module 'os' (frozen)>, 'sys': <module 'sys' (built-in)>}
+>>> 
+>>> 
+>>> sorted( vars() )
+['__annotations__', '__builtins__', '__doc__', '__loader__', '__name__', '__package__', '__spec__', 'os', 'sys']
+
+# so, for our top-level "module" at least, its "namespace" contains what it has declared (and stored in its symbol table)
+
+# let us now see what the values of these globals are
+
+>>> __annotations__
+{}
+
+>>> __builtins__
+<module 'builtins' (built-in)>
+
+>>> __doc__
+>>> 
+
+# the above shows that the value of '__doc__' is 'None' (i.e., it does have a value ; it is just that its value is 'None')
+
+# you can use 'vars()' to confirm this
+
+>>> None   # just to be sure (the evaluation of 'None' is empty)
+>>> 4      # just to be sure (the evaluation of '4' is '4')
+4
+
+>>> eval( "None" )
+>>> eval( "4" )
+4
+
+# For those who wrote or are writting PL projects, the above should remind you of something ...
+
+>>> __loader__
+<class '_frozen_importlib.BuiltinImporter'>
+
+>>> __name__
+'__main__'
+
+>>> __package__
+
+>>> __spec__
+
+# a simple recap : 
+#   the top-level (a fictitious "module") is accorded (by the Python system) a "symbol table" (a dict) from the start, many of the data contained in this "symbol table" are defaulted to be 'None'
+
+# you can use 'import StartUpScript as sos ; sos.pprint( vars() )' to see it more clearly.
+
+# we now use functions and class instances to reference these module-globals
+
+>>> def F() :
+...   print( __annotations__ )
+...   print( __name__ )
+... 
+>>>
+
+>>> class C :
+...   def F( self ) :
+...     print( __annotations__ )
+...     print( __name__ )
+...   
+...   def G() :
+...     print( __annotations__ )
+...     print( __name__ )
+... 
+>>>
+
+>>> aClassC = C()
+
+>>> aClassC.F()
+{}
+__main__
+
+>>> C.G()
+{}
+__main__
+
+>>> F()
+{}
+__main__
+
+# What about our marvelous module 'StartUpScript.py'
+
+>>> import StartUpScript as sos    # instead of 'from StartUpScript import *' ; just trying to make things clearer
+
+>>> sos.B( 'pwd' )
+<HOME-DIR>/PythonProj/Testing
+
+>>> sos.B( 'echo $PYTHONPATH' )    # this is the reason why we have '<HOME-DIR>/bin' in sys.path
+<HOME-DIR>/bin:
+
+>>> sos.B( 'ls ~/bin' )            # this is why we were able to 'import StartUpScript' in the above
+Date			PyTest01.py		StartUpScript.py	__pycache__		argParseProg03Out
+PyCharmCommon.py	PyTest02.py		Temp			argParseProg03In
+
+>>> dir( sos )                     # just to recall what we have in the module named 'StartUpScript' (its alias is 'sos' here)
+['B', 'S', '__builtins__', '__cached__', '__doc__', '__file__', '__loader__', '__name__', '__package__', '__spec__', 'os', 'pprint', 'subprocess', 'sys']
+
+>>> sorted( vars( sos ))           # the symbol table of this module
+['B', 'S', '__builtins__', '__cached__', '__doc__', '__file__', '__loader__', '__name__', '__package__', '__spec__', 'os', 'pprint', 'subprocess', 'sys']
+
+# so, as it seems, the namespace of the module 'StartUpScript' contains exactly what it has in its symbol table
+
+# what about the object named 'aClassC' (an instance of the class 'ClassC')
+
+>>> dir( aClassC ) # names that the object named 'aClassC' can directly access (note the use of '__' before and after each name)
+['F', 'G', '__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__']
+
+>>> sorted( vars( aClassC ))       # symbol table of the object named 'aClassC'
+[]
+
+# indeed, the object named 'aClassC' did not declare anything in its own "namespace"
+# therefore, for 'aClassC' at least, everything in its "namespace" either comes from its class (and ancestor classes?) or system defaults
+
+>>> aClassC.__class__
+<class '__main__.C'>
+
+>>> aClassC.__module__
+'__main__'
+
+# The "module" named '__main__' : 
+#     a fictitious module ; we refer to it as 「our top-level "module"」 ; it is also known as "the top level"
+# 
+# Every module has a name (the value of its __name__ attribute) ; our fictitious top-level "module" is named '__main__'
+# Here, the class 'C' is a class defined in this (fictitious) top-level "module"
+
+>>> __name__
+'__main__'
+
+>>> help( aClassC.__sizeof__ )
+
+       Help on built-in function __sizeof__:
+
+       __sizeof__() method of __main__.C instance
+           Size of object in memory, in bytes.
+
+>>> aClassC.__sizeof__()
+24
+
+# what do we have in our top-level "module" now 
+
+>>> dir()
+['C', 'F', '__annotations__', '__builtins__', '__doc__', '__loader__', '__name__', '__package__', '__spec__', 'aClassC', 'os', 'sos', 'sys']
+
+>>> sorted( vars() )
+['C', 'F', '__annotations__', '__builtins__', '__doc__', '__loader__', '__name__', '__package__', '__spec__', 'aClassC', 'os', 'sos', 'sys']
+
+# recall that our top-level "module" is named '__main__'
+# we now show that every module (including our top-level, fictitious "module") has a name
+
+>>> sos.__name__
+'StartUpScript'
+
+>>> sys.__name__
+'sys'
+
+# now let us see how well Python works regarding access-protections
+
+#############################
+
+# A comprehensive example for private/protected/public and static/non-static - START
+
+#############################
+
+>>> sos.B( 'cat ~/bin/PyTestOfFandC.py' )
+# File name : PyTestOfFandC.py
+
+aOfFandC     = 10
+bOfFandC_    = 20
+_cOfFandC    = 30
+_dOfFandC_   = 40
+__eOfFandC   = 50
+__fOfFandC_  = 60
+__gOfFandC__ = 70
+
+def F() :
+  print( "__name__ printed from the module named 'PyTestOfFandC' :" )
+  print( __name__ )
+
+class C :
+  def F( self ) :
+    print( "__name__ printed from the module named 'PyTestOfFandC' :" )
+    print( __name__ )
+  
+  def G() :
+    print( "__name__ printed from the module named 'PyTestOfFandC' :" )
+    print( __name__ )
+
+def PrintModuleVar() :
+  print( "Value of aOfFandC :",     aOfFandC )
+  print( "Value of bOfFandC :",     bOfFandC_ )
+  print( "Value of _cOfFandC :",    _cOfFandC )
+  print( "Value of _dOfFandC_ :",   _dOfFandC_ )
+  print( "Value of __eOfFandC :",   __eOfFandC )
+  print( "Value of __fOfFandC_ :",  __fOfFandC_ )
+  print( "Value of __gOfFandC__ :", __gOfFandC__ )
+
+
+>>> import PyTestOfFandC as testFC
+
+>>> dir( testFC )
+['C', 'F', 'PrintModuleVar', '__builtins__', '__cached__', '__doc__', '__eOfFandC', '__fOfFandC_', '__file__', '__gOfFandC__', '__loader__', '__name__', '__package__', '__spec__', '_cOfFandC', '_dOfFandC_', 'aOfFandC', 'bOfFandC_']
+
+>>> testFC.F()
+__name__ printed from the module named 'PyTestOfFandC' :
+PyTestOfFandC
+
+# this is not surprising
+# but how about this ???
+
+>>> from PyTestOfFandC import *    ### <---------------------------------------- (watch out!)
+
+>>> dir()
+['C', 'F', 'PrintModuleVar', '__annotations__', '__builtins__', '__doc__', '__loader__', '__name__', '__package__', '__spec__', 'aClassC', 'aOfFandC', 'bOfFandC_', 'os', 'sos', 'sys', 'testFC']
+
+# we see that module-vars with names starting with '_' are not imported (thereby becoming names of the current "namespace")
+
+# therefore,
+>>> __name__
+'__main__'
+
+>>> F()
+__name__ printed from the module named 'PyTestOfFandC' :
+PyTestOfFandC
+
+# Good! the '__name__' referenced by this F() (which is actually PyTestOfFandC.F() and not our original, locally defined F()) is still 'PyTestOfFandC.__name__' and not the local '__name__' here
+
+# Lesson learned : imported functions and classes and "globals" 會蓋掉原有的 functions and classes and globals！ 但其運作方式依舊是依照其"來處"的運作方式！(hsia : 應只是name qualification的問題 - 我們所使用的names與系統真正使用的names不一樣。 More comments from hsia : It's only a matter of "誰是誰"、亦即系統必須由我們所使用的名字搞清楚我們指的到底是誰、一旦搞清楚我們指的是誰、就依照那個「誰」該有的運作方式運作(該怎麼做就怎麼做)！)
+
+# But is 'module-static' protection (module-static variables cannot be accessed from the outside) honored in Python??? 
+
+>>> testFC.__name__ = testFC.__name__ + '_okay'
+
+>>> F()
+__name__ printed from the module named 'PyTestOfFandC' :
+PyTestOfFandC_okay
+
+# Nope! (i.e., the concept of module-static is not really honored in Python)
+
+# How about "globals" in the general sense (and not just those with names starting with two '_' and ending with two '_')?
+
+>>> PrintModuleVar()
+Value of aOfFandC : 10
+Value of bOfFandC : 20
+Value of _cOfFandC : 30
+Value of _dOfFandC_ : 40
+Value of __eOfFandC : 50
+Value of __fOfFandC_ : 60
+Value of __gOfFandC__ : 70
+
+# Obviously, PrintModuleVar() (which is actually testFC.PrintModuleVar() ; 'PrintModuleVar' is just a kind of "alias" if you will) still works in its original "namespace" environment (and not in the current "namespace" environment (there is no '_cOfFandC', for example, in the current "namespace" environment))
+
+>>> aOfFandC += 5
+>>> bOfFandC_ += 5
+>>> _cOfFandC += 5
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+NameError: name '_cOfFandC' is not defined. Did you mean: 'aOfFandC'?
+
+# that is, there is no '_cOfFandC' in the current "namespace"
+
+>>> testFC._cOfFandC += 5
+>>> testFC._dOfFandC_ += 5
+>>> testFC.__eOfFandC += 5
+>>> testFC.__fOfFandC_ += 5
+>>> testFC.__gOfFandC__ += 5
+
+>>> sorted( vars())
+['C', 'F', 'PrintModuleVar', '__annotations__', '__builtins__', '__doc__', '__loader__', '__name__', '__package__', '__spec__', 'aClassC', 'aOfFandC', 'bOfFandC_', 'os', 'sos', 'sys', 'testFC']
+
+# 'PrintModuleVar', 'aOfFandC', and 'bOfFandC_' are said to be "declared in the current namespace". But actually, they are not.
+
+# We do have these names in the current "namespace". However, it is not guaranteed that they are declared here!
+
+>>> PrintModuleVar()
+Value of aOfFandC : 10
+Value of bOfFandC : 20
+Value of _cOfFandC : 35
+Value of _dOfFandC_ : 45
+Value of __eOfFandC : 55
+Value of __fOfFandC_ : 65
+Value of __gOfFandC__ : 75
+
+# On one hand, this is outrageous (an imported name is not really the original one ...)！
+# On the other hand, it means that the system does not allow us to DIRECTLY change the module-vars of imported modules (i.e., we can only reference them, but we cannot update them), a restriction that is understandable.
+
+# now, 'aOfFandC', and 'bOfFandC_' are really declared in the current "namespace". (But is there an easy way to tell which case it is ???)
+
+# Quick recap : Python has module-static (a module can have its own "globals"), but it does not offer module-static-protection. 
+
+#               Furthermore, after we have SUCCESSFULLY imported other module's "globals", we can only reference these imported globals ; if we change them, these "globals" of other modules become our own globals (this, however, does not mean that we cannot change other module's global though).
+
+# Q : Suppose we only reference aOfFandC and bOfFandC_ in the current namespace (and do not do things like 'aOfFandC += 5', i.e., do not change their values directly). If we first do 'tesfFC.aOfFandC += 5' and then reference 'aOfFandC' again, will we find the value of 'aOfFandC' changed?  You'll be surprised. (at least I am surprised...)
+
+# Q : What will happen if we first 'testFC.aOfFandC += 100' and then 'from PyTestOfFandC import *' again???
+
+# A new recap : (about F() and PrintModuleVar() and aOfFandC and bOfFandC_ ...)
+
+# 說起來也蠻好笑的...，既然一旦import *進來就完全變成另外一個人，又何必在乎名稱是否是以'_'作為開頭(反正也改不到原來的那個)？
+
+# 那個重複import *所得的結果又要如何在abstract-level解釋清楚？？？
+
+#############################
+
+# Let us now turn our attention to a different question - does Python support the notion of private or protected or "class/function static"?
+
+>>> class Class1 :
+...   
+...   # class data members (three underlines following the name) declared (= assigned) here
+...   __a123___ = 10          # intended to be sprivate
+...   _b123___ = 20           # intended to be protected
+...   c123___ = 30            # intended to be public
+...   
+...   __d123__ = 40           # special class data members (only two underlines following the name)
+...   
+...   __e123_  = 50           # just want to see what will happen
+...   __f123   = 60           # just want to see what will happen
+...   
+...   def __init__( self ) :
+...     
+...     Class1.__a123___ += 1
+...     
+...     # instance data members (no more than two underlines following the name) declared (= assigned) here
+...     self.myOwn = 1000      # intended to be public
+...     self._myOwn = 2000     # intended to be protected
+...     self.__myOwn = 3000    # intended to be private
+...     self.__myOwn_ = 4000   # just want to see the effects of '__' plus '_'
+...     
+...     self.__myOwn__ = 5000  # special instance data member
+...     
+...     self.__myOwn___ = 6000 # just want to see the effects of '__' plus '___'
+...   
+...   def PrintClassVar() :
+...     
+...     ## NameError: name '__a123___' is not defined
+...     # print( "Value of __a123___ :", __a123___ )
+...     
+...     print( "Value of __a123___ :", Class1.__a123___ )
+...     print( "Value of _b123___ :",  Class1._b123___ )
+...     print( "Value of c123___ :",   Class1.c123___ )
+...     print( "Value of __d123__ :",  Class1.__d123__ )
+...     print( "Value of __e123_ :",   Class1.__e123_ )
+...     print( "Value of __f123 :",    Class1.__f123 )
+...   
+...   def PrintInstanceVar( self ) :
+...     print( "Value of self.myOwn :",      self.myOwn )
+...     print( "Value of self._myOwn :",     self._myOwn )
+...     print( "Value of self.__myOwn :",    self.__myOwn )
+...     print( "Value of self.__myOwn_ :",   self.__myOwn_ )
+...     print( "Value of self.__myOwn__ :",  self.__myOwn__ )
+...     print( "Value of self.__myOwn___ :", self.__myOwn___ )
+...     
+...     print( "Value of __a123___ :", Class1.__a123___ )
+...     print( "Value of _b123___ :",  Class1._b123___ )
+...     print( "Value of c123___ :",   Class1.c123___ )
+...     print( "Value of __d123__ :",  Class1.__d123__ )
+...     print( "Value of __e123_ :",   Class1.__e123_ )
+...     print( "Value of __f123 :",    Class1.__f123 )
+... 
+>>> # END-Class1
+
+>>> aClass1 = Class1()
+
+>>> dir( Class1 )
+['PrintClassVar', 'PrintInstanceVar', '_Class1__e123_', '_Class1__f123', '__a123___', '__class__', '__d123__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', '_b123___', 'c123___']
+
+>>> sorted( vars( Class1 ))
+['PrintClassVar', 'PrintInstanceVar', '_Class1__e123_', '_Class1__f123', '__a123___', '__d123__', '__dict__', '__doc__', '__init__', '__module__', '__weakref__', '_b123___', 'c123___']
+
+>>> # Apparently, name mangling only occurs for data members (class or instance) that have names with two '_' before and at most one '_' behind.
+
+>>> Class1.PrintClassVar()
+Value of __a123___ : 11
+Value of _b123___ : 20
+Value of c123___ : 30
+Value of __d123__ : 40
+Value of __e123_ : 50
+Value of __f123 : 60
+
+>>> Class1.__a123___ += 5
+>>> Class1._b123___ += 5
+>>> Class1.c123___ += 5
+>>> Class1.__d123__ += 5
+>>> Class1._Class1__e123_ += 5
+>>> Class1._Class1__f123 += 5
+
+>>> Class1.PrintClassVar()
+Value of __a123___ : 16
+Value of _b123___ : 25
+Value of c123___ : 35
+Value of __d123__ : 45
+Value of __e123_ : 55
+Value of __f123 : 65
+
+>>> dir( aClass1 )
+['PrintClassVar', 'PrintInstanceVar', '_Class1__e123_', '_Class1__f123', '_Class1__myOwn', '_Class1__myOwn_', '__a123___', '__class__', '__d123__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__myOwn__', '__myOwn___', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', '_b123___', '_myOwn', 'c123___', 'myOwn']
+
+>>> sorted( vars( aClass1 ))
+['_Class1__myOwn', '_Class1__myOwn_', '__myOwn__', '__myOwn___', '_myOwn', 'myOwn']
+
+>>> aClass1.PrintInstanceVar()
+Value of self.myOwn : 1000
+Value of self._myOwn : 2000
+Value of self.__myOwn : 3000
+Value of self.__myOwn_ : 4000
+Value of self.__myOwn__ : 5000
+Value of self.__myOwn___ : 6000
+Value of __a123___ : 16
+Value of _b123___ : 25
+Value of c123___ : 35
+Value of __d123__ : 45
+Value of __e123_ : 55
+Value of __f123 : 65
+
+>>> aClass1._Class1__myOwn += 5
+>>> aClass1._Class1__myOwn_ += 5
+>>> aClass1.__myOwn__ += 5
+>>> aClass1.__myOwn___ += 5
+>>> aClass1._myOwn += 5
+>>> aClass1.myOwn += 5
+
+>>> aClass1.PrintInstanceVar()
+Value of self.myOwn : 1005
+Value of self._myOwn : 2005
+Value of self.__myOwn : 3005
+Value of self.__myOwn_ : 4005
+Value of self.__myOwn__ : 5005
+Value of self.__myOwn___ : 6005
+Value of __a123___ : 16
+Value of _b123___ : 25
+Value of c123___ : 35
+Value of __d123__ : 45
+Value of __e123_ : 55
+Value of __f123 : 65
+
+>>> # The above should serve to show that Python does not offer 'private' or 'protected' or 'class-static' protections.
+>>> # Python does offer name mangling for data members with names starting with two '_' and ending with at most one '_'
+
+# Quick recap : Python does have class-static, but it does not offer private/protected-like protection for class/instance data members.
+# hsia : I believe the same is true for class/instance member functions (= methods)
+
+#############################
+
+# END - A comprehensive example for private/protected/public and static/non-static
+
+####### reflection time #######
+
+https://towardsdatascience.com/private-protected-attributes-in-python-demystified-once-and-for-all-9456d4e56414
+
+Critics suggest that to prevent attribute clobbering it’s enough to simply stick to the convention of prepending the attribute with a single underscore. Here’s the full quote from Ian Bicking I cited at the beginning of the article;
+
+  Never, ever use two leading underscores. This is annoyingly private. If name clashes are a concern, use explicit name mangling instead (e.g., _MyThing_balabla). This is essentially the same thing as double-underscore, only it’s transparent where double underscore obscures.
+
+I must note that an attribute with a single leading underscore _ does not mean anything special to the python interpreter. But, it’s one of those strong conventions in the world of Pythonistas. If you see one, it means that you should not access such attributes from outside the class. You can even observe that even in some corners of the official Python documentation, attributes with a single leading underscore _ are called “protected.”
+
+Even though the practice of “protecting” an attribute using a single leading underscore is common, it is not as often to hear them being called “protected” attributes. Some even call them “private.”
+
+#############################
+
+Function分三種：
+
+  Module functions   - 即傳統的functions 
+                      (除非所屬module有被'from ModuleName import *'或是所屬module是本module或是所屬module是top-level，否則稱呼時必須指名所屬module，e.g., os.system(); 如果有作'from os import *'、則system()即可 )
+
+  Class functions    - Module之中被分門別類(稱呼時必須冠上其"姓氏")的傳統functions
+                      (呼叫原則與module functions相同，只是要加上其"姓氏"而已，e.g., MyModule1.Class10.G123(); 如果有作'from MyModule1 import *'、則Class10.G123()即可 )
+
+  Instance functions - instances "自有" 的functions (e.g., a = ClassName() ; a.F() )
+                       (note : 可經由instance呼叫其所屬class的class functions，也可經由instance access其所屬class的class data (前提是instance本身並沒有define (= assign)同名的data) 。 instance本身若要(在其 "自有" 的function裡面)assign to class variables、必須'ClassName.var1 = ...'而不能'self.var1 = ...'！)
+
+如果module-variable (module-data)不希望被存取，就在此module-variable名稱的最前面加'_'(隨便幾個'_'皆可，一個就夠)。如此一來，使用者就不能在'from ModuleName import *'之後直接以名稱來access此module-variable。不過使用者依舊可以使用'ModuleName._varName'這個名稱來access (包括update) '_varName'(不管varName的名稱之中還有幾個'_')這個「ModuleName的作者不希望被存取的」module-data; 同時，我們一般也不鼓勵使用'from ModuleName import *'這種寫法。所以再怎麼說、module-variables (module-data)都無系統保護可言。
+
+如果class data或instance data不希望被存取，就在這些data名稱的最前面加雙底線、而名稱的最後--頂多--只能有一個底線。如此一來，使用者就不能直接以此data的名稱來access此data。不過不過不過、這只是個小小的不方便措施而已，使用者依舊可以使用'_ClassName__dataName'(或'_ClassName__dataName_')這個名稱來access (包括update) '__dataName'(或'__dataName_')這個--不希望被存取的--class-data或instance-data。
+
+# hsia : 讀者(of this article)可以compare what-is-said-here with what is said in the Python reference manual (e.g., p. 9, p. 45, and p. 64 of reference.pdf, version 3.7.4) about the meaning of the use of underscores ('_') at the beginning (and possibly at the end too) of variable names. I think what-is-said-here is clearer.
+
+#####
+
+Function之中可以用的names =  declared (= assigned) local var. + para.
+(假設function名為'F')      + 所屬module的namespace裏的所有names (即'dir()'所得之結果，應是與'sorted( dict( F.__globals__ ) )'所得之結果相同) 
+                            - 但若要update module-var、就必須要有作'global'宣告(否則同名之var以local var為優先)
+                          + 所屬class的(合乎規矩、可呼叫的)function names
+                          + 所屬class的class variable names(若與declared local var.同名則以local var為優先)
+                          + 所屬class (或所屬module)的IMMEDIATE enclosing function的local variable names (與para. names?)
+                            - 但若要update immediate enclosing function中的local variable names (與para. names?)、就必須要有作'nonlocal'宣告(否則同名之var以local var為優先)
+                          + if instance method, then 自己(即self)有declare (= assign)過的instance variable names (即：self.xyz)
+                          + sorted( dict( F.__builtins__ ) )之中所列出的names (應與'dir(__builtins__)'同。大家應都是一樣)
+                          + ModuleName.name, where 'ModuleName' is 所屬module所import的module and 'name' appears in dir( ModuleName )
+                            # 強烈建議除非with very good reasons、應該用'import ModuleName as abbreviation'而不要用'from ModuleName import *'
+
+#####
+
+對module function與class function與instance function(即所有的function)而言，globals是
+
+  ＊本module的namespace裏的所有names (即'dir()'所show出來的所有names) 
+    # 包括所有在本module的top level所define (= assign)者
+    #     以及
+    #     所有本module的任何function(不管是module function還是class function還是instance function)宣告為'global'且 --有-- define (= assign)者
+
+  ＊所有的ModuleName.name ; 其中  'ModuleName' 是 本module所import者  而  'name' 必須有出現於 dir( ModuleName ) 之中
+
+對class function而言，class variables是
+
+  ＊所有define (= assign)於本class的(任何)function之外(但位於本class之中)的data
+
+  (Class functions不能access instance variables; 因為class functions事實上是傳統的functions，只是有被分類而已)
+
+對instance function而言，instance variables是
+
+  ＊所有define (= assign)於本class的(任何)instance function之內、其名稱是以'self.'作開頭的data  ### 該instance function必須要有被執行過！！！
+    # 尤指所有在本class的__init__()之中被define (= assign)、名稱是以'self.'作開頭的data
+
+對instance function而言，class variables是
+
+  ＊所有define (= assign)於本class的(任何)function之外(但位於本class之中)、    且     未被本function所define (= assign)    的data
+
+注意：Instance function所define的variables、其名稱以'self.'作開頭者是instance variables，其名稱不是以'self.'作開頭者是local variables。
+
+     (Java與C++是用naming convention來解決這個"問題"，亦即：instance variable的名字是以'm'作為開頭，local variables則不是)
+
+把class functions與instance functions當傳統functions看就好！(事實上也該如此)
+
+Class functions根本就是傳統functions! Class variables(既然全是public)也根本就是普通的global variables！ 只是二者在被呼叫/access時必須加上其"姓氏"而已。
+
+至於instance function，也根本就只是傳統function＋一個'self' parameter。'self'是一個指向一個「基本上是struct」(既然everything is public)的pointer。
+(Instance variables事實上是struct的欄位。一向如此(不管是哪個語言)。)
+
+Python是用list(而不是用array或linked list)來存a bunch of structs (= class instances or dicts)。
+
+Python-list相當於C++與Java的(未宣告其element型別的)vector。
+
+Python-dict相當於C++的struct與Java的「只有data member、且無任何private/protected與static修飾詞的」class instance。
+(Python與C/Java的不同之處是Python將此(struct)的概念push到極致、幾乎到了array或linked list或vector或Lisp-styled list的層級)
+
+#####
+
+指令的執行、一定是在「本層次」執行。亦即：我們永遠是在某個「本層次」執行指令。
+
+所謂的「本層次」有三個、也只有三個： 
+
+  本module (包括(the fictitious) top-level)
+
+  本class (即在class之中、但是是在所有class functions與instance functions之外)
+
+  與
+
+  「本function」(不管是傳統functions還是class functions還是instance functions)
+
+當我們在「本層次」assign一個變數時(不管是不是在迴圈或if-then-clause之中、更不管有多少個nesting levels)，我們就是在  宣告  一個「專屬於本層次的變數」
+(對module而言，所謂「專屬於本層次的變數」就是本module的global variables)
+(對class而言，所謂「專屬於本層次的變數」就是本class的class variables)
+(對function而言(不管是傳統functions還是class functions還是instance functions)，所謂「專屬於本層次的變數」就是本function的local variables)
+
+            除非 
+
+此變數  已在本層次被宣告為  'global'或'nonlocal' 
+(in which case we are EITHER defining new global/local variables for the-module-we-belong-to/our-immediate-enclosing-function OR updating their existing global/local variables)
+
+            或
+
+此變數的名稱是以 'ModuleName.'或'ClassName.'或'VariableName.'或'ParameterName.'(包括'self.') 作為開頭 
+(in which case we are EITHER defining new module-variables/class-variables/instance-variables for this module/class/class-instance OR updating their existing module-variables/class-variables/instance-variables)
+
+#####
+
+至於我們可以在「本層次」reference什麼變數或call什麼functions、這要看「本層次」是module、還是class、還是function。
+
+如果「本層次」是function，所能reference的變數與呼叫的functions已詳述於上(Function之中可以用的names)。
+不過要注意：
+  如果「現在所reference的module-var或class-data或immediate enclosing function的local var.(或para)」
+  「當執行本function之後的code時」"居然"被assign一個值了
+  那麼「『原先reference一個module-var或class-data或immediate enclosing function的local var.(或para)』的那行程式碼」現在就變成error了！
+  因為此local var. "referenced before assignment"。
+
+如果「本層次」是class (即位於class之內、但又處於class的(任何)function之外)：   # 此處所述未考慮inner class (= class之中的class)
+  所屬module的namespace裏的所有names (即'dir()'所得之結果)
+  - 但若要update module-var、就必須要有作'global'宣告(否則同名之var以class data為優先)
+  + 有宣告(= assign)的class variables與所有first-level class functions
+  + dir(__builtins__)之中所列出的names
+  + ModuleName.name, where 'ModuleName' is 所屬module所import的module and 'name' appears in dir( ModuleName )
+ 
+如果「本層次」是module (包括 top-level, the fictitious "module" named '__main__')
+  namespace裏的所有names (即'dir()'所得之結果)
+  + dir(__builtins__)之中所列出的names
+  + ModuleName.name, where 'ModuleName' is 所屬module所import的module and 'name' appears in dir( ModuleName )
+ 
+#############################
+
+有什麼變數與什麼functions、如何知道怎麼用 - START
+
+#############################
+
+# preliminaries - Part I
+
+>>> dir()
+['C', 'Class1', 'F', 'PrintModuleVar', '__annotations__', '__builtins__', '__doc__', '__loader__', '__name__', '__package__', '__spec__', 'aClass1', 'aClassC', 'aOfFandC', 'bOfFandC_', 'os', 'sos', 'sys', 'testFC']
+
+>>> sorted( vars() )
+['C', 'Class1', 'F', 'PrintModuleVar', '__annotations__', '__builtins__', '__doc__', '__loader__', '__name__', '__package__', '__spec__', 'aClass1', 'aClassC', 'aOfFandC', 'bOfFandC_', 'os', 'sos', 'sys', 'testFC']
+
+# Which 'C' is 'aClassC' an instance of? The once existed 'C' (現在被覆蓋掉了)! And not the current 'C' (which is actually testFC.C)!
+
+>>> type( aClassC )
+<class '__main__.C'>
+
+>>> aClassC.F()   # I just find it interesting. That's all.
+{}
+__main__
+
+>>> sorted( vars( C ) )    # = sorted( dict( C.__dict__ ))
+['F', 'G', '__dict__', '__doc__', '__module__', '__weakref__']
+
+>>> C.__module__
+'PyTestOfFandC'
+
+# '覆蓋' 代表 naming conflict。只是無法name it而已(受限於「使用name的規則」)，並不代表「該東西」並不存在。(事實上依舊存在，只是無法name it而已)
+
+>>> anotherClassC = C()
+
+>>> anotherClassC.F()
+__name__ printed from the module named 'PyTestOfFandC' :
+PyTestOfFandC
+
+>>> type( anotherClassC )
+<class 'PyTestOfFandC.C'>
+
+# 同樣都是" instances of the class (nick-)named 'C' "。一個是instance of __main__.C，另一個是instance of PyTestOfFandC.C。
+
+>>> sorted( vars() )    # = if there is (but there isn't) a '__dict__', then sorted( dict( __dict__ ))
+['C', 'Class1', 'F', 'PrintModuleVar', '__annotations__', '__builtins__', '__doc__', '__loader__', '__name__', '__package__', '__spec__', 'aClass1', 'aClassC', 'aOfFandC', 'anotherClassC', 'bOfFandC_', 'os', 'sos', 'sys', 'testFC']
+
+# 強烈建議除非with very good reasons、應該用'import ModuleName as abbreviation'而不要用'from ModuleName import *'
+
+#############################
+
+                        --- A gentle reminder ---
+
+dir( SomeThing ) : SomeThing的namespace之中  有這些names存在  (尤其要注意雙底線開頭與雙底線結尾者、這些傢伙具有特殊意義者)
+
+vars( SomeThing ) : SomeThing的namespace之中  由它自己所宣告的names (亦即：這傢伙的"symbol table"的內容)
+                # vars( SomeThing )只是列出SomeThing的__dict__ ( = SomeThing的"symbol table"(用以儲存namespace之中目前真正有的(已宣告的)) 的內容  而已
+
+# vars( SomeThing )  是  dir( SomeThing ) 的子集合
+
+# 'vars()' and 'dir()' are about the current module (it may be the fictitious "module" named '__main__', also known as "the top level")
+
+# 每個instance或class/type或module都有一個"symbol table" (存於其__dict__之中)   # 但不知為何、各module的dir()之中沒'__dict__'這名稱
+# 這個所謂的"symbol table"的內容是永久性的 (if it is NOT associated with an instance)  # Instance只要存在、其"symbol table"當然也是永久性
+# Function definition也有一個associated "symbol table"，但"instance of function call"則沒有！  
+# "Instance of function call"有的   是    activation record！
+
+Relevant function calls :
+
+# vars( anInstance )             OR    dict( vars( SomeClass ))   OR  vars( SomeModule )
+
+# sorted( vars( anInstance ) )   OR    sorted( vars( SomeClass )) OR  sorted( vars( SomeModule ))
+  vs.
+# dir( anInstance )              OR    dir( SomeClass )           OR  dir( SomeModule )
+
+#############################
+
+# preliminaries - Part II
+
+# Something to know about dict
+
+From library.pdf ...
+
+The following examples all return a dictionary equal to {"one": 1, "two": 2, "three": 3} :
+
+>>> a = dict( one=1, two=2, three=3 )       # type cast as function call ...
+>>> b = { 'one': 1, 'two': 2, 'three': 3 }
+>>> c = dict( zip( ['one', 'two', 'three'], [1, 2, 3] ) )
+>>> d = dict( [ ('two', 2), ('one', 1), ('three', 3) ] )
+>>> e = dict( { 'three': 3, 'one': 1, 'two': 2 } )
+
+>>> a == b == c == d == e
+True
+
+# On the side, there is also a long-time question by hsia :
+#    How do we specify an array (or linked list) of C-styled-structs in Python ???
+
+>>> b = [ { 'id' : '10827359', 'name': 'Tom', 'age' : 22, 'score' : 85 }, { 'id' : '10827372', 'name': 'Peter', 'age' : 23, 'score' : 70 } ]
+>>> b[1]['score'] = 75
+
+>>> b
+[{'id': '10827359', 'name': 'Tom', 'age': 22, 'score': 85}, {'id': '10827372', 'name': 'Peter', 'age': 23, 'score': 75}]
+
+>>> b[0], b[1] = b[1], b[0]
+
+>>> b
+[{'id': '10827372', 'name': 'Peter', 'age': 23, 'score': 75}, {'id': '10827359', 'name': 'Tom', 'age': 22, 'score': 85}]
+
+### ??? How about this ??? ###
+>>> a = { '10827359' : { 'name': 'Tom', 'age' : 22, 'score' : 85 }, '10827372': { 'name': 'Peter', 'age' : 23, 'score' : 70 }  }
+>>> a['10827372']['score'] = 75
+
+# Comments???
+
+#############################
+
+# preliminaries - Part III
+
+# Regarding 'defining the attributes of an object on the fly' (don't remember where I see these words ...)
+
+>>> dir( aClass1 )
+['PrintClassVar', 'PrintInstanceVar', '_Class1__e123_', '_Class1__f123', '_Class1__myOwn', '_Class1__myOwn_', '__a123___', '__class__', '__d123__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__myOwn__', '__myOwn___', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', '_b123___', '_myOwn', 'c123___', 'myOwn']
+
+>>> bClass1 = Class1()
+
+>>> bClass1.__dict__['hi'] = 'hello'   # add an attribute to an instance of Class1
+
+>>> dir( bClass1 )
+['PrintClassVar', 'PrintInstanceVar', '_Class1__e123_', '_Class1__f123', '_Class1__myOwn', '_Class1__myOwn_', '__a123___', '__class__', '__d123__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__myOwn__', '__myOwn___', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', '_b123___', '_myOwn', 'c123___', 'hi', 'myOwn']
+
+>>> bClass1.hi
+'hello'
+
+>>> dir( aClass1 )                     # the attributes of other instances of Class1 remain unchanged
+['PrintClassVar', 'PrintInstanceVar', '_Class1__e123_', '_Class1__f123', '_Class1__myOwn', '_Class1__myOwn_', '__a123___', '__class__', '__d123__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__myOwn__', '__myOwn___', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', '_b123___', '_myOwn', 'c123___', 'myOwn']
+
+# So much for 'defining the attributes of an object (!= defining a class) on the fly' ...
+
+#############################
+
+有什麼變數與什麼functions、如何知道怎麼用 - Continued
+
+#############################
+
+>>> dir()
+['C', 'Class1', 'F', 'PrintModuleVar', '__annotations__', '__builtins__', '__doc__', '__loader__', '__name__', '__package__', '__spec__', 'aClass1', 'aClassC', 'aOfFandC', 'anotherClassC', 'bClass1', 'bOfFandC_', 'os', 'sos', 'sys', 'testFC']
+
+>>> __builtins__
+<module 'builtins' (built-in)>
+
+>>> __builtins__
+<module 'builtins' (built-in)>
+
+>>> dir( __builtins__ )
+['ArithmeticError', 'AssertionError', 'AttributeError', 'BaseException', 'BaseExceptionGroup', 'BlockingIOError', 'BrokenPipeError', 'BufferError', 'BytesWarning', 'ChildProcessError', 'ConnectionAbortedError', 'ConnectionError', 'ConnectionRefusedError', 'ConnectionResetError', 'DeprecationWarning', 'EOFError', 'Ellipsis', 'EncodingWarning', 'EnvironmentError', 'Exception', 'ExceptionGroup', 'False', 'FileExistsError', 'FileNotFoundError', 'FloatingPointError', 'FutureWarning', 'GeneratorExit', 'IOError', 'ImportError', 'ImportWarning', 'IndentationError', 'IndexError', 'InterruptedError', 'IsADirectoryError', 'KeyError', 'KeyboardInterrupt', 'LookupError', 'MemoryError', 'ModuleNotFoundError', 'NameError', 'None', 'NotADirectoryError', 'NotImplemented', 'NotImplementedError', 'OSError', 'OverflowError', 'PendingDeprecationWarning', 'PermissionError', 'ProcessLookupError', 'RecursionError', 'ReferenceError', 'ResourceWarning', 'RuntimeError', 'RuntimeWarning', 'StopAsyncIteration', 'StopIteration', 'SyntaxError', 'SyntaxWarning', 'SystemError', 'SystemExit', 'TabError', 'TimeoutError', 'True', 'TypeError', 'UnboundLocalError', 'UnicodeDecodeError', 'UnicodeEncodeError', 'UnicodeError', 'UnicodeTranslateError', 'UnicodeWarning', 'UserWarning', 'ValueError', 'Warning', 'ZeroDivisionError', '_', '__build_class__', '__debug__', '__doc__', '__import__', '__loader__', '__name__', '__package__', '__spec__', 'abs', 'aiter', 'all', 'anext', 'any', 'ascii', 'bin', 'bool', 'breakpoint', 'bytearray', 'bytes', 'callable', 'chr', 'classmethod', 'compile', 'complex', 'copyright', 'credits', 'delattr', 'dict', 'dir', 'divmod', 'enumerate', 'eval', 'exec', 'exit', 'filter', 'float', 'format', 'frozenset', 'getattr', 'globals', 'hasattr', 'hash', 'help', 'hex', 'id', 'input', 'int', 'isinstance', 'issubclass', 'iter', 'len', 'license', 'list', 'locals', 'map', 'max', 'memoryview', 'min', 'next', 'object', 'oct', 'open', 'ord', 'pow', 'print', 'property', 'quit', 'range', 'repr', 'reversed', 'round', 'set', 'setattr', 'slice', 'sorted', 'staticmethod', 'str', 'sum', 'super', 'tuple', 'type', 'vars', 'zip']
+
+# these are the ones we can call in any function
+
+>>> help( len )   # recall that the parameter '/' means that the argument preceding it has to be positional arguments (no keywords)
+
+Help on built-in function len in module builtins:
+
+len(obj, /)
+    Return the number of items in a container.
+(END)
+
+>>> help( super )
+
+Help on class super in module builtins:
+
+class super(object)
+ |  super() -> same as super(__class__, <first argument>)
+ |  super(type) -> unbound super object
+ |  super(type, obj) -> bound super object; requires isinstance(obj, type)
+ |  super(type, type2) -> bound super object; requires issubclass(type2, type)
+ |  Typical use to call a cooperative superclass method:
+ |  class C(B):
+ |      def meth(self, arg):
+ |          super().meth(arg)
+ |  This works for class methods too:
+ |  class C(B):
+ |      @classmethod
+ |      def cmeth(cls, arg):
+ |          super().cmeth(arg)
+ |  
+ |  Methods defined here:
+ |  
+ |  __get__(self, instance, owner=None, /)
+ |      Return an attribute of instance, which is of type owner.
+ |  
+ |  __getattribute__(self, name, /)
+ |      Return getattr(self, name).
+ |  
+ |  __init__(self, /, *args, **kwargs)
+ |      Initialize self.  See help(type(self)) for accurate signature.
+ |  
+ |  __repr__(self, /)
+ |      Return repr(self).
+ |  
+ |  ----------------------------------------------------------------------
+ |  Static methods defined here:
+ |  
+ |  __new__(*args, **kwargs) from builtins.type
+ |      Create and return a new object.  See help(type) for accurate signature.
+ |  
+ |  ----------------------------------------------------------------------
+ |  Data descriptors defined here:
+ |  
+ |  __self__
+ |      the instance invoking super(); may be None
+ |  
+ |  __self_class__
+ |      the type of the instance invoking super(); may be None
+ |  
+ |  __thisclass__
+ |      the class invoking super()
+(END)
+
+# Kind of similar to 'man' of Linux
+
+#############################
+
+>>> dir( 'x' )
+['__add__', '__class__', '__contains__', '__delattr__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getitem__', '__getnewargs__', '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__iter__', '__le__', '__len__', '__lt__', '__mod__', '__mul__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__rmod__', '__rmul__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', 'capitalize', 'casefold', 'center', 'count', 'encode', 'endswith', 'expandtabs', 'find', 'format', 'format_map', 'index', 'isalnum', 'isalpha', 'isascii', 'isdecimal', 'isdigit', 'isidentifier', 'islower', 'isnumeric', 'isprintable', 'isspace', 'istitle', 'isupper', 'join', 'ljust', 'lower', 'lstrip', 'maketrans', 'partition', 'removeprefix', 'removesuffix', 'replace', 'rfind', 'rindex', 'rjust', 'rpartition', 'rsplit', 'rstrip', 'split', 'splitlines', 'startswith', 'strip', 'swapcase', 'title', 'translate', 'upper', 'zfill']
+
+>>> dir( ( 5 ) )
+['__abs__', '__add__', '__and__', '__bool__', '__ceil__', '__class__', '__delattr__', '__dir__', '__divmod__', '__doc__', '__eq__', '__float__', '__floor__', '__floordiv__', '__format__', '__ge__', '__getattribute__', '__getnewargs__', '__getstate__', '__gt__', '__hash__', '__index__', '__init__', '__init_subclass__', '__int__', '__invert__', '__le__', '__lshift__', '__lt__', '__mod__', '__mul__', '__ne__', '__neg__', '__new__', '__or__', '__pos__', '__pow__', '__radd__', '__rand__', '__rdivmod__', '__reduce__', '__reduce_ex__', '__repr__', '__rfloordiv__', '__rlshift__', '__rmod__', '__rmul__', '__ror__', '__round__', '__rpow__', '__rrshift__', '__rshift__', '__rsub__', '__rtruediv__', '__rxor__', '__setattr__', '__sizeof__', '__str__', '__sub__', '__subclasshook__', '__truediv__', '__trunc__', '__xor__', 'as_integer_ratio', 'bit_count', 'bit_length', 'conjugate', 'denominator', 'from_bytes', 'imag', 'numerator', 'real', 'to_bytes']
+
+>>> dir( 5.7 )
+['__abs__', '__add__', '__bool__', '__ceil__', '__class__', '__delattr__', '__dir__', '__divmod__', '__doc__', '__eq__', '__float__', '__floor__', '__floordiv__', '__format__', '__ge__', '__getattribute__', '__getformat__', '__getnewargs__', '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__int__', '__le__', '__lt__', '__mod__', '__mul__', '__ne__', '__neg__', '__new__', '__pos__', '__pow__', '__radd__', '__rdivmod__', '__reduce__', '__reduce_ex__', '__repr__', '__rfloordiv__', '__rmod__', '__rmul__', '__round__', '__rpow__', '__rsub__', '__rtruediv__', '__setattr__', '__sizeof__', '__str__', '__sub__', '__subclasshook__', '__truediv__', '__trunc__', 'as_integer_ratio', 'conjugate', 'fromhex', 'hex', 'imag', 'is_integer', 'real']
+
+>>> dir( float )
+['__abs__', '__add__', '__bool__', '__ceil__', '__class__', '__delattr__', '__dir__', '__divmod__', '__doc__', '__eq__', '__float__', '__floor__', '__floordiv__', '__format__', '__ge__', '__getattribute__', '__getformat__', '__getnewargs__', '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__int__', '__le__', '__lt__', '__mod__', '__mul__', '__ne__', '__neg__', '__new__', '__pos__', '__pow__', '__radd__', '__rdivmod__', '__reduce__', '__reduce_ex__', '__repr__', '__rfloordiv__', '__rmod__', '__rmul__', '__round__', '__rpow__', '__rsub__', '__rtruediv__', '__setattr__', '__sizeof__', '__str__', '__sub__', '__subclasshook__', '__truediv__', '__trunc__', 'as_integer_ratio', 'conjugate', 'fromhex', 'hex', 'imag', 'is_integer', 'real']
+
+>>> dir( int )
+['__abs__', '__add__', '__and__', '__bool__', '__ceil__', '__class__', '__delattr__', '__dir__', '__divmod__', '__doc__', '__eq__', '__float__', '__floor__', '__floordiv__', '__format__', '__ge__', '__getattribute__', '__getnewargs__', '__getstate__', '__gt__', '__hash__', '__index__', '__init__', '__init_subclass__', '__int__', '__invert__', '__le__', '__lshift__', '__lt__', '__mod__', '__mul__', '__ne__', '__neg__', '__new__', '__or__', '__pos__', '__pow__', '__radd__', '__rand__', '__rdivmod__', '__reduce__', '__reduce_ex__', '__repr__', '__rfloordiv__', '__rlshift__', '__rmod__', '__rmul__', '__ror__', '__round__', '__rpow__', '__rrshift__', '__rshift__', '__rsub__', '__rtruediv__', '__rxor__', '__setattr__', '__sizeof__', '__str__', '__sub__', '__subclasshook__', '__truediv__', '__trunc__', '__xor__', 'as_integer_ratio', 'bit_count', 'bit_length', 'conjugate', 'denominator', 'from_bytes', 'imag', 'numerator', 'real', 'to_bytes']
+
+>>> dir( str )
+['__add__', '__class__', '__contains__', '__delattr__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getitem__', '__getnewargs__', '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__iter__', '__le__', '__len__', '__lt__', '__mod__', '__mul__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__rmod__', '__rmul__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', 'capitalize', 'casefold', 'center', 'count', 'encode', 'endswith', 'expandtabs', 'find', 'format', 'format_map', 'index', 'isalnum', 'isalpha', 'isascii', 'isdecimal', 'isdigit', 'isidentifier', 'islower', 'isnumeric', 'isprintable', 'isspace', 'istitle', 'isupper', 'join', 'ljust', 'lower', 'lstrip', 'maketrans', 'partition', 'removeprefix', 'removesuffix', 'replace', 'rfind', 'rindex', 'rjust', 'rpartition', 'rsplit', 'rstrip', 'split', 'splitlines', 'startswith', 'strip', 'swapcase', 'title', 'translate', 'upper', 'zfill']
+
+>>> dir( dict )
+['__class__', '__class_getitem__', '__contains__', '__delattr__', '__delitem__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getitem__', '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__ior__', '__iter__', '__le__', '__len__', '__lt__', '__ne__', '__new__', '__or__', '__reduce__', '__reduce_ex__', '__repr__', '__reversed__', '__ror__', '__setattr__', '__setitem__', '__sizeof__', '__str__', '__subclasshook__', 'clear', 'copy', 'fromkeys', 'get', 'items', 'keys', 'pop', 'popitem', 'setdefault', 'update', 'values']
+
+>>> dir( tuple )
+['__add__', '__class__', '__class_getitem__', '__contains__', '__delattr__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getitem__', '__getnewargs__', '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__iter__', '__le__', '__len__', '__lt__', '__mul__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__rmul__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', 'count', 'index']
+
+>>> dir( list )
+['__add__', '__class__', '__class_getitem__', '__contains__', '__delattr__', '__delitem__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getitem__', '__getstate__', '__gt__', '__hash__', '__iadd__', '__imul__', '__init__', '__init_subclass__', '__iter__', '__le__', '__len__', '__lt__', '__mul__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__reversed__', '__rmul__', '__setattr__', '__setitem__', '__sizeof__', '__str__', '__subclasshook__', 'append', 'clear', 'copy', 'count', 'extend', 'index', 'insert', 'pop', 'remove', 'reverse', 'sort']
+
+>>> help( str.split )
+Help on method_descriptor:
+
+split(self, /, sep=None, maxsplit=-1)
+    Return a list of the substrings in the string, using sep as the separator string.
+
+      sep
+        The separator used to split the string.
+
+        When set to None (the default value), will split on any whitespace
+        character (including \\n \\r \\t \\f and spaces) and will discard
+        empty strings from the result.
+      maxsplit
+        Maximum number of splits (starting from the left).
+        -1 (the default value) means no limit.
+
+    Note, str.split() is mainly useful for data that has been intentionally
+    delimited.  With natural text that includes punctuation, consider using
+    the regular expression module.
+(END)
+
+>>> "help is on its way".split( sep='s' )
+['help i', ' on it', ' way']
+
+>>> _
+['help i', ' on it', ' way']
+
+>>> help( list.sort )
+Help on method_descriptor:
+
+sort(self, /, *, key=None, reverse=False)
+    Sort the list in ascending order and return None.
+
+    The sort is in-place (i.e. the list itself is modified) and stable (i.e. the
+    order of two equal elements is maintained).
+
+    If a key function is given, apply it once to each list item and sort them,
+    ascending or descending, according to their function values.
+
+    The reverse flag can be set to sort in descending order.
+(END)
+
+>>> "help is on its way".split( sep='s' ).sort()
+>>> # (the prompt appears) i.e., no output ... 
+
+>>> help( list )
+...   # complete help-listing for all methods of list-objects
+
+>>> help( open )
+Help on built-in function open in module io:
+
+open(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None, closefd=True, opener=None)
+    Open file and return a stream.  Raise OSError upon failure.
+
+    file is either a text or byte string giving the name (and the path
+    if the file isn't in the current working directory) of the file to
+    be opened or an integer file descriptor of the file to be
+    wrapped. (If a file descriptor is given, it is closed when the
+    returned I/O object is closed, unless closefd is set to False.)
+
+    mode is an optional string that specifies the mode in which the file
+    is opened. It defaults to 'r' which means open for reading in text
+    mode.  Other common values are 'w' for writing (truncating the file if
+    it already exists), 'x' for creating and writing to a new file, and
+    'a' for appending (which on some Unix systems, means that all writes
+    append to the end of the file regardless of the current seek position).
+    In text mode, if encoding is not specified the encoding used is platform
+    dependent: locale.getencoding() is called to get the current locale encoding.
+    (For reading and writing raw bytes use binary mode and leave encoding
+    unspecified.) The available modes are:
+
+    ========= ===============================================================
+    Character Meaning
+    --------- ---------------------------------------------------------------
+    'r'       open for reading (default)
+    'w'       open for writing, truncating the file first
+    'x'       create a new file and open it for writing
+    'a'       open for writing, appending to the end of the file if it exists
+    'b'       binary mode
+    't'       text mode (default)
+    '+'       open a disk file for updating (reading and writing)
+    ========= ===============================================================
+
+    The default mode is 'rt' ...
+
+
+-----------------------------------
+
+# What are the other types that we have?
+
+From reference.pdf, pp. 18-25
+
+Standard type hierarchy   # 'type' is synonymous to 'class'
+
+None (NoneType)
+NotImplemented (NotImplementedType)
+... or Ellipsis (ellipsis)
+numbers.Number (<class 'abc.ABCMeta'>)
+  numbers.Integral
+    Integers (int)
+    Booleans (bool)
+  numbers.Real (float)
+  numbers.Complex (complex)
+Sequences
+  Immutable sequences
+    Strings (str)
+    Tuples (tuple)
+    Bytes (bytes)
+  Mutable sequences
+    Lists (list)
+    Byte Arrays (bytearray)
+Set types
+  Sets
+  Frozen sets
+Mappings
+  Dictionaries
+Callable types
+  User-defined functions
+  Instance methods
+  Generator functions
+  Coroutine functions
+  Asynchronous generator functions
+  Built-in functions
+  Nuilt-in methods
+  Classes
+  Class instances
+Modules
+Custom classes
+Class instances
+I/O objects (file objects)
+Internal types
+  Code objects
+  Frame objects
+  Traceback objects
+  Slice objects
+  Static method objects
+  Class method objects
+
+From library.pdf, p. i
+
+Built-in Types
+4.1 Truth Value Testing
+4.2 Boolean Operations — and, or, not
+4.3 Comparisons
+4.4 Numeric Types — int, float, complex
+4.5 Iterator Types      ### iter
+4.6 Sequence Types — list, tuple, range
+4.7 Text Sequence Type — str
+4.8 Binary Sequence Types — bytes, bytearray, memoryview
+4.9 Set Types — set, frozenset
+4.10 Mapping Types — dict
+4.11 Context Manager Types
+4.12 Other Built-in Types
+4.13 Special Attributes
+
+-----------------------------------
+
+# Question : You (a class, a function, an object) have those functions listed in your __dict__. Can you use them? How do you use them? How to find out about the way to use them? What exactly are the ones you can use and you cannot use and why?
+
+
+>>> (5).__abs__()
+5
+
+>>> 'x'.join('y')
+'y'
+
+>>> 'x'.isalpha()
+True
+
+>>> 'xyz'.replace('y','a')
+'xaz'
+
+>>> (5).bit_count
+<built-in method bit_count of int object at 0x103a52648>
+>>> (5).bit_count()
+2
+
+#############################
+
+>>> sos.pprint( testFC.__builtins__ )
+{'ArithmeticError': <class 'ArithmeticError'>,
+ 'AssertionError': <class 'AssertionError'>,
+ 'AttributeError': <class 'AttributeError'>,
+ 'BaseException': <class 'BaseException'>,
+ 'BaseExceptionGroup': <class 'BaseExceptionGroup'>,
+ 'BlockingIOError': <class 'BlockingIOError'>,
+ 'BrokenPipeError': <class 'BrokenPipeError'>,
+ 'BufferError': <class 'BufferError'>,
+ 'BytesWarning': <class 'BytesWarning'>,
+ 'ChildProcessError': <class 'ChildProcessError'>,
+ 'ConnectionAbortedError': <class 'ConnectionAbortedError'>,
+ 'ConnectionError': <class 'ConnectionError'>,
+ 'ConnectionRefusedError': <class 'ConnectionRefusedError'>,
+ 'ConnectionResetError': <class 'ConnectionResetError'>,
+ 'DeprecationWarning': <class 'DeprecationWarning'>,
+ 'EOFError': <class 'EOFError'>,
+ 'Ellipsis': Ellipsis,
+ 'EncodingWarning': <class 'EncodingWarning'>,
+ 'EnvironmentError': <class 'OSError'>,
+ 'Exception': <class 'Exception'>,
+ 'ExceptionGroup': <class 'ExceptionGroup'>,
+ 'False': False,
+ 'FileExistsError': <class 'FileExistsError'>,
+ 'FileNotFoundError': <class 'FileNotFoundError'>,
+ 'FloatingPointError': <class 'FloatingPointError'>,
+ 'FutureWarning': <class 'FutureWarning'>,
+ 'GeneratorExit': <class 'GeneratorExit'>,
+ 'IOError': <class 'OSError'>,
+ 'ImportError': <class 'ImportError'>,
+ 'ImportWarning': <class 'ImportWarning'>,
+ 'IndentationError': <class 'IndentationError'>,
+ 'IndexError': <class 'IndexError'>,
+ 'InterruptedError': <class 'InterruptedError'>,
+ 'IsADirectoryError': <class 'IsADirectoryError'>,
+ 'KeyError': <class 'KeyError'>,
+ 'KeyboardInterrupt': <class 'KeyboardInterrupt'>,
+ 'LookupError': <class 'LookupError'>,
+ 'MemoryError': <class 'MemoryError'>,
+ 'ModuleNotFoundError': <class 'ModuleNotFoundError'>,
+ 'NameError': <class 'NameError'>,
+ 'None': None,
+ 'NotADirectoryError': <class 'NotADirectoryError'>,
+ 'NotImplemented': NotImplemented,
+ 'NotImplementedError': <class 'NotImplementedError'>,
+ 'OSError': <class 'OSError'>,
+ 'OverflowError': <class 'OverflowError'>,
+ 'PendingDeprecationWarning': <class 'PendingDeprecationWarning'>,
+ 'PermissionError': <class 'PermissionError'>,
+ 'ProcessLookupError': <class 'ProcessLookupError'>,
+ 'RecursionError': <class 'RecursionError'>,
+ 'ReferenceError': <class 'ReferenceError'>,
+ 'ResourceWarning': <class 'ResourceWarning'>,
+ 'RuntimeError': <class 'RuntimeError'>,
+ 'RuntimeWarning': <class 'RuntimeWarning'>,
+ 'StopAsyncIteration': <class 'StopAsyncIteration'>,
+ 'StopIteration': <class 'StopIteration'>,
+ 'SyntaxError': <class 'SyntaxError'>,
+ 'SyntaxWarning': <class 'SyntaxWarning'>,
+ 'SystemError': <class 'SystemError'>,
+ 'SystemExit': <class 'SystemExit'>,
+ 'TabError': <class 'TabError'>,
+ 'TimeoutError': <class 'TimeoutError'>,
+ 'True': True,
+ 'TypeError': <class 'TypeError'>,
+ 'UnboundLocalError': <class 'UnboundLocalError'>,
+ 'UnicodeDecodeError': <class 'UnicodeDecodeError'>,
+ 'UnicodeEncodeError': <class 'UnicodeEncodeError'>,
+ 'UnicodeError': <class 'UnicodeError'>,
+ 'UnicodeTranslateError': <class 'UnicodeTranslateError'>,
+ 'UnicodeWarning': <class 'UnicodeWarning'>,
+ 'UserWarning': <class 'UserWarning'>,
+ 'ValueError': <class 'ValueError'>,
+ 'Warning': <class 'Warning'>,
+ 'ZeroDivisionError': <class 'ZeroDivisionError'>,
+ '_': ['CLD_CONTINUED',
+       'CLD_DUMPED',
+       'CLD_EXITED',
+       'CLD_KILLED',
+       'CLD_STOPPED',
+       'CLD_TRAPPED',
+       'DirEntry',
+       'EX_CANTCREAT',
+       'EX_CONFIG',
+       'EX_DATAERR',
+       'EX_IOERR',
+       'EX_NOHOST',
+       'EX_NOINPUT',
+       'EX_NOPERM',
+       'EX_NOUSER',
+       'EX_OK',
+       'EX_OSERR',
+       'EX_OSFILE',
+       'EX_PROTOCOL',
+       'EX_SOFTWARE',
+       'EX_TEMPFAIL',
+       'EX_UNAVAILABLE',
+       'EX_USAGE',
+       'F_LOCK',
+       'F_OK',
+       'F_TEST',
+       'F_TLOCK',
+       'F_ULOCK',
+       'GenericAlias',
+       'Mapping',
+       'MutableMapping',
+       'NGROUPS_MAX',
+       'O_ACCMODE',
+       'O_APPEND',
+       'O_ASYNC',
+       'O_CLOEXEC',
+       'O_CREAT',
+       'O_DIRECTORY',
+       'O_DSYNC',
+       'O_EVTONLY',
+       'O_EXCL',
+       'O_EXLOCK',
+       'O_FSYNC',
+       'O_NDELAY',
+       'O_NOCTTY',
+       'O_NOFOLLOW',
+       'O_NOFOLLOW_ANY',
+       'O_NONBLOCK',
+       'O_RDONLY',
+       'O_RDWR',
+       'O_SHLOCK',
+       'O_SYMLINK',
+       'O_SYNC',
+       'O_TRUNC',
+       'O_WRONLY',
+       'POSIX_SPAWN_CLOSE',
+       'POSIX_SPAWN_DUP2',
+       'POSIX_SPAWN_OPEN',
+       'PRIO_PGRP',
+       'PRIO_PROCESS',
+       'PRIO_USER',
+       'P_ALL',
+       'P_NOWAIT',
+       'P_NOWAITO',
+       'P_PGID',
+       'P_PID',
+       'P_WAIT',
+       'PathLike',
+       'RTLD_GLOBAL',
+       'RTLD_LAZY',
+       'RTLD_LOCAL',
+       'RTLD_NODELETE',
+       'RTLD_NOLOAD',
+       'RTLD_NOW',
+       'R_OK',
+       'SCHED_FIFO',
+       'SCHED_OTHER',
+       'SCHED_RR',
+       'SEEK_CUR',
+       'SEEK_DATA',
+       'SEEK_END',
+       'SEEK_HOLE',
+       'SEEK_SET',
+       'ST_NOSUID',
+       'ST_RDONLY',
+       'TMP_MAX',
+       'WCONTINUED',
+       'WCOREDUMP',
+       'WEXITED',
+       'WEXITSTATUS',
+       'WIFCONTINUED',
+       'WIFEXITED',
+       'WIFSIGNALED',
+       'WIFSTOPPED',
+       'WNOHANG',
+       'WNOWAIT',
+       'WSTOPPED',
+       'WSTOPSIG',
+       'WTERMSIG',
+       'WUNTRACED',
+       'W_OK',
+       'X_OK',
+       '_Environ',
+       '__all__',
+       '__builtins__',
+       '__doc__',
+       '__file__',
+       '__loader__',
+       '__name__',
+       '__package__',
+       '__spec__',
+       '_check_methods',
+       '_execvpe',
+       '_exists',
+       '_exit',
+       '_fspath',
+       '_fwalk',
+       '_get_exports_list',
+       '_spawnvef',
+       '_walk',
+       '_wrap_close',
+       'abc',
+       'abort',
+       'access',
+       'altsep',
+       'chdir',
+       'chflags',
+       'chmod',
+       'chown',
+       'chroot',
+       'close',
+       'closerange',
+       'confstr',
+       'confstr_names',
+       'cpu_count',
+       'ctermid',
+       'curdir',
+       'defpath',
+       'device_encoding',
+       'devnull',
+       'dup',
+       'dup2',
+       'environ',
+       'environb',
+       'error',
+       'execl',
+       'execle',
+       'execlp',
+       'execlpe',
+       'execv',
+       'execve',
+       'execvp',
+       'execvpe',
+       'extsep',
+       'fchdir',
+       'fchmod',
+       'fchown',
+       'fdopen',
+       'fork',
+       'forkpty',
+       'fpathconf',
+       'fsdecode',
+       'fsencode',
+       'fspath',
+       'fstat',
+       'fstatvfs',
+       'fsync',
+       'ftruncate',
+       'fwalk',
+       'get_blocking',
+       'get_exec_path',
+       'get_inheritable',
+       'get_terminal_size',
+       'getcwd',
+       'getcwdb',
+       'getegid',
+       'getenv',
+       'getenvb',
+       'geteuid',
+       'getgid',
+       'getgrouplist',
+       'getgroups',
+       'getloadavg',
+       'getlogin',
+       'getpgid',
+       'getpgrp',
+       'getpid',
+       'getppid',
+       'getpriority',
+       'getsid',
+       'getuid',
+       'initgroups',
+       'isatty',
+       'kill',
+       'killpg',
+       'lchflags',
+       'lchmod',
+       'lchown',
+       'linesep',
+       'link',
+       'listdir',
+       'lockf',
+       'login_tty',
+       'lseek',
+       'lstat',
+       'major',
+       'makedev',
+       'makedirs',
+       'minor',
+       'mkdir',
+       'mkfifo',
+       'mknod',
+       'name',
+       'nice',
+       'open',
+       'openpty',
+       'pardir',
+       'path',
+       'pathconf',
+       'pathconf_names',
+       'pathsep',
+       'pipe',
+       'popen',
+       'posix_spawn',
+       'posix_spawnp',
+       'pread',
+       'preadv',
+       'putenv',
+       'pwrite',
+       'pwritev',
+       'read',
+       'readlink',
+       'readv',
+       'register_at_fork',
+       'remove',
+       'removedirs',
+       'rename',
+       'renames',
+       'replace',
+       'rmdir',
+       'scandir',
+       'sched_get_priority_max',
+       'sched_get_priority_min',
+       'sched_yield',
+       'sendfile',
+       'sep',
+       'set_blocking',
+       'set_inheritable',
+       'setegid',
+       'seteuid',
+       'setgid',
+       'setgroups',
+       'setpgid',
+       'setpgrp',
+       'setpriority',
+       'setregid',
+       'setreuid',
+       'setsid',
+       'setuid',
+       'spawnl',
+       'spawnle',
+       'spawnlp',
+       'spawnlpe',
+       'spawnv',
+       'spawnve',
+       'spawnvp',
+       'spawnvpe',
+       'st',
+       'stat',
+       'stat_result',
+       'statvfs',
+       'statvfs_result',
+       'strerror',
+       'supports_bytes_environ',
+       'supports_dir_fd',
+       'supports_effective_ids',
+       'supports_fd',
+       'supports_follow_symlinks',
+       'symlink',
+       'sync',
+       'sys',
+       'sysconf',
+       'sysconf_names',
+       'system',
+       'tcgetpgrp',
+       'tcsetpgrp',
+       'terminal_size',
+       'times',
+       'times_result',
+       'truncate',
+       'ttyname',
+       'umask',
+       'uname',
+       'uname_result',
+       'unlink',
+       'unsetenv',
+       'urandom',
+       'utime',
+       'wait',
+       'wait3',
+       'wait4',
+       'waitpid',
+       'waitstatus_to_exitcode',
+       'walk',
+       'write',
+       'writev'],
+ '__build_class__': <built-in function __build_class__>,
+ '__debug__': True,
+ '__doc__': 'Built-in functions, exceptions, and other objects.\n'
+            '\n'
+            "Noteworthy: None is the `nil' object; Ellipsis represents `...' "
+            'in slices.',
+ '__import__': <built-in function __import__>,
+ '__loader__': <class '_frozen_importlib.BuiltinImporter'>,
+ '__name__': 'builtins',
+ '__package__': '',
+ '__spec__': ModuleSpec(name='builtins', loader=<class '_frozen_importlib.BuiltinImporter'>, origin='built-in'),
+ 'abs': <built-in function abs>,
+ 'aiter': <built-in function aiter>,
+ 'all': <built-in function all>,
+ 'anext': <built-in function anext>,
+ 'any': <built-in function any>,
+ 'ascii': <built-in function ascii>,
+ 'bin': <built-in function bin>,
+ 'bool': <class 'bool'>,
+ 'breakpoint': <built-in function breakpoint>,
+ 'bytearray': <class 'bytearray'>,
+ 'bytes': <class 'bytes'>,
+ 'callable': <built-in function callable>,
+ 'chr': <built-in function chr>,
+ 'classmethod': <class 'classmethod'>,
+ 'compile': <built-in function compile>,
+ 'complex': <class 'complex'>,
+ 'copyright': Copyright (c) 2001-2022 Python Software Foundation.
+All Rights Reserved.
+
+Copyright (c) 2000 BeOpen.com.
+All Rights Reserved.
+
+Copyright (c) 1995-2001 Corporation for National Research Initiatives.
+All Rights Reserved.
+
+Copyright (c) 1991-1995 Stichting Mathematisch Centrum, Amsterdam.
+All Rights Reserved.,
+ 'credits':     Thanks to CWI, CNRI, BeOpen.com, Zope Corporation and a cast of thousands
+    for supporting Python development.  See www.python.org for more information.,
+ 'delattr': <built-in function delattr>,
+ 'dict': <class 'dict'>,
+ 'dir': <built-in function dir>,
+ 'divmod': <built-in function divmod>,
+ 'enumerate': <class 'enumerate'>,
+ 'eval': <built-in function eval>,
+ 'exec': <built-in function exec>,
+ 'exit': Use exit() or Ctrl-D (i.e. EOF) to exit,
+ 'filter': <class 'filter'>,
+ 'float': <class 'float'>,
+ 'format': <built-in function format>,
+ 'frozenset': <class 'frozenset'>,
+ 'getattr': <built-in function getattr>,
+ 'globals': <built-in function globals>,
+ 'hasattr': <built-in function hasattr>,
+ 'hash': <built-in function hash>,
+ 'help': Type help() for interactive help, or help(object) for help about object.,
+ 'hex': <built-in function hex>,
+ 'id': <built-in function id>,
+ 'input': <built-in function input>,
+ 'int': <class 'int'>,
+ 'isinstance': <built-in function isinstance>,
+ 'issubclass': <built-in function issubclass>,
+ 'iter': <built-in function iter>,
+ 'len': <built-in function len>,
+ 'license': Type license() to see the full license text,
+ 'list': <class 'list'>,
+ 'locals': <built-in function locals>,
+ 'map': <class 'map'>,
+ 'max': <built-in function max>,
+ 'memoryview': <class 'memoryview'>,
+ 'min': <built-in function min>,
+ 'next': <built-in function next>,
+ 'object': <class 'object'>,
+ 'oct': <built-in function oct>,
+ 'open': <built-in function open>,
+ 'ord': <built-in function ord>,
+ 'pow': <built-in function pow>,
+ 'print': <built-in function print>,
+ 'property': <class 'property'>,
+ 'quit': Use quit() or Ctrl-D (i.e. EOF) to exit,
+ 'range': <class 'range'>,
+ 'repr': <built-in function repr>,
+ 'reversed': <class 'reversed'>,
+ 'round': <built-in function round>,
+ 'set': <class 'set'>,
+ 'setattr': <built-in function setattr>,
+ 'slice': <class 'slice'>,
+ 'sorted': <built-in function sorted>,
+ 'staticmethod': <class 'staticmethod'>,
+ 'str': <class 'str'>,
+ 'sum': <built-in function sum>,
+ 'super': <class 'super'>,
+ 'tuple': <class 'tuple'>,
+ 'type': <class 'type'>,
+ 'vars': <built-in function vars>,
+ 'zip': <class 'zip'>}
+
+
+
+
+
+
+
+
+
+>>> sos.pprint( testFC.__dict__ )
+{'C': <class 'PyTestOfFandC.C'>,
+ 'F': <function F at 0x1033c98a0>,
+ 'PrintModuleVar': <function PrintModuleVar at 0x1033c9940>,
+ '__builtins__': {'ArithmeticError': <class 'ArithmeticError'>,
+                  'AssertionError': <class 'AssertionError'>,
+                  'AttributeError': <class 'AttributeError'>,
+                  'BaseException': <class 'BaseException'>,
+                  'BaseExceptionGroup': <class 'BaseExceptionGroup'>,
+                  'BlockingIOError': <class 'BlockingIOError'>,
+                  'BrokenPipeError': <class 'BrokenPipeError'>,
+                  'BufferError': <class 'BufferError'>,
+                  'BytesWarning': <class 'BytesWarning'>,
+                  'ChildProcessError': <class 'ChildProcessError'>,
+                  'ConnectionAbortedError': <class 'ConnectionAbortedError'>,
+                  'ConnectionError': <class 'ConnectionError'>,
+                  'ConnectionRefusedError': <class 'ConnectionRefusedError'>,
+                  'ConnectionResetError': <class 'ConnectionResetError'>,
+                  'DeprecationWarning': <class 'DeprecationWarning'>,
+                  'EOFError': <class 'EOFError'>,
+                  'Ellipsis': Ellipsis,
+                  'EncodingWarning': <class 'EncodingWarning'>,
+                  'EnvironmentError': <class 'OSError'>,
+                  'Exception': <class 'Exception'>,
+                  'ExceptionGroup': <class 'ExceptionGroup'>,
+                  'False': False,
+                  'FileExistsError': <class 'FileExistsError'>,
+                  'FileNotFoundError': <class 'FileNotFoundError'>,
+                  'FloatingPointError': <class 'FloatingPointError'>,
+                  'FutureWarning': <class 'FutureWarning'>,
+                  'GeneratorExit': <class 'GeneratorExit'>,
+                  'IOError': <class 'OSError'>,
+                  'ImportError': <class 'ImportError'>,
+                  'ImportWarning': <class 'ImportWarning'>,
+                  'IndentationError': <class 'IndentationError'>,
+                  'IndexError': <class 'IndexError'>,
+                  'InterruptedError': <class 'InterruptedError'>,
+                  'IsADirectoryError': <class 'IsADirectoryError'>,
+                  'KeyError': <class 'KeyError'>,
+                  'KeyboardInterrupt': <class 'KeyboardInterrupt'>,
+                  'LookupError': <class 'LookupError'>,
+                  'MemoryError': <class 'MemoryError'>,
+                  'ModuleNotFoundError': <class 'ModuleNotFoundError'>,
+                  'NameError': <class 'NameError'>,
+                  'None': None,
+                  'NotADirectoryError': <class 'NotADirectoryError'>,
+                  'NotImplemented': NotImplemented,
+                  'NotImplementedError': <class 'NotImplementedError'>,
+                  'OSError': <class 'OSError'>,
+                  'OverflowError': <class 'OverflowError'>,
+                  'PendingDeprecationWarning': <class 'PendingDeprecationWarning'>,
+                  'PermissionError': <class 'PermissionError'>,
+                  'ProcessLookupError': <class 'ProcessLookupError'>,
+                  'RecursionError': <class 'RecursionError'>,
+                  'ReferenceError': <class 'ReferenceError'>,
+                  'ResourceWarning': <class 'ResourceWarning'>,
+                  'RuntimeError': <class 'RuntimeError'>,
+                  'RuntimeWarning': <class 'RuntimeWarning'>,
+                  'StopAsyncIteration': <class 'StopAsyncIteration'>,
+                  'StopIteration': <class 'StopIteration'>,
+                  'SyntaxError': <class 'SyntaxError'>,
+                  'SyntaxWarning': <class 'SyntaxWarning'>,
+                  'SystemError': <class 'SystemError'>,
+                  'SystemExit': <class 'SystemExit'>,
+                  'TabError': <class 'TabError'>,
+                  'TimeoutError': <class 'TimeoutError'>,
+                  'True': True,
+                  'TypeError': <class 'TypeError'>,
+                  'UnboundLocalError': <class 'UnboundLocalError'>,
+                  'UnicodeDecodeError': <class 'UnicodeDecodeError'>,
+                  'UnicodeEncodeError': <class 'UnicodeEncodeError'>,
+                  'UnicodeError': <class 'UnicodeError'>,
+                  'UnicodeTranslateError': <class 'UnicodeTranslateError'>,
+                  'UnicodeWarning': <class 'UnicodeWarning'>,
+                  'UserWarning': <class 'UserWarning'>,
+                  'ValueError': <class 'ValueError'>,
+                  'Warning': <class 'Warning'>,
+                  'ZeroDivisionError': <class 'ZeroDivisionError'>,
+                  '_': ['CLD_CONTINUED',
+                        'CLD_DUMPED',
+                        'CLD_EXITED',
+                        'CLD_KILLED',
+                        'CLD_STOPPED',
+                        'CLD_TRAPPED',
+                        'DirEntry',
+                        'EX_CANTCREAT',
+                        'EX_CONFIG',
+                        'EX_DATAERR',
+                        'EX_IOERR',
+                        'EX_NOHOST',
+                        'EX_NOINPUT',
+                        'EX_NOPERM',
+                        'EX_NOUSER',
+                        'EX_OK',
+                        'EX_OSERR',
+                        'EX_OSFILE',
+                        'EX_PROTOCOL',
+                        'EX_SOFTWARE',
+                        'EX_TEMPFAIL',
+                        'EX_UNAVAILABLE',
+                        'EX_USAGE',
+                        'F_LOCK',
+                        'F_OK',
+                        'F_TEST',
+                        'F_TLOCK',
+                        'F_ULOCK',
+                        'GenericAlias',
+                        'Mapping',
+                        'MutableMapping',
+                        'NGROUPS_MAX',
+                        'O_ACCMODE',
+                        'O_APPEND',
+                        'O_ASYNC',
+                        'O_CLOEXEC',
+                        'O_CREAT',
+                        'O_DIRECTORY',
+                        'O_DSYNC',
+                        'O_EVTONLY',
+                        'O_EXCL',
+                        'O_EXLOCK',
+                        'O_FSYNC',
+                        'O_NDELAY',
+                        'O_NOCTTY',
+                        'O_NOFOLLOW',
+                        'O_NOFOLLOW_ANY',
+                        'O_NONBLOCK',
+                        'O_RDONLY',
+                        'O_RDWR',
+                        'O_SHLOCK',
+                        'O_SYMLINK',
+                        'O_SYNC',
+                        'O_TRUNC',
+                        'O_WRONLY',
+                        'POSIX_SPAWN_CLOSE',
+                        'POSIX_SPAWN_DUP2',
+                        'POSIX_SPAWN_OPEN',
+                        'PRIO_PGRP',
+                        'PRIO_PROCESS',
+                        'PRIO_USER',
+                        'P_ALL',
+                        'P_NOWAIT',
+                        'P_NOWAITO',
+                        'P_PGID',
+                        'P_PID',
+                        'P_WAIT',
+                        'PathLike',
+                        'RTLD_GLOBAL',
+                        'RTLD_LAZY',
+                        'RTLD_LOCAL',
+                        'RTLD_NODELETE',
+                        'RTLD_NOLOAD',
+                        'RTLD_NOW',
+                        'R_OK',
+                        'SCHED_FIFO',
+                        'SCHED_OTHER',
+                        'SCHED_RR',
+                        'SEEK_CUR',
+                        'SEEK_DATA',
+                        'SEEK_END',
+                        'SEEK_HOLE',
+                        'SEEK_SET',
+                        'ST_NOSUID',
+                        'ST_RDONLY',
+                        'TMP_MAX',
+                        'WCONTINUED',
+                        'WCOREDUMP',
+                        'WEXITED',
+                        'WEXITSTATUS',
+                        'WIFCONTINUED',
+                        'WIFEXITED',
+                        'WIFSIGNALED',
+                        'WIFSTOPPED',
+                        'WNOHANG',
+                        'WNOWAIT',
+                        'WSTOPPED',
+                        'WSTOPSIG',
+                        'WTERMSIG',
+                        'WUNTRACED',
+                        'W_OK',
+                        'X_OK',
+                        '_Environ',
+                        '__all__',
+                        '__builtins__',
+                        '__doc__',
+                        '__file__',
+                        '__loader__',
+                        '__name__',
+                        '__package__',
+                        '__spec__',
+                        '_check_methods',
+                        '_execvpe',
+                        '_exists',
+                        '_exit',
+                        '_fspath',
+                        '_fwalk',
+                        '_get_exports_list',
+                        '_spawnvef',
+                        '_walk',
+                        '_wrap_close',
+                        'abc',
+                        'abort',
+                        'access',
+                        'altsep',
+                        'chdir',
+                        'chflags',
+                        'chmod',
+                        'chown',
+                        'chroot',
+                        'close',
+                        'closerange',
+                        'confstr',
+                        'confstr_names',
+                        'cpu_count',
+                        'ctermid',
+                        'curdir',
+                        'defpath',
+                        'device_encoding',
+                        'devnull',
+                        'dup',
+                        'dup2',
+                        'environ',
+                        'environb',
+                        'error',
+                        'execl',
+                        'execle',
+                        'execlp',
+                        'execlpe',
+                        'execv',
+                        'execve',
+                        'execvp',
+                        'execvpe',
+                        'extsep',
+                        'fchdir',
+                        'fchmod',
+                        'fchown',
+                        'fdopen',
+                        'fork',
+                        'forkpty',
+                        'fpathconf',
+                        'fsdecode',
+                        'fsencode',
+                        'fspath',
+                        'fstat',
+                        'fstatvfs',
+                        'fsync',
+                        'ftruncate',
+                        'fwalk',
+                        'get_blocking',
+                        'get_exec_path',
+                        'get_inheritable',
+                        'get_terminal_size',
+                        'getcwd',
+                        'getcwdb',
+                        'getegid',
+                        'getenv',
+                        'getenvb',
+                        'geteuid',
+                        'getgid',
+                        'getgrouplist',
+                        'getgroups',
+                        'getloadavg',
+                        'getlogin',
+                        'getpgid',
+                        'getpgrp',
+                        'getpid',
+                        'getppid',
+                        'getpriority',
+                        'getsid',
+                        'getuid',
+                        'initgroups',
+                        'isatty',
+                        'kill',
+                        'killpg',
+                        'lchflags',
+                        'lchmod',
+                        'lchown',
+                        'linesep',
+                        'link',
+                        'listdir',
+                        'lockf',
+                        'login_tty',
+                        'lseek',
+                        'lstat',
+                        'major',
+                        'makedev',
+                        'makedirs',
+                        'minor',
+                        'mkdir',
+                        'mkfifo',
+                        'mknod',
+                        'name',
+                        'nice',
+                        'open',
+                        'openpty',
+                        'pardir',
+                        'path',
+                        'pathconf',
+                        'pathconf_names',
+                        'pathsep',
+                        'pipe',
+                        'popen',
+                        'posix_spawn',
+                        'posix_spawnp',
+                        'pread',
+                        'preadv',
+                        'putenv',
+                        'pwrite',
+                        'pwritev',
+                        'read',
+                        'readlink',
+                        'readv',
+                        'register_at_fork',
+                        'remove',
+                        'removedirs',
+                        'rename',
+                        'renames',
+                        'replace',
+                        'rmdir',
+                        'scandir',
+                        'sched_get_priority_max',
+                        'sched_get_priority_min',
+                        'sched_yield',
+                        'sendfile',
+                        'sep',
+                        'set_blocking',
+                        'set_inheritable',
+                        'setegid',
+                        'seteuid',
+                        'setgid',
+                        'setgroups',
+                        'setpgid',
+                        'setpgrp',
+                        'setpriority',
+                        'setregid',
+                        'setreuid',
+                        'setsid',
+                        'setuid',
+                        'spawnl',
+                        'spawnle',
+                        'spawnlp',
+                        'spawnlpe',
+                        'spawnv',
+                        'spawnve',
+                        'spawnvp',
+                        'spawnvpe',
+                        'st',
+                        'stat',
+                        'stat_result',
+                        'statvfs',
+                        'statvfs_result',
+                        'strerror',
+                        'supports_bytes_environ',
+                        'supports_dir_fd',
+                        'supports_effective_ids',
+                        'supports_fd',
+                        'supports_follow_symlinks',
+                        'symlink',
+                        'sync',
+                        'sys',
+                        'sysconf',
+                        'sysconf_names',
+                        'system',
+                        'tcgetpgrp',
+                        'tcsetpgrp',
+                        'terminal_size',
+                        'times',
+                        'times_result',
+                        'truncate',
+                        'ttyname',
+                        'umask',
+                        'uname',
+                        'uname_result',
+                        'unlink',
+                        'unsetenv',
+                        'urandom',
+                        'utime',
+                        'wait',
+                        'wait3',
+                        'wait4',
+                        'waitpid',
+                        'waitstatus_to_exitcode',
+                        'walk',
+                        'write',
+                        'writev'],
+                  '__build_class__': <built-in function __build_class__>,
+                  '__debug__': True,
+                  '__doc__': 'Built-in functions, exceptions, and other '
+                             'objects.\n'
+                             '\n'
+                             "Noteworthy: None is the `nil' object; Ellipsis "
+                             "represents `...' in slices.",
+                  '__import__': <built-in function __import__>,
+                  '__loader__': <class '_frozen_importlib.BuiltinImporter'>,
+                  '__name__': 'builtins',
+                  '__package__': '',
+                  '__spec__': ModuleSpec(name='builtins', loader=<class '_frozen_importlib.BuiltinImporter'>, origin='built-in'),
+                  'abs': <built-in function abs>,
+                  'aiter': <built-in function aiter>,
+                  'all': <built-in function all>,
+                  'anext': <built-in function anext>,
+                  'any': <built-in function any>,
+                  'ascii': <built-in function ascii>,
+                  'bin': <built-in function bin>,
+                  'bool': <class 'bool'>,
+                  'breakpoint': <built-in function breakpoint>,
+                  'bytearray': <class 'bytearray'>,
+                  'bytes': <class 'bytes'>,
+                  'callable': <built-in function callable>,
+                  'chr': <built-in function chr>,
+                  'classmethod': <class 'classmethod'>,
+                  'compile': <built-in function compile>,
+                  'complex': <class 'complex'>,
+                  'copyright': Copyright (c) 2001-2022 Python Software Foundation.
+All Rights Reserved.
+
+Copyright (c) 2000 BeOpen.com.
+All Rights Reserved.
+
+Copyright (c) 1995-2001 Corporation for National Research Initiatives.
+All Rights Reserved.
+
+Copyright (c) 1991-1995 Stichting Mathematisch Centrum, Amsterdam.
+All Rights Reserved.,
+                  'credits':     Thanks to CWI, CNRI, BeOpen.com, Zope Corporation and a cast of thousands
+    for supporting Python development.  See www.python.org for more information.,
+                  'delattr': <built-in function delattr>,
+                  'dict': <class 'dict'>,
+                  'dir': <built-in function dir>,
+                  'divmod': <built-in function divmod>,
+                  'enumerate': <class 'enumerate'>,
+                  'eval': <built-in function eval>,
+                  'exec': <built-in function exec>,
+                  'exit': Use exit() or Ctrl-D (i.e. EOF) to exit,
+                  'filter': <class 'filter'>,
+                  'float': <class 'float'>,
+                  'format': <built-in function format>,
+                  'frozenset': <class 'frozenset'>,
+                  'getattr': <built-in function getattr>,
+                  'globals': <built-in function globals>,
+                  'hasattr': <built-in function hasattr>,
+                  'hash': <built-in function hash>,
+                  'help': Type help() for interactive help, or help(object) for help about object.,
+                  'hex': <built-in function hex>,
+                  'id': <built-in function id>,
+                  'input': <built-in function input>,
+                  'int': <class 'int'>,
+                  'isinstance': <built-in function isinstance>,
+                  'issubclass': <built-in function issubclass>,
+                  'iter': <built-in function iter>,
+                  'len': <built-in function len>,
+                  'license': Type license() to see the full license text,
+                  'list': <class 'list'>,
+                  'locals': <built-in function locals>,
+                  'map': <class 'map'>,
+                  'max': <built-in function max>,
+                  'memoryview': <class 'memoryview'>,
+                  'min': <built-in function min>,
+                  'next': <built-in function next>,
+                  'object': <class 'object'>,
+                  'oct': <built-in function oct>,
+                  'open': <built-in function open>,
+                  'ord': <built-in function ord>,
+                  'pow': <built-in function pow>,
+                  'print': <built-in function print>,
+                  'property': <class 'property'>,
+                  'quit': Use quit() or Ctrl-D (i.e. EOF) to exit,
+                  'range': <class 'range'>,
+                  'repr': <built-in function repr>,
+                  'reversed': <class 'reversed'>,
+                  'round': <built-in function round>,
+                  'set': <class 'set'>,
+                  'setattr': <built-in function setattr>,
+                  'slice': <class 'slice'>,
+                  'sorted': <built-in function sorted>,
+                  'staticmethod': <class 'staticmethod'>,
+                  'str': <class 'str'>,
+                  'sum': <built-in function sum>,
+                  'super': <class 'super'>,
+                  'tuple': <class 'tuple'>,
+                  'type': <class 'type'>,
+                  'vars': <built-in function vars>,
+                  'zip': <class 'zip'>},
+ '__cached__': '<HOME-DIR>/bin/__pycache__/PyTestOfFandC.cpython-311.pyc',
+ '__doc__': None,
+ '__eOfFandC': 55,
+ '__fOfFandC_': 65,
+ '__file__': '<HOME-DIR>/bin/PyTestOfFandC.py',
+ '__gOfFandC__': 75,
+ '__loader__': <_frozen_importlib_external.SourceFileLoader object at 0x10339fd90>,
+ '__name__': 'PyTestOfFandC',
+ '__package__': '',
+ '__spec__': ModuleSpec(name='PyTestOfFandC', loader=<_frozen_importlib_external.SourceFileLoader object at 0x10339fd90>, origin='<HOME-DIR>/bin/PyTestOfFandC.py'),
+ '_cOfFandC': 35,
+ '_dOfFandC_': 45,
+ 'aOfFandC': 10,
+ 'bOfFandC_': 20}
+
+
+#############################
+
+>>> dir( sys )
+['__breakpointhook__', '__displayhook__', '__doc__', '__excepthook__', '__interactivehook__', '__loader__', '__name__', '__package__', '__spec__', '__stderr__', '__stdin__', '__stdout__', '__unraisablehook__', '_base_executable', '_clear_type_cache', '_current_exceptions', '_current_frames', '_debugmallocstats', '_framework', '_getframe', '_getquickenedcount', '_git', '_home', '_stdlib_dir', '_xoptions', 'abiflags', 'addaudithook', 'api_version', 'argv', 'audit', 'base_exec_prefix', 'base_prefix', 'breakpointhook', 'builtin_module_names', 'byteorder', 'call_tracing', 'copyright', 'displayhook', 'dont_write_bytecode', 'exc_info', 'excepthook', 'exception', 'exec_prefix', 'executable', 'exit', 'flags', 'float_info', 'float_repr_style', 'get_asyncgen_hooks', 'get_coroutine_origin_tracking_depth', 'get_int_max_str_digits', 'getallocatedblocks', 'getdefaultencoding', 'getdlopenflags', 'getfilesystemencodeerrors', 'getfilesystemencoding', 'getprofile', 'getrecursionlimit', 'getrefcount', 'getsizeof', 'getswitchinterval', 'gettrace', 'hash_info', 'hexversion', 'implementation', 'int_info', 'intern', 'is_finalizing', 'last_traceback', 'last_type', 'last_value', 'maxsize', 'maxunicode', 'meta_path', 'modules', 'orig_argv', 'path', 'path_hooks', 'path_importer_cache', 'platform', 'platlibdir', 'prefix', 'ps1', 'ps2', 'pycache_prefix', 'set_asyncgen_hooks', 'set_coroutine_origin_tracking_depth', 'set_int_max_str_digits', 'setdlopenflags', 'setprofile', 'setrecursionlimit', 'setswitchinterval', 'settrace', 'stderr', 'stdin', 'stdlib_module_names', 'stdout', 'thread_info', 'unraisablehook', 'version', 'version_info', 'warnoptions']
+
+
+>>> dir( os )
+['CLD_CONTINUED', 'CLD_DUMPED', 'CLD_EXITED', 'CLD_KILLED', 'CLD_STOPPED', 'CLD_TRAPPED', 'DirEntry', 'EX_CANTCREAT', 'EX_CONFIG', 'EX_DATAERR', 'EX_IOERR', 'EX_NOHOST', 'EX_NOINPUT', 'EX_NOPERM', 'EX_NOUSER', 'EX_OK', 'EX_OSERR', 'EX_OSFILE', 'EX_PROTOCOL', 'EX_SOFTWARE', 'EX_TEMPFAIL', 'EX_UNAVAILABLE', 'EX_USAGE', 'F_LOCK', 'F_OK', 'F_TEST', 'F_TLOCK', 'F_ULOCK', 'GenericAlias', 'Mapping', 'MutableMapping', 'NGROUPS_MAX', 'O_ACCMODE', 'O_APPEND', 'O_ASYNC', 'O_CLOEXEC', 'O_CREAT', 'O_DIRECTORY', 'O_DSYNC', 'O_EVTONLY', 'O_EXCL', 'O_EXLOCK', 'O_FSYNC', 'O_NDELAY', 'O_NOCTTY', 'O_NOFOLLOW', 'O_NOFOLLOW_ANY', 'O_NONBLOCK', 'O_RDONLY', 'O_RDWR', 'O_SHLOCK', 'O_SYMLINK', 'O_SYNC', 'O_TRUNC', 'O_WRONLY', 'POSIX_SPAWN_CLOSE', 'POSIX_SPAWN_DUP2', 'POSIX_SPAWN_OPEN', 'PRIO_PGRP', 'PRIO_PROCESS', 'PRIO_USER', 'P_ALL', 'P_NOWAIT', 'P_NOWAITO', 'P_PGID', 'P_PID', 'P_WAIT', 'PathLike', 'RTLD_GLOBAL', 'RTLD_LAZY', 'RTLD_LOCAL', 'RTLD_NODELETE', 'RTLD_NOLOAD', 'RTLD_NOW', 'R_OK', 'SCHED_FIFO', 'SCHED_OTHER', 'SCHED_RR', 'SEEK_CUR', 'SEEK_DATA', 'SEEK_END', 'SEEK_HOLE', 'SEEK_SET', 'ST_NOSUID', 'ST_RDONLY', 'TMP_MAX', 'WCONTINUED', 'WCOREDUMP', 'WEXITED', 'WEXITSTATUS', 'WIFCONTINUED', 'WIFEXITED', 'WIFSIGNALED', 'WIFSTOPPED', 'WNOHANG', 'WNOWAIT', 'WSTOPPED', 'WSTOPSIG', 'WTERMSIG', 'WUNTRACED', 'W_OK', 'X_OK', '_Environ', '__all__', '__builtins__', '__doc__', '__file__', '__loader__', '__name__', '__package__', '__spec__', '_check_methods', '_execvpe', '_exists', '_exit', '_fspath', '_fwalk', '_get_exports_list', '_spawnvef', '_walk', '_wrap_close', 'abc', 'abort', 'access', 'altsep', 'chdir', 'chflags', 'chmod', 'chown', 'chroot', 'close', 'closerange', 'confstr', 'confstr_names', 'cpu_count', 'ctermid', 'curdir', 'defpath', 'device_encoding', 'devnull', 'dup', 'dup2', 'environ', 'environb', 'error', 'execl', 'execle', 'execlp', 'execlpe', 'execv', 'execve', 'execvp', 'execvpe', 'extsep', 'fchdir', 'fchmod', 'fchown', 'fdopen', 'fork', 'forkpty', 'fpathconf', 'fsdecode', 'fsencode', 'fspath', 'fstat', 'fstatvfs', 'fsync', 'ftruncate', 'fwalk', 'get_blocking', 'get_exec_path', 'get_inheritable', 'get_terminal_size', 'getcwd', 'getcwdb', 'getegid', 'getenv', 'getenvb', 'geteuid', 'getgid', 'getgrouplist', 'getgroups', 'getloadavg', 'getlogin', 'getpgid', 'getpgrp', 'getpid', 'getppid', 'getpriority', 'getsid', 'getuid', 'initgroups', 'isatty', 'kill', 'killpg', 'lchflags', 'lchmod', 'lchown', 'linesep', 'link', 'listdir', 'lockf', 'login_tty', 'lseek', 'lstat', 'major', 'makedev', 'makedirs', 'minor', 'mkdir', 'mkfifo', 'mknod', 'name', 'nice', 'open', 'openpty', 'pardir', 'path', 'pathconf', 'pathconf_names', 'pathsep', 'pipe', 'popen', 'posix_spawn', 'posix_spawnp', 'pread', 'preadv', 'putenv', 'pwrite', 'pwritev', 'read', 'readlink', 'readv', 'register_at_fork', 'remove', 'removedirs', 'rename', 'renames', 'replace', 'rmdir', 'scandir', 'sched_get_priority_max', 'sched_get_priority_min', 'sched_yield', 'sendfile', 'sep', 'set_blocking', 'set_inheritable', 'setegid', 'seteuid', 'setgid', 'setgroups', 'setpgid', 'setpgrp', 'setpriority', 'setregid', 'setreuid', 'setsid', 'setuid', 'spawnl', 'spawnle', 'spawnlp', 'spawnlpe', 'spawnv', 'spawnve', 'spawnvp', 'spawnvpe', 'st', 'stat', 'stat_result', 'statvfs', 'statvfs_result', 'strerror', 'supports_bytes_environ', 'supports_dir_fd', 'supports_effective_ids', 'supports_fd', 'supports_follow_symlinks', 'symlink', 'sync', 'sys', 'sysconf', 'sysconf_names', 'system', 'tcgetpgrp', 'tcsetpgrp', 'terminal_size', 'times', 'times_result', 'truncate', 'ttyname', 'umask', 'uname', 'uname_result', 'unlink', 'unsetenv', 'urandom', 'utime', 'wait', 'wait3', 'wait4', 'waitpid', 'waitstatus_to_exitcode', 'walk', 'write', 'writev']
+
+# a simple illustration (again)
+
+>>> os.walk         # first, see whether it is a variable or a function
+<function walk at 0x1011158a0>
+
+>>> help( os.walk ) # then, see its descriptioon (what it is and how to call it if it is a funciton)
+Help on function walk in module os:
+
+walk(top, topdown=True, onerror=None, followlinks=False)
+    Directory tree generator.
+    
+    For each directory in the directory tree rooted at top (including top
+    itself, but excluding '.' and '..'), yields a 3-tuple
+    
+        dirpath, dirnames, filenames
+    
+    dirpath is a string, the path to the directory.  dirnames is a list of
+    the names of the subdirectories in dirpath (including symlinks to directories,
+    and excluding '.' and '..').
+    filenames is a list of the names of the non-directory files in dirpath.
+...
+
+>>> os.walk( '/' )  # try it out
+<generator object _walk at 0x101b18490>
+
+>>> # for i in os.walk( '/' ) : print( i ) ### this will print everything on the directory tree of your system (use Ctrl-c to interrupt)
+
+### final episode ###
+
+>>> "help is on its way".split( sep='s' )
+['help i', ' on it', ' way']
+>>> "help is on its way".split( sep='s' ).sort()
+>>> _
+['help i', ' on it', ' way']
+>>> sos.pprint( testFC.__builtins__ )           ####### <-------------------- just to redo what was done in the above ...
+{'ArithmeticError': <class 'ArithmeticError'>,
+ 'AssertionError': <class 'AssertionError'>,
+ 'AttributeError': <class 'AttributeError'>,
+ 'BaseException': <class 'BaseException'>,
+ 'BaseExceptionGroup': <class 'BaseExceptionGroup'>,
+ 'BlockingIOError': <class 'BlockingIOError'>,
+ 'BrokenPipeError': <class 'BrokenPipeError'>,
+ 'BufferError': <class 'BufferError'>,
+ 'BytesWarning': <class 'BytesWarning'>,
+ 'ChildProcessError': <class 'ChildProcessError'>,
+ 'ConnectionAbortedError': <class 'ConnectionAbortedError'>,
+ 'ConnectionError': <class 'ConnectionError'>,
+ 'ConnectionRefusedError': <class 'ConnectionRefusedError'>,
+ 'ConnectionResetError': <class 'ConnectionResetError'>,
+ 'DeprecationWarning': <class 'DeprecationWarning'>,
+ 'EOFError': <class 'EOFError'>,
+ 'Ellipsis': Ellipsis,
+ 'EncodingWarning': <class 'EncodingWarning'>,
+ 'EnvironmentError': <class 'OSError'>,
+ 'Exception': <class 'Exception'>,
+ 'ExceptionGroup': <class 'ExceptionGroup'>,
+ 'False': False,
+ 'FileExistsError': <class 'FileExistsError'>,
+ 'FileNotFoundError': <class 'FileNotFoundError'>,
+ 'FloatingPointError': <class 'FloatingPointError'>,
+ 'FutureWarning': <class 'FutureWarning'>,
+ 'GeneratorExit': <class 'GeneratorExit'>,
+ 'IOError': <class 'OSError'>,
+ 'ImportError': <class 'ImportError'>,
+ 'ImportWarning': <class 'ImportWarning'>,
+ 'IndentationError': <class 'IndentationError'>,
+ 'IndexError': <class 'IndexError'>,
+ 'InterruptedError': <class 'InterruptedError'>,
+ 'IsADirectoryError': <class 'IsADirectoryError'>,
+ 'KeyError': <class 'KeyError'>,
+ 'KeyboardInterrupt': <class 'KeyboardInterrupt'>,
+ 'LookupError': <class 'LookupError'>,
+ 'MemoryError': <class 'MemoryError'>,
+ 'ModuleNotFoundError': <class 'ModuleNotFoundError'>,
+ 'NameError': <class 'NameError'>,
+ 'None': None,
+ 'NotADirectoryError': <class 'NotADirectoryError'>,
+ 'NotImplemented': NotImplemented,
+ 'NotImplementedError': <class 'NotImplementedError'>,
+ 'OSError': <class 'OSError'>,
+ 'OverflowError': <class 'OverflowError'>,
+ 'PendingDeprecationWarning': <class 'PendingDeprecationWarning'>,
+ 'PermissionError': <class 'PermissionError'>,
+ 'ProcessLookupError': <class 'ProcessLookupError'>,
+ 'RecursionError': <class 'RecursionError'>,
+ 'ReferenceError': <class 'ReferenceError'>,
+ 'ResourceWarning': <class 'ResourceWarning'>,
+ 'RuntimeError': <class 'RuntimeError'>,
+ 'RuntimeWarning': <class 'RuntimeWarning'>,
+ 'StopAsyncIteration': <class 'StopAsyncIteration'>,
+ 'StopIteration': <class 'StopIteration'>,
+ 'SyntaxError': <class 'SyntaxError'>,
+ 'SyntaxWarning': <class 'SyntaxWarning'>,
+ 'SystemError': <class 'SystemError'>,
+ 'SystemExit': <class 'SystemExit'>,
+ 'TabError': <class 'TabError'>,
+ 'TimeoutError': <class 'TimeoutError'>,
+ 'True': True,
+ 'TypeError': <class 'TypeError'>,
+ 'UnboundLocalError': <class 'UnboundLocalError'>,
+ 'UnicodeDecodeError': <class 'UnicodeDecodeError'>,
+ 'UnicodeEncodeError': <class 'UnicodeEncodeError'>,
+ 'UnicodeError': <class 'UnicodeError'>,
+ 'UnicodeTranslateError': <class 'UnicodeTranslateError'>,
+ 'UnicodeWarning': <class 'UnicodeWarning'>,
+ 'UserWarning': <class 'UserWarning'>,
+ 'ValueError': <class 'ValueError'>,
+ 'Warning': <class 'Warning'>,
+ 'ZeroDivisionError': <class 'ZeroDivisionError'>,
+ '_': ['help i', ' on it', ' way'],
+ '__build_class__': <built-in function __build_class__>,
+ '__debug__': True,
+ '__doc__': 'Built-in functions, exceptions, and other objects.\n'
+            '\n'
+            "Noteworthy: None is the `nil' object; Ellipsis represents `...' "
+            'in slices.',
+ '__import__': <built-in function __import__>,
+ '__loader__': <class '_frozen_importlib.BuiltinImporter'>,
+ '__name__': 'builtins',
+ '__package__': '',
+ '__spec__': ModuleSpec(name='builtins', loader=<class '_frozen_importlib.BuiltinImporter'>, origin='built-in'),
+ 'abs': <built-in function abs>,
+ 'aiter': <built-in function aiter>,
+ 'all': <built-in function all>,
+ 'anext': <built-in function anext>,
+ 'any': <built-in function any>,
+ 'ascii': <built-in function ascii>,
+ 'bin': <built-in function bin>,
+ 'bool': <class 'bool'>,
+ 'breakpoint': <built-in function breakpoint>,
+ 'bytearray': <class 'bytearray'>,
+ 'bytes': <class 'bytes'>,
+ 'callable': <built-in function callable>,
+ 'chr': <built-in function chr>,
+ 'classmethod': <class 'classmethod'>,
+ 'compile': <built-in function compile>,
+ 'complex': <class 'complex'>,
+ 'copyright': Copyright (c) 2001-2022 Python Software Foundation.
+All Rights Reserved.
+
+Copyright (c) 2000 BeOpen.com.
+All Rights Reserved.
+
+Copyright (c) 1995-2001 Corporation for National Research Initiatives.
+All Rights Reserved.
+
+Copyright (c) 1991-1995 Stichting Mathematisch Centrum, Amsterdam.
+All Rights Reserved.,
+ 'credits':     Thanks to CWI, CNRI, BeOpen.com, Zope Corporation and a cast of thousands
+    for supporting Python development.  See www.python.org for more information.,
+ 'delattr': <built-in function delattr>,
+ 'dict': <class 'dict'>,
+ 'dir': <built-in function dir>,
+ 'divmod': <built-in function divmod>,
+ 'enumerate': <class 'enumerate'>,
+ 'eval': <built-in function eval>,
+ 'exec': <built-in function exec>,
+ 'exit': Use exit() or Ctrl-D (i.e. EOF) to exit,
+ 'filter': <class 'filter'>,
+ 'float': <class 'float'>,
+ 'format': <built-in function format>,
+ 'frozenset': <class 'frozenset'>,
+ 'getattr': <built-in function getattr>,
+ 'globals': <built-in function globals>,
+ 'hasattr': <built-in function hasattr>,
+ 'hash': <built-in function hash>,
+ 'help': Type help() for interactive help, or help(object) for help about object.,
+ 'hex': <built-in function hex>,
+ 'id': <built-in function id>,
+ 'input': <built-in function input>,
+ 'int': <class 'int'>,
+ 'isinstance': <built-in function isinstance>,
+ 'issubclass': <built-in function issubclass>,
+ 'iter': <built-in function iter>,
+ 'len': <built-in function len>,
+ 'license': Type license() to see the full license text,
+ 'list': <class 'list'>,
+ 'locals': <built-in function locals>,
+ 'map': <class 'map'>,
+ 'max': <built-in function max>,
+ 'memoryview': <class 'memoryview'>,
+ 'min': <built-in function min>,
+ 'next': <built-in function next>,
+ 'object': <class 'object'>,
+ 'oct': <built-in function oct>,
+ 'open': <built-in function open>,
+ 'ord': <built-in function ord>,
+ 'pow': <built-in function pow>,
+ 'print': <built-in function print>,
+ 'property': <class 'property'>,
+ 'quit': Use quit() or Ctrl-D (i.e. EOF) to exit,
+ 'range': <class 'range'>,
+ 'repr': <built-in function repr>,
+ 'reversed': <class 'reversed'>,
+ 'round': <built-in function round>,
+ 'set': <class 'set'>,
+ 'setattr': <built-in function setattr>,
+ 'slice': <class 'slice'>,
+ 'sorted': <built-in function sorted>,
+ 'staticmethod': <class 'staticmethod'>,
+ 'str': <class 'str'>,
+ 'sum': <built-in function sum>,
+ 'super': <class 'super'>,
+ 'tuple': <class 'tuple'>,
+ 'type': <class 'type'>,
+ 'vars': <built-in function vars>,
+ 'zip': <class 'zip'>}
+
+#####
+
+# How can we find the modules that already exist in our library (of Python modules).
+
+>>> sys.path
+['', '<HOME-DIR>/bin', '<HOME-DIR>/PythonProj/Testing', '/opt/homebrew/Cellar/python@3.11/3.11.1/Frameworks/Python.framework/Versions/3.11/lib/python311.zip', '/opt/homebrew/Cellar/python@3.11/3.11.1/Frameworks/Python.framework/Versions/3.11/lib/python3.11', '/opt/homebrew/Cellar/python@3.11/3.11.1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/lib-dynload', '<HOME-DIR>/Library/Python/3.11/lib/python/site-packages', '/opt/homebrew/lib/python3.11/site-packages']
+
+# Below, we can find many of the Python modules described in library.pdf (e.g., pp. 95-1858, library.pdf, version 3.7.4)
+
+>>> sos.B( 'ls /opt/homebrew/Cellar/python@3.11/3.11.1/Frameworks/Python.framework/Versions/3.11/lib/python3.11' )
+LICENSE.txt				fnmatch.py				rlcompleter.py
+__future__.py				fractions.py				runpy.py
+__hello__.py				ftplib.py				sched.py
+__phello__				functools.py				secrets.py
+__pycache__				genericpath.py				selectors.py
+_aix_support.py				getopt.py				shelve.py
+_bootsubprocess.py			getpass.py				shlex.py
+_collections_abc.py			gettext.py				shutil.py
+_compat_pickle.py			glob.py					signal.py
+_compression.py				graphlib.py				site-packages
+_markupbase.py				gzip.py					site.py
+_osx_support.py				hashlib.py				sitecustomize.py
+_py_abc.py				heapq.py				smtpd.py
+_pydecimal.py				hmac.py					smtplib.py
+_pyio.py				html					sndhdr.py
+_sitebuiltins.py			http					socket.py
+_strptime.py				idlelib					socketserver.py
+_sysconfigdata__darwin_darwin.py	imaplib.py				sqlite3
+_threading_local.py			imghdr.py				sre_compile.py
+_weakrefset.py				imp.py					sre_constants.py
+abc.py					importlib				sre_parse.py
+aifc.py					inspect.py				ssl.py
+antigravity.py				io.py					stat.py
+argparse.py				ipaddress.py				statistics.py
+ast.py					json					string.py
+asynchat.py				keyword.py				stringprep.py
+asyncio					lib-dynload				struct.py
+asyncore.py				lib2to3					subprocess.py
+base64.py				linecache.py				sunau.py
+bdb.py					locale.py				symtable.py
+bisect.py				logging					sysconfig.py
+bz2.py					lzma.py					tabnanny.py
+cProfile.py				mailbox.py				tarfile.py
+calendar.py				mailcap.py				telnetlib.py
+cgi.py					mimetypes.py				tempfile.py
+cgitb.py				modulefinder.py				test
+chunk.py				multiprocessing				textwrap.py
+cmd.py					netrc.py				this.py
+code.py					nntplib.py				threading.py
+codecs.py				ntpath.py				timeit.py
+codeop.py				nturl2path.py				tkinter
+collections				numbers.py				token.py
+colorsys.py				opcode.py				tokenize.py
+compileall.py				operator.py				tomllib
+concurrent				optparse.py				trace.py
+config-3.11-darwin			os.py					traceback.py
+configparser.py				pathlib.py				tracemalloc.py
+contextlib.py				pdb.py					tty.py
+contextvars.py				pickle.py				turtle.py
+copy.py					pickletools.py				turtledemo
+copyreg.py				pipes.py				types.py
+crypt.py				pkgutil.py				typing.py
+csv.py					platform.py				unittest
+ctypes					plistlib.py				urllib
+curses					poplib.py				uu.py
+dataclasses.py				posixpath.py				uuid.py
+datetime.py				pprint.py				venv
+dbm					profile.py				warnings.py
+decimal.py				pstats.py				wave.py
+difflib.py				pty.py					weakref.py
+dis.py					py_compile.py				webbrowser.py
+distutils				pyclbr.py				wsgiref
+doctest.py				pydoc.py				xdrlib.py
+email					pydoc_data				xml
+encodings				queue.py				xmlrpc
+ensurepip				quopri.py				zipapp.py
+enum.py					random.py				zipfile.py
+filecmp.py				re					zipimport.py
+fileinput.py				reprlib.py				zoneinfo
+
+# the ones below seem to be related to how the Python system works
+
+>>> sos.B( 'ls <HOME-DIR>/Library/Python/3.11/lib/python/site-packages' )
+IPython						isoduration					prometheus_client-0.16.0.dist-info
+Jinja2-3.1.2.dist-info				isoduration-20.11.0.dist-info			prompt_toolkit
+MarkupSafe-2.1.2.dist-info			jedi						prompt_toolkit-3.0.38.dist-info
+PyYAML-6.0.dist-info				jedi-0.18.2.dist-info				psutil
+Pygments-2.14.0.dist-info			jinja2						psutil-5.9.4.dist-info
+QtPy-2.3.0.dist-info				jsonpointer-2.3.dist-info			ptyprocess
+Send2Trash-1.8.0.dist-info			jsonpointer.py					ptyprocess-0.7.0.dist-info
+__pycache__					jsonschema					pure_eval
+_argon2_cffi_bindings				jsonschema-4.17.3.dist-info			pure_eval-0.2.2.dist-info
+_cffi_backend.cpython-311-darwin.so		jupyter-1.0.0.dist-info				pvectorc.cpython-311-darwin.so
+_pyrsistent_version.py				jupyter.py					pycparser
+_yaml						jupyter_client					pycparser-2.21.dist-info
+anyio						jupyter_client-8.0.3.dist-info			pygments
+anyio-3.6.2.dist-info				jupyter_console					pyrsistent
+appnope						jupyter_console-6.6.3.dist-info			pyrsistent-0.19.3.dist-info
+appnope-0.1.3.dist-info				jupyter_core					python_dateutil-2.8.2.dist-info
+argon2						jupyter_core-5.2.0.dist-info			python_json_logger-2.0.7.dist-info
+argon2_cffi-21.3.0.dist-info			jupyter_events					pythonjsonlogger
+argon2_cffi_bindings-21.2.0.dist-info		jupyter_events-0.6.3.dist-info			pyzmq-25.0.0.dist-info
+arrow						jupyter_server					qtconsole
+arrow-1.2.3.dist-info				jupyter_server-2.4.0.dist-info			qtconsole-5.4.0.dist-info
+asttokens					jupyter_server_terminals			qtpy
+asttokens-2.2.1.dist-info			jupyter_server_terminals-0.4.4.dist-info	rfc3339_validator-0.1.4.dist-info
+attr						jupyterlab_pygments				rfc3339_validator.py
+attrs						jupyterlab_pygments-0.2.2.dist-info		rfc3986_validator-0.1.1.dist-info
+attrs-22.2.0.dist-info				jupyterlab_widgets				rfc3986_validator.py
+backcall					jupyterlab_widgets-3.0.5.dist-info		send2trash
+backcall-0.2.0.dist-info			markupsafe					six-1.16.0.dist-info
+beautifulsoup4-4.11.2.dist-info			matplotlib_inline				six.py
+bleach						matplotlib_inline-0.1.6.dist-info		sniffio
+bleach-6.0.0.dist-info				mistune						sniffio-1.3.0.dist-info
+bs4						mistune-2.0.5.dist-info				soupsieve
+cffi						nbclassic					soupsieve-2.4.dist-info
+cffi-1.15.1.dist-info				nbclassic-0.5.3.dist-info			stack_data
+comm						nbclient					stack_data-0.6.2.dist-info
+comm-0.1.2.dist-info				nbclient-0.7.2.dist-info			terminado
+dateutil					nbconvert					terminado-0.17.1.dist-info
+debugpy						nbconvert-7.2.9.dist-info			tinycss2
+debugpy-1.6.6.dist-info				nbformat					tinycss2-1.2.1.dist-info
+decorator-5.1.1.dist-info			nbformat-5.7.3.dist-info			tornado
+decorator.py					nest_asyncio-1.5.6.dist-info			tornado-6.2.dist-info
+defusedxml					nest_asyncio.py					traitlets
+defusedxml-0.7.1.dist-info			notebook					traitlets-5.9.0.dist-info
+executing					notebook-6.5.3.dist-info			uri_template
+executing-1.2.0.dist-info			notebook_shim					uri_template-1.2.0.dist-info
+fastjsonschema					notebook_shim-0.2.2.dist-info			wcwidth
+fastjsonschema-2.16.3.dist-info			packaging					wcwidth-0.2.6.dist-info
+fqdn						packaging-23.0.dist-info			webcolors-1.12.dist-info
+fqdn-1.5.1.dist-info				pandocfilters-1.5.0.dist-info			webcolors.py
+idna						pandocfilters.py				webencodings
+idna-3.4.dist-info				parso						webencodings-0.5.1.dist-info
+ipykernel					parso-0.8.3.dist-info				websocket
+ipykernel-6.21.3.dist-info			pexpect						websocket_client-1.5.1.dist-info
+ipykernel_launcher.py				pexpect-4.8.0.dist-info				widgetsnbextension
+ipython-8.11.0.dist-info			pickleshare-0.7.5.dist-info			widgetsnbextension-4.0.5.dist-info
+ipython_genutils				pickleshare.py					yaml
+ipython_genutils-0.2.0.dist-info		platformdirs					zmq
+ipywidgets					platformdirs-3.1.1.dist-info
+ipywidgets-8.0.4.dist-info			prometheus_client
+
+# Below is where the pip associated with this particular version of Python (python3.11) "lives"
+
+>>> sos.B( 'ls /opt/homebrew/lib/python3.11/site-packages' )
+_distutils_hack			pip				pkg_resources			setuptools-65.6.3.dist-info
+distutils-precedence.pth	pip-22.3.1.dist-info		setuptools
+
+# the ones below have to do with CPython "core" (all C/C++ libraries)
+
+>>> sos.B( 'ls /opt/homebrew/Cellar/python@3.11/3.11.1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/lib-dynload' )
+_asyncio.cpython-311-darwin.so			_lzma.cpython-311-darwin.so			_typing.cpython-311-darwin.so
+_bisect.cpython-311-darwin.so			_md5.cpython-311-darwin.so			_uuid.cpython-311-darwin.so
+_blake2.cpython-311-darwin.so			_multibytecodec.cpython-311-darwin.so		_xxsubinterpreters.cpython-311-darwin.so
+_bz2.cpython-311-darwin.so			_multiprocessing.cpython-311-darwin.so		_xxtestfuzz.cpython-311-darwin.so
+_codecs_cn.cpython-311-darwin.so		_opcode.cpython-311-darwin.so			_zoneinfo.cpython-311-darwin.so
+_codecs_hk.cpython-311-darwin.so		_pickle.cpython-311-darwin.so			array.cpython-311-darwin.so
+_codecs_iso2022.cpython-311-darwin.so		_posixshmem.cpython-311-darwin.so		audioop.cpython-311-darwin.so
+_codecs_jp.cpython-311-darwin.so		_posixsubprocess.cpython-311-darwin.so		binascii.cpython-311-darwin.so
+_codecs_kr.cpython-311-darwin.so		_queue.cpython-311-darwin.so			cmath.cpython-311-darwin.so
+_codecs_tw.cpython-311-darwin.so		_random.cpython-311-darwin.so			fcntl.cpython-311-darwin.so
+_contextvars.cpython-311-darwin.so		_scproxy.cpython-311-darwin.so			grp.cpython-311-darwin.so
+_crypt.cpython-311-darwin.so			_sha1.cpython-311-darwin.so			math.cpython-311-darwin.so
+_csv.cpython-311-darwin.so			_sha256.cpython-311-darwin.so			mmap.cpython-311-darwin.so
+_ctypes.cpython-311-darwin.so			_sha3.cpython-311-darwin.so			nis.cpython-311-darwin.so
+_ctypes_test.cpython-311-darwin.so		_sha512.cpython-311-darwin.so			pyexpat.cpython-311-darwin.so
+_curses.cpython-311-darwin.so			_socket.cpython-311-darwin.so			readline.cpython-311-darwin.so
+_curses_panel.cpython-311-darwin.so		_sqlite3.cpython-311-darwin.so			resource.cpython-311-darwin.so
+_datetime.cpython-311-darwin.so			_ssl.cpython-311-darwin.so			select.cpython-311-darwin.so
+_dbm.cpython-311-darwin.so			_statistics.cpython-311-darwin.so		syslog.cpython-311-darwin.so
+_decimal.cpython-311-darwin.so			_struct.cpython-311-darwin.so			termios.cpython-311-darwin.so
+_elementtree.cpython-311-darwin.so		_testbuffer.cpython-311-darwin.so		unicodedata.cpython-311-darwin.so
+_hashlib.cpython-311-darwin.so			_testcapi.cpython-311-darwin.so			xxlimited.cpython-311-darwin.so
+_heapq.cpython-311-darwin.so			_testimportmultiple.cpython-311-darwin.so	xxlimited_35.cpython-311-darwin.so
+_json.cpython-311-darwin.so			_testinternalcapi.cpython-311-darwin.so		zlib.cpython-311-darwin.so
+_lsprof.cpython-311-darwin.so			_testmultiphase.cpython-311-darwin.so
+
+>>> def F0412_1300( a : int, b : int ) -> int :
+...   '''
+...   This function is a test.
+...   It is accorded a docString to see its effects.
+...   '''
+...   return a + b
+... 
+>>> 
+
+>>> F0412_1300( 3, 5 )
+8
+
+>>> dir( F0412_1300 )
+['__annotations__', '__builtins__', '__call__', '__class__', '__closure__', '__code__', '__defaults__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__get__', '__getattribute__', '__getstate__', '__globals__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__kwdefaults__', '__le__', '__lt__', '__module__', '__name__', '__ne__', '__new__', '__qualname__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__']
+
+>>> F0412_1300.__call__( 3, 5 )
+8
+
+>>> F0412_1300.__doc__
+'\n  This function is a test.\n  It is accorded a docString to see its effects.\n  '
+
+>>> help( F0412_1300 )
+Help on function F0412_1300 in module __main__:
+
+F0412_1300(a: int, b: int) -> int
+    This function is a test.
+    It is accorded a docString to see its effects.
+(END)
+
+>>> def F0412_1330() :
+...   '''
+... Let's see whether the docString itself needs to be indented.
+... The guess is No,
+...   '''
+...   pass
+... 
+>>> help( F0412_1330 )
+Help on function F0412_1330 in module __main__:
+
+F0412_1330()
+    Let's see whether the docString itself needs to be indented.
+    The guess is No,
+(END)
+
+https://betterprogramming.pub/how-to-write-proper-docstrings-for-a-python-function-7c40b8d2e153
+
+#############################
+
+有什麼變數與什麼functions、如何知道怎麼用 - END
+
+#############################
+
+"This is just the beginning." 
+(E.g., see pp. 26-42 of reference.pdf (version 3.7.4) for descriptions of the special methods)
+
+- hsia
+
+-------------------------------------------------------------
+
+An important modification to our previous class-notes :
+
+Parameter-Passing-Rule summary :
+
+  Function definition :    def F1( plain-para, para-with-defaults, *para, para-with-defaults, **kwpara ) : ...
+
+  Note : Once you have '*para' appearing in the parameter list, arguments corresponding to the ones behind it can only be passed using keywords.
+
+  Keyword-enfocement  :    def F2( paras-that-need-not-be-passed-using-keyword, *, paras-that-must-be-passed-with-the-use-of-keywords ) : ...
+
+  Therefore,
+             def F( ..., *para, ... ) : ...
+             =
+             def F( ..., *para, *, ... ) : ...
+             # However, Python does not allow us to define parameters
+ this way (we can only write >>def F( a, *, b ) : ...<<)
+
+  Position-enforcement : def F3( paras-are-matched-by-position-only, /, paras-that-need-not-be-matched-by-positions ) : ...
+
+                         # a slash in the parameter list of a function denotes that the parameters prior to it are positional-only.
+
+  Combined-enforcement : def F4( paras-that-are-matched-by-position-only, /, *, paras-that-must-be-passed-with-the-use-of-keywords )
+
+  --- whatever the case may be, the safest way to call a function is ---
+
+  Function call       :    F( plain-arguments, keyword-arguments )
+
+  ----------
+
+  >>> def F0408_1800( a, b, /, *, c, d ) :
+  ...   print( a, b, c, d )
+  ... 
+  >>> F0408_1800( 10, 20, d = 30, c = 40 )
+  10 20 40 30
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+A quick summary of previous classnotes.
+
+-------------------------------------------------------------
+
+How to AVOID the problem of 「pipED the correct package but python gives a ModuleNotFoundError and says there is no such module」
+
+1. There may be many versions of Python installed on our computer.
+
+   Just >>python[TAB][TAB]<< and we will see what versions of python are installed on our computer
+
+   e.g.,
+
+   > python   # 'python[TAB][TAB]'
+   python              python2             python3             python3.10          python3.11          python3.9-config
+   python-config       python2.7           python3-config      python3.10-config   python3.11-config   pythonw
+   python.app          python2.7-config    python3-intel64     python3.10-intel64  python3.9           pythonw2.7
+
+2. Each version of python comes (in theory at least) with a version of 'pip', which is located under the same 'bin/' as what that particular version of python is located. (If there is no 'pip' under the same 'bin/' as the pythonX.Y we are using, then perhaps try >>pythonX.Y -m ensurepip --upgrade<< to get that corresponding 'pip' first.) (>>pythonX.Y -m pip install --upgrade pip setuptools wheel<< ???)
+
+3. Either we use this "right" version of 'pip' to do 'pip install ...' (so that the things we install are indeed put in the "right" places),
+
+   or we do something like 'pythonX.Y -m pip install <packageName>' (or 'pythonX.Y -m pip install -user <packageName>', if there is a 'sudo' requirement), so that pythonX.Y itself chooses the right 'pip' to run, where pythonX.Y is the particular version of python we intend to use for running the being-installed-package.
+
+4. To find where the "right" version of 'pip' is located :
+
+   (a) Run the particular version of python we want to use
+       e.g.,
+       > python3.11
+
+   (b) >>> import os
+
+   (c) >>> os.__file__
+       '/opt/homebrew/Cellar/python@3.11/3.11.1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/os.py'
+
+   (d) 'os.py' is located under some 'lib' ;
+       under the same parent directory of this 'lib/' is a corresponding 'bin/' ;
+       in theory, pythonX.Y is located this 'bin/' ;
+       under this 'bin/', there should be a version of 'pip' ; this 'pip' is the "right" version of 'pip' to use.
+
+       e.g.,
+       >>> sos.B( 'ls -al /opt/homebrew/Cellar/python@3.11/3.11.1/Frameworks/Python.framework/Versions/3.11/bin' )
+       total 184
+       drwxr-xr-x   9 USER  GROUP    288  2  4 14:50 .
+       drwxr-xr-x  10 USER  GROUP    320  1 22 14:52 ..
+       -rwxr-xr-x   1 USER  GROUP    173  1 22 14:52 2to3-3.11
+       -rwxr-xr-x   1 USER  GROUP    171  1 22 14:52 idle3.11
+       -rwxr-xr-x   1 USER  GROUP    249  2  4 14:50 pip3
+       -rwxr-xr-x   1 USER  GROUP    249  2  4 14:50 pip3.11
+       -rwxr-xr-x   1 USER  GROUP    156  1 22 14:52 pydoc3.11
+       -rwxr-xr-x   1 USER  GROUP  69168  1 22 14:52 python3.11
+       -rwxr-xr-x   1 USER  GROUP   2115  1 22 14:52 python3.11-config
+
+5. Go to the directory where this "right" version of 'pip' is located, and then do './pip install ...' in that directory.
+
+   e.g.,
+   > cd /opt/homebrew/Cellar/python@3.11/3.11.1/Frameworks/Python.framework/Versions/3.11/bi
+   > ./pip3 install ...
+
+-------------------------------------------------------------
+
+A suggested way to make a Python script a command ...
+
+1. Content of the script file : 
+
+# assume that the path of 'python3.9' is within $PATH
+
+> cat PythonScript.py
+#!/usr/bin/env python3
+print( "hi" )
+
+2. Alternative content of the script file (this does not requre that the path of 'python3.9' is within $PATH)
+
+#!<full path of python3.9>
+... # python code
+
+3. chmod u+x PythonScript.py
+
+4. ./PythonScript.py
+
+5. 
+
+> cp PythonScript.py ~/bin/PythonCmd
+> PythonCmd   # if $PATH contains this path (/home/wang/bin)
+   
+-------------------------------------------------------------
+
+A suggested way of doing "list piping" ... (one script prints the value of a list and the other script reads in the list)
+
+1. Content of the python script (call it 'argParseProg03Out' for the moment) that does the output :
+
+(a) output to a file (print the value of the list named 'a' to the file)
+
+File content below ---
+
+outfile = open( outfileName, mode = 'w' )
+pprint( a, stream = outfile, width = 10, indent = 2 )
+
+File content above ---
+
+(b) output to stdout :
+
+File content below ---
+
+pprint( a, width = 10, indent = 2 )
+
+File content above ---
+
+(2) Content of the Python script (call it 'argParseProg03In' for the moment) that does the input :
+
+(a) read from a file
+
+File content below ---
+
+infile = open( args.infile, mode = 'r' )
+inputStr = infile.read()
+a = eval( inputStr )
+
+File content above ---
+
+(b) read from stdin 
+
+File content below ---
+
+inputStr = sys.stdin.read()
+a = eval( inputStr )
+
+File content above ---
+
+3. Ways of doing "list piping"
+
+(a) > ./argParseProg03Out | ./argParseProg03In
+    # or, if the two are already made Linux commands, ##### > argParseProg03Out | argParseProg03In #####
+
+(b) > ./argParseProg03Out -of Result357.py && ./argParseProg03In -if Result357.py    # '-of' and '-if' are options for the scripts
+    # or, if the two are already mad Linux commands, 
+    #    > argParseProg03Out -of Result357.py && argParseProg03In -if Result357.p
+
+-------------------------------------------------------------
+
+Ways of handling command-line options in a Python script :
+
+### Below is an example (for 'argParseProg03In') ###
+
+import argparse
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument( '-if', '--infile', type = str, help = 'the file to input from' ) # for keyword argument (options)
+
+args = parser.parse_args()
+
+# now 'args.infile' contains the value of the command-line option '-if' 
+
+if args.infile != None :
+  print( '\n' + 'infile : ' + args.infile )
+
+if args.infile != None :
+
+  infile = open( args.infile, mode = 'r' )
+
+  inputStr = infile.read()
+
+else :
+
+  inputStr = sys.stdin.read()
+
+a = eval( inputStr )
+
+### Above is an example (for 'argParseProg03In') ###
+
+-------------------------------------------------------------
+
+Suggested ways of invoking the Python interpreter.
+
+1. Assume that this line ##### export PYTHONPATH=~/bin:$PYTHONPATH ##### is in ~/.bash_profile
+
+python3.11  # or your favorite Python interpreter
+
+# once we are within "the Python environment"
+
+import os, sys
+
+import StartUpScript as sos    # so that we can run Linux commands (e.g., 'ls ~/bin') as, say, sos.B( 'ls ~/bin' )
+# OR just 'from StartUpScript import *', so that we can directly use 'pprint' and 'B' without giving them the prefix 'sos.'
+
+2. If the line ##### export PYTHONPATH=~/bin:$PYTHONPATH ##### is not in ~/.bash_profile or the above does not work for whatever reason ...
+
+python3.11 -i ~/bin/StartUpScript
+
+# once we are within the Python environment, we can use 'B' and 'pprint' directly ...
+
+--------------------------------------------------------------------------------------
+
+--- Content of StartUpScript.py ---
+
+#!/usr/bin/python3.9
+# To use a coding scheme other than UTF-8, put, e.g., '# -*- coding: cp1252 -*-' on this line, where 'cp1252' (Windows-1252) must be a valid codecs supported by Python.
+
+import os
+import subprocess
+import sys
+from pprint import pprint  
+
+## Since we now have B(), L() should not be needed.
+## One "drawback" with L() is that it runs 'cmd' in the background,
+## causing '>>>' to be displayed before the output of 'cmd' is displayed,
+## making it look like the user is not prompted after the output of 'cmd' appears.
+
+# def L( cmd ) :
+#   subprocess.Popen( cmd, shell=True, executable='/bin/bash' )
+
+# 'S' means 'sh' (the shell that is used to run the 'cmd'
+
+def S( cmd ) :
+  os.system( cmd )
+
+# 'B' means 'bash' ;
+#
+# Remember to always use >>' ... '<< to specify a bash-command (i.e., use single-quotes for specifying the cmd-string).
+# In specifying the command itself (i.e., the >>...<< of >>'...'<<), use >>"<< as much as possible.
+# e.g.,
+# B( 'LANG=zh_TW.UTF-8 ; var123="The dollar expression \$(( 3 + 5 )) will give us $((3+5)), while \`date\` will give us `date`" ; echo $var123 ' )
+#
+# If the use of >>'<< is absolutely necessary for specifying the bash-command to execute, see if >>\'<< will work.
+# However, there is no guarantee (that >>\'<< will work).
+#
+# Of course, we can also run >>B( './BashTestScript.sh' )<< to simplify typing.
+# But to try to prevent from potential hacking, the file permission bits of this shell script (e.g., BashTestScript.sh)
+# should be such that the 'setuid' and 'setgid' bits are both set (i.e., do >>chmod 7755 BashTestScript.sh<< in advance)
+
+def B( cmd ) :
+  os.system( "bash -c '" + cmd + "'" )
+
+# # Better not print below, so as not to distort the output
+# print('\nPython %s on %s' % (sys.version, sys.platform))
+# print( "\n--- StartUpScript.py loaded ---\n" )
+
+--- END - Content of StartUpScript.py ---

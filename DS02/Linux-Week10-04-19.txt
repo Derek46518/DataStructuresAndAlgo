@@ -1,0 +1,338 @@
+Week 10 (Theme of the week : Command separation and shell substitution - an almost-complete version)
+
+  # Among others, these should be introduced : $(())    `  `   $( )  '...'   "..."   $'...'
+
+  command separation    # pipeline separation ( ;  ||  &&  & ), where the postfix of a pipleline is either | or > or < or >> or << or |& or the like.
+  shell substitution
+  ---
+  alias
+  practices
+
+бубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубу
+
+the Unix/Linux (shell-level) convention of
+  жие\бG 0
+  ев▒╤бG лD0
+when executing a program or evaluating a shell-level expression
+
+     as opposed to
+
+C/C++ (programming) convention of
+  false : 0
+  true : лD0
+when calling a function or evaluating an expression
+
+бубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубу
+
+> whereis false
+false: /usr/bin/false /usr/share/man/man1/false.1.gz /usr/share/man/man1p/false.1p.gz
+
+> whereis true
+true: /usr/bin/true /usr/share/man/man1/true.1.gz /usr/share/man/man1p/true.1p.gz
+
+> false ; echo $?
+1
+
+> true ; echo $?
+0
+
+> happyHoliday ; echo $?
+bash: happyHoliday: command not found
+127
+
+> ls happyHoliday ; echo $?
+ls: cannot access happyHoliday: No such file or directory
+2
+
+> date ; echo $?
+Sun Nov 27 13:37:13 CST 2022
+0
+
+бубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубу
+
+Separation of basic commands ( ;   |   ||   &&   &   >   >>   < )  # I call it "command separation"
+
+> date ; date
+Sun Nov 27 14:39:42 CST 2022
+Sun Nov 27 14:39:42 CST 2022
+
+> date | date
+Sun Nov 27 14:39:59 CST 2022
+
+# A C program fragment, with :    head -> [ data | next --]--> [ data | next --]--> [ data | next --]--> |||
+#               or it may be :    head -> |||
+
+  walk = head ;
+  while ( walk != NULL && walk->data != key )
+    walk = walk->next ;
+
+  // assert : either walk is NULL or walk is pointing at the node with its data being key
+
+> true && date
+Sun Nov 27 14:43:32 CST 2022
+> false && date
+>
+
+> true || date
+> false || date
+Sun Nov 27 14:44:44 CST 2022
+>
+
+  > InfiniteLoop & date
+       VS.
+  > InfiniteLoop ; date
+
+> echo $$
+21504
+
+> date ; date
+Sun Nov 27 14:47:59 CST 2022
+Sun Nov 27 14:47:59 CST 2022
+
+> date & date
+[1] 22055
+Sun Nov 27 14:48:04 CST 2022
+Sun Nov 27 14:48:04 CST 2022
+[1]+  Done                    date
+
+> date & date
+[1] 22062
+Sun Nov 27 14:49:24 CST 2022
+Sun Nov 27 14:49:24 CST 2022
+[1]+  Done                    date
+
+> echo $$
+21504
+
+> PrintPara 123 456 PrintPara 789
+Num of para : 5
+Arg 0 : PrintPara
+Arg 1 : 123
+Arg 2 : 456
+Arg 3 : PrintPara
+Arg 4 : 789
+
+> PrintPara 123 ; PrintPara 789
+Num of para : 2
+Arg 0 : PrintPara
+Arg 1 : 123
+Num of para : 2
+Arg 0 : PrintPara
+Arg 1 : 789
+
+> PrintPara 123 | PrintPara 789
+Num of para : 2
+Arg 0 : PrintPara
+Arg 1 : 789
+
+> PrintPara 123 && PrintPara 789
+Num of para : 2
+Arg 0 : PrintPara
+Arg 1 : 123
+Num of para : 2
+Arg 0 : PrintPara
+Arg 1 : 789
+
+> PrintPara 123 || PrintPara 789
+Num of para : 2
+Arg 0 : PrintPara
+Arg 1 : 123
+
+> PrintPara 123 & PrintPara 789
+[1] 22104
+Num of para : 2
+Arg 0 : PrintPara
+Arg 1 : 123
+Num of para : 2
+Arg 0 : PrintPara
+Arg 1 : 789
+[1]+  Done                    PrintPara 123
+
+> PrintPara 123 &
+[1] 22108
+Num of para : 2
+Arg 0 : PrintPara
+Arg 1 : 123
+[1]+  Done                    PrintPara 123
+
+Command separation ( ;   |   ||   &&   &   >   >>   < )
+
+бубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубу
+
+Shell substitution ($, `...` and '...' and "...")
+
+> echo $$
+21504
+
+> PrintPara $$
+Num of para : 2
+Arg 0 : PrintPara
+Arg 1 : 21504
+
+> abc=HiHowAreYou
+> echo abc
+abc
+> echo $abc
+HiHowAreYou
+> echo $abcd
+
+> echo ${abc}d
+HiHowAreYoud
+> PrintPara abc $abc
+Num of para : 3
+Arg 0 : PrintPara
+Arg 1 : abc
+Arg 2 : HiHowAreYou
+
+> xyz='Hi How are you'
+> echo $xyz
+Hi How are you
+> www=Hi How are you
+bash: How: command not found
+> echo $www
+
+> PrintPara $xyz
+Num of para : 5
+Arg 0 : PrintPara
+Arg 1 : Hi
+Arg 2 : How
+Arg 3 : are
+Arg 4 : you
+> PrintPara 'Hi How are you'
+Num of para : 2
+Arg 0 : PrintPara
+Arg 1 : Hi How are you
+
+> echo date
+date
+
+> echo `date`
+Sun Nov 27 15:09:55 CST 2022
+
+> PrintPara `date`
+Num of para : 7
+Arg 0 : PrintPara
+Arg 1 : Sun
+Arg 2 : Nov
+Arg 3 : 27
+Arg 4 : 15:10:03
+Arg 5 : CST
+Arg 6 : 2022
+
+> echo $( date )
+Sun Nov 27 15:09:55 CST 2022
+
+> PrintPara $( date )
+Num of para : 7
+Arg 0 : PrintPara
+Arg 1 : Sun
+Arg 2 : Nov
+Arg 3 : 27
+Arg 4 : 15:10:03
+Arg 5 : CST
+Arg 6 : 2022
+
+> PrintPara $'This is \na book.'Is it\?
+> PrintPara $'This is \na book.'Is\ it\?
+
+> PrintPara "How are you on date"
+Num of para : 2
+Arg 0 : PrintPara
+Arg 1 : How are you on date
+
+> PrintPara "How are you on `date`"
+Num of para : 2
+Arg 0 : PrintPara
+Arg 1 : How are you on Sun Nov 27 15:11:28 CST 2022
+
+> PrintPara 'How are you on `date`'
+Num of para : 2
+Arg 0 : PrintPara
+Arg 1 : How are you on `date`
+
+> def=`date`
+> echo $def
+Sun Nov 27 15:12:44 CST 2022
+> PrintPara $def
+Num of para : 7
+Arg 0 : PrintPara
+Arg 1 : Sun
+Arg 2 : Nov
+Arg 3 : 27
+Arg 4 : 15:12:44
+Arg 5 : CST
+Arg 6 : 2022
+
+> PrintPara "`date`"
+Num of para : 2
+Arg 0 : PrintPara
+Arg 1 : Sun Nov 27 15:15:26 CST 2022
+
+> PrintPara -r red/green -r fat/'terribly small in size'
+Num of para : 5
+Arg 0 : PrintPara
+Arg 1 : -r
+Arg 2 : red/green
+Arg 3 : -r
+Arg 4 : fat/terribly small in size
+
+Shell substitution ($, `...` and '...' and "...")
+
+бубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубу
+
+
+vi .bashrc
+
+# enter the following two lines at the end
+
+alias WhatVars="set | egrep -n '^[_[:alnum:]]+=.*$'"
+alias WhatFuncs="set | egrep -n '^[_[:alnum:]]+[[:space:]]*\(\)[[:space:]]*$'"
+
+# now ESCAPE :wq
+
+source ~/.bashrc
+
+# try: WhatVars | grep PS1
+# try: WhatFuncs
+
+> alias VIEW-BIG5='LANG=zh_TW.BIG5'
+> alias VIEW-UTF-8='LANG=zh_TW.UTF-8'
+> alias
+
+> alias WhatADay='`date`'
+> WhatADay
+д@: command not found
+> alias WhatADay='echo `date`'
+> WhatADay
+д@ 11ды 21 17:22:22 CST 2022
+
+> alias WhatAVar='$whatavar'
+> whatavar='echo `date` $((3+5))'
+> WhatAVar          # Did not work (>>`date` $((3+5))<< remains unchanged)
+> alias WhatAVarAgain='echo `date` $((3+5))'
+> WhatAVarAgain     # Worked (>>`date` $((3+5))<< changed)
+> alias StrangeWhat=WhatADay
+> StrangeWhat
+> alias StrangeWhat=WhatAVarAgain
+> StrangeWhat
+
+> alias abc='echo'
+> myDateABC='`date`'
+> abc $myDateABC
+`date`
+> echo $myDateABC
+`date`
+> `date`
+дG: command not found
+
+
+бубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубубу
+
+Practices
+
+
+
+
+
+
+
