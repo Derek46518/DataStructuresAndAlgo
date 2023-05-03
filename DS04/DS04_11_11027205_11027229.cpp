@@ -1,7 +1,7 @@
 /**
  * @file DS04_11_11027205_11027229.cpp
  * @author Derek(11027229) and Nier(11027205)
- * @brief ?�是一?�被?�到?��?�??��?�?��作業4
+ * @brief 
  *
  * @version 1.0
  * @date 2023-04-21
@@ -19,7 +19,8 @@
 #include <cmath>
 #include <iomanip>
 #include <algorithm>
-
+#include <queue>
+#include <unordered_set>
 using namespace std;
 
 struct Data
@@ -73,9 +74,9 @@ class Graph{
 
         void writeFile(string fileName){
             size_t pos = fileName.find_last_of('.');
-            // printf("aaaa");
+            
             if (pos != std::string::npos) {
-                // Replace the substring after the last '.' with "bin"
+                // Replace the substring after the last '.' with "adj"
                 fileName.replace(pos + 1, std::string::npos, "adjt");
             }
 
@@ -85,7 +86,7 @@ class Graph{
             int count = 0;
             for(Node * node : graph){
                 if(i<10)ofs << "[  " << i <<"] "<<node->currentID<<":"<<endl;
-                else if (1<100) ofs << "[ " << i <<"] "<<node->currentID<<":"<<endl;
+                else if (i<100) ofs << "[ " << i <<"] "<<node->currentID<<":"<<endl;
                 else ofs << "[" << i <<"] "<<node->currentID<<":"<<endl;
                 int j = 1;
                 for(pair<Node *,float> p : node ->pairs){
@@ -98,6 +99,7 @@ class Graph{
                 ofs << endl;
                 i++;
             }
+            ofs << "<<< There are " << i-1 << " IDs in total. >>>\n";
             cout << "<<< There are " << i-1 << " IDs in total. >>>\n\n";
             cout << "<<< There are " << count << " nodes in total. >>>\n";
             ofs.close();
@@ -130,7 +132,56 @@ class Graph{
                 node -> printNodes();
             }
         }
+        
+        void traverse(string fileName){
+        	size_t pos = fileName.find_last_of('.');
+            if (pos != std::string::npos) {
+                // Replace the substring after the last '.' with "adj"
+                fileName.replace(pos + 1, std::string::npos, "cntt");
+            }
+            ofstream ofs(fileName);
+        	ofs << "<<< There are " << graph.size() << " IDs in total. >>>" << endl;
+        	unordered_set<Node*> visit;
+			queue<Node *> q;
+			int i = 1;
+        	for(Node * node : graph){
+        		
+        		q.push(node);
+        		innerTravel(node,visit,q);
+        		
+        		visit.erase(node);
+        		
+        		if(i<10) ofs << "  [" << i << "] " << node->currentID<<"("<< <<"):\n";
+        		else if(i<100) ofs << " [" << i << "] " << node->currentID<<"("<< <<"):\n";
+        		else ofs << "[" << i << "] " << node->currentID<<"("<< <<"):\n";
+        		vector<Node * > visited(visit.begin(),visit.end());
+        		std::sort(visited.begin(),visited.end(),[](auto &g1, auto& g2){return g1->currentID<g2->currentID;});
+        		for(Node * n : visited){
+        			
+				}
+			
+        		
+        		visit.clear();
+        		i++;
+			}
+		}
+		void innerTravel(Node* node, unordered_set<Node*>& visited, queue<Node*>& q) {
+    		visited.insert(node);
 
+    		while (!q.empty()) {
+        		node = q.front();
+        		q.pop();
+
+        		for (auto& pair : node->pairs) {
+            		if (visited.count(pair.first) == 0) {
+                		visited.insert(pair.first);
+                		q.push(pair.first);
+            		}
+        		}
+    		}
+		}
+		
+		
     private:
         vector<Node*> graph;
         
@@ -162,7 +213,6 @@ void WriteToVec(string binFilename, vector<Data> &data)
 
 int getInt()
 {
-  // ?��??��?
   string s;
   getline(cin, s);
   int total = 0; // total
@@ -232,6 +282,7 @@ int main()
             		cout << "Please do mission 1 first\n";
 					break;
 				}
+				graph.traverse(fileName);
 				
 				
             break;
