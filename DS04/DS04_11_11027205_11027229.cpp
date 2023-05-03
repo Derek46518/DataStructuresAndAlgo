@@ -1,7 +1,7 @@
 /**
  * @file DS04_11_11027205_11027229.cpp
  * @author Derek(11027229) and Nier(11027205)
- * @brief ?™æ˜¯ä¸€?‹è¢«?åˆ°?„å?æ¡??¨ä?è§?±ºä½œæ¥­4
+ * @brief ?ï¿½æ˜¯ä¸€?ï¿½è¢«?ï¿½åˆ°?ï¿½ï¿½?ï¿½??ï¿½ï¿½?ï¿½?ï¿½ï¿½ä½œæ¥­4
  *
  * @version 1.0
  * @date 2023-04-21
@@ -53,9 +53,6 @@ class Node{
             cout << '\n';
         }
         string currentID;
-        
-    private:
-        
         vector<pair<Node *,float> > pairs;
 };
 
@@ -74,7 +71,33 @@ class Graph{
             return NULL;
         }
 
-        
+        void writeFile(string fileName){
+            size_t pos = fileName.find_last_of('.');
+            // printf("aaaa");
+            if (pos != std::string::npos) {
+                // Replace the substring after the last '.' with "bin"
+                fileName.replace(pos + 1, std::string::npos, "adjt");
+            }
+
+            ofstream ofs(fileName);
+            ofs << "<<< There are " << graph.size() << " IDs in total. >>>"<<endl;
+            int i = 1;
+            int count = 0;
+            for(Node * node : graph){
+                ofs << "[  " << i <<"] "<<node->currentID<<":"<<endl;
+                int j = 1;
+                for(pair<Node *,float> p : node ->pairs){
+                    ofs << "\t( "<<j<<") "<<p.first->currentID<<", "<<p.second;
+                    j++;
+                    count ++;
+                }
+                ofs << endl;
+                i++;
+            }
+            ofs << "<<< There are " << count << " nodes in total. >>>";
+            ofs.close();
+            
+        }
 
         
         void createGraph(vector<Data> data){
@@ -134,33 +157,82 @@ void WriteToVec(string binFilename, vector<Data> &data)
 
 int getInt()
 {
-  // ?ˆè??´è?
+  // ?ï¿½ï¿½??ï¿½ï¿½?
   string s;
   getline(cin, s);
   int total = 0; // total
-  int a;         // ?«å??„æ•¸å­?
+  int a;         
   if (s.length() == 0)
-    return -1; // å¦‚æ?ä½¿ç”¨?…ç›´?¥æ?ä¸‹enter å°±å???1(?·è?main?‚æ??±ä½¿?¨è€…è¼¸?¥éŒ¯èª?
+    return -1; 
   // string to integer
   for (int i = 0; i < s.length(); i++)
   {
     total *= 10;
     a = s[i] - '0';
     if (a < 0 || a > 9)
-      return -1; // å¦‚æ?ä¸åœ¨ç¯„å???å°±å???1 (?·è?main?‚æ??±ä½¿?¨è€…è¼¸?¥éŒ¯èª?
+      return -1; 
     total += a;
   }
-  return total; // å°‡å€¼å??³å???
+  return total; 
+}
+
+string addPrefix(string add, string s)
+{
+  stringstream ss;
+  ss << add;
+  ss << s;
+  ss << ".bin";
+  return ss.str();
+}
+
+bool readData(Graph & graph,vector<Data> &data, string & fileName){
+    if(fileName.size()==3)
+        fileName = addPrefix("pairs",fileName);
+    ifstream ifs;
+    ifs.open(fileName);
+    if(!ifs.is_open()){
+        printf("No File\n");
+        return false;
+    }
+    ifs.close();
+    
+    WriteToVec(fileName,data);
+    graph.createGraph(data);
+    return true;
 }
 
 int main()
 {
+
     vector<Data> data;
     Graph graph;
+    string fileName;
+    cout << "*** Graph data manipulation **\n* 0. QUIT                  *\n* 1. Build adjancency lists        *\n* 2. Compute connection counts        *\n* *************************************\n";
+    int n = getInt();
+    while(n!=0){
+        switch(n){
+            case 1:
+            cout << "Please input file name :";
+            getline(cin,fileName);
+            if(!readData(graph,data,fileName)){
+                break;
+            }
+            // graph.printAll();
+            graph.writeFile(fileName);
+            break;
+            
+            case 2 :
+            break;
+        }
+        cout << "*** Graph data manipulation **\n* 0. QUIT                  *\n* 1. Build adjancency lists        *\n* 2. Compute connection counts        *\n* *************************************\n";
+        n = getInt();
+    }
+    /*
     WriteToVec("pairs401.bin",data);
     for(Data d : data){
         cout << d.putID << ' ' << d.getID << ' ' << d.weight << '\n';
     }
     graph.createGraph(data);
     graph.printAll();
+    */
 }
