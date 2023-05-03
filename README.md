@@ -4,3 +4,5 @@
 不想被吳怡宏摧殘 可以退選
 請記得這個Repository的程式碼有版權，非貢獻者，請注意「不得抄襲」這裡面的「任何程式碼」
 否則會被 此Repository的擁有者 打到住進ICU
+
+影片範例 : https://youtube.com/playlist?list=PL50W4dsz0gF3cm99vQqZIXhsTXv2rJFDv
