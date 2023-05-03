@@ -2,7 +2,8 @@
  * @file DS04_11_11027205_11027229.cpp
  * @author Derek(11027229) and Nier(11027205)
  * @brief 
- *
+ * This is DS homework 4
+ * About building Graph and BFS
  * @version 1.0
  * @date 2023-04-21
  *
@@ -22,7 +23,10 @@
 #include <queue>
 #include <unordered_set>
 using namespace std;
-
+/**
+ * @brief struct of original data
+ * 
+ */
 struct Data
 {
     char putID[10] = {'\0'};
@@ -30,21 +34,44 @@ struct Data
     float weight;
 };
 
+/**
+ * @brief The class of node
+ * Every student ID is a node, store in currentID, the connection is recorded into pairs
+ * 
+ */
 class Node{
     public:
         
+        /**
+         * @brief Construct a new Node object
+         * 
+         * @param id student id
+         */
         Node(string id){
             currentID = id;
         }
-
+        /**
+         * @brief add pair in node
+         * 
+         * @param in neighbour node
+         * @param weight the weight of the path
+         */
         void addPair(Node * in, float weight){
             pairs.push_back(make_pair(in,weight));
         }
 
+        /**
+         * @brief sort pair by id
+         * 
+         */
         void sort(){
             std::sort(pairs.begin(),pairs.end(),[](const auto& n1, auto& n2){return n1.first->currentID <n2.first->currentID;});
         }
         
+        /**
+         * @brief print out the neighbours of every node. For debug use.
+         * 
+         */
         void printNodes(){
             for(auto p : pairs){
                 cout << p.first ->currentID << '\t' << p.second << '\t';
@@ -55,17 +82,40 @@ class Node{
         vector<pair<Node *,float> > pairs;
 };
 
+/**
+ * @brief The class of a graph
+ * This class is used to build graph and run BFS
+ * Adjencency list : graph
+ * 
+ * 
+ */
 class Graph{
     public:
+    
+        /**
+         * @brief clear graph
+         * 
+         */
         void clear(){
             graph.clear();
         }
+        /**
+         * @brief find the node corresponding the student ID.
+         * 
+         * @param str student ID
+         * @return Node* the node corresponding the student ID.
+         */
         Node * find(string str){
             for(Node *n : graph){
-                if (n->currentID==str) return n;
+                if (n->currentID==str) return n; // found node
             }
-            return NULL;
+            return NULL; // not found, return NULL
         }
+        /**
+         * @brief write .adj file. 
+         * after building graph, sort the Adjencency List by ID, and write the graph into the file.
+         * @param fileName 
+         */
         void writeFile(string fileName){
             size_t pos = fileName.find_last_of('.');            
             if (pos != std::string::npos) {
@@ -96,6 +146,12 @@ class Graph{
             cout << "<<< There are " << count << " nodes in total. >>>\n";
             ofs.close();
         }
+
+        /**
+         * @brief build the Graph
+         * 
+         * @param data vector of original data
+         */
         void createGraph(vector<Data> data){
             for(Data d : data){
                 Node * firstPair = find(d.putID);
@@ -115,24 +171,36 @@ class Graph{
             }
             std::sort(graph.begin(),graph.end(),[](auto &g1, auto& g2){return g1->currentID<g2->currentID;});
         }
+        /**
+         * @brief Print out the graph, for debug uses
+         * 
+         */
         void printAll(){
             for(Node * node : graph){
                 cout << node ->currentID << '\n';
                 node -> printNodes();
             }
         }
+
+        /**
+         * @brief travel the graph by BFS, and write the data into .cnt
+         * 
+         * @param fileName 
+         */
         void traverse(string fileName){
+            // create fileName
         	size_t pos = fileName.find_last_of('.');
             if (pos != std::string::npos) {
                 // Replace the substring after the last '.' with "adj"
                 fileName.replace(pos + 1, std::string::npos, "cntt");
             }
+            // open file
             ofstream ofs(fileName);
-        	ofs << "<<< There are " << graph.size() << " IDs in total. >>>" << endl;
-        	unordered_set<Node*> visit;
-        	vector< std::pair<string, vector<Node*> > > list;
-			queue<Node *> q;
-			// int i = 1;
+        	ofs << "<<< There are " << graph.size() << " IDs in total. >>>" << endl; // write
+        	unordered_set<Node*> visit; // store visited Node
+        	vector< std::pair<string, vector<Node*> > > list; // store all info
+			queue<Node *> q; // store unvisited node
+			
         	for(Node * node : graph){
         		// start travel
         		q.push(node);
@@ -144,11 +212,13 @@ class Graph{
         		vector<Node * > visited(visit.begin(),visit.end()); 
         		std::sort(visited.begin(),visited.end(),[](auto &g1, auto& g2){return g1->currentID<g2->currentID;});
         		list.push_back(make_pair(node->currentID,visited) ); // push back the visited list
-        		visit.clear();
+        		visit.clear(); // clear data
         		
 			}
+            // use stable sort to prevent order being washed.
 			std::stable_sort(list.begin(),list.end(),[](auto &g1, auto& g2){return g1.second.size()>g2.second.size();});
 			int i = 1;
+            // write data
 			for(pair<string, vector<Node*> >  a : list){
 				if(i<10) ofs << "[  " << i << "] " << a.first<<"("<< a.second.size()<<"):\n";
         		else if(i<100) ofs << "[ " << i << "] " << a.first<<"("<< a.second.size() <<"):\n";
@@ -166,13 +236,24 @@ class Graph{
 
 			cout << "<<< There are " << graph.size() << " IDs in total. >>>" << endl;
 		}
+        /**
+         * @brief inner traversal, using recursion
+         * 
+         * @param node current node
+         * @param visited visited nodes
+         * @param q the queue
+         */
 		void innerTravel(Node* node, unordered_set<Node*>& visited, queue<Node*>& q) {
-    		visited.insert(node);
+    		visited.insert(node); // insert current node to visited
     		while (!q.empty()) {
+                // get first node and pop
         		node = q.front();
         		q.pop();
+                // get neighbours
         		for (auto& pair : node->pairs) {
+                    // if not visited
             		if (visited.count(pair.first) == 0) {
+                        // insert into visited, and insert into queue
                 		visited.insert(pair.first);
                 		q.push(pair.first);
             		}
@@ -184,7 +265,12 @@ class Graph{
         vector<Node*> graph;
 };
 
-//  write binary to struct
+/**
+ * @brief Write binary file into vector
+ * 
+ * @param binFilename binary filename
+ * @param data output vector
+ */
 void WriteToVec(string binFilename, vector<Data> &data)
 {
     Data tempData;
@@ -207,7 +293,11 @@ void WriteToVec(string binFilename, vector<Data> &data)
 } // void WriteToVec
 
 
-
+/**
+ * @brief Get the integer of user input
+ * 
+ * @return int user input
+ */
 int getInt()
 {
   string s;
@@ -228,6 +318,13 @@ int getInt()
   return total; 
 }
 
+/**
+ * @brief add prefix to filename
+ * 
+ * @param add prefix
+ * @param s current filename
+ * @return string fixed filename
+ */
 string addPrefix(string add, string s)
 {
   stringstream ss;
@@ -237,6 +334,15 @@ string addPrefix(string add, string s)
   return ss.str();
 }
 
+/**
+ * @brief read the data by filename, and build graph
+ * 
+ * @param graph 
+ * @param data the output data.
+ * @param fileName the file to open
+ * @return true if the file exist
+ * @return false if the data doesn't exist
+ */
 bool readData(Graph & graph,vector<Data> &data, string & fileName){
     if(fileName.size()==3)
         fileName = addPrefix("pairs",fileName);
