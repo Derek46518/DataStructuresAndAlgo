@@ -98,6 +98,8 @@ class Graph{
          */
         void clear(){
             graph.clear();
+            graphIn.clear();
+            
         }
         /**
          * @brief find the node corresponding the student ID.
@@ -106,10 +108,13 @@ class Graph{
          * @return Node* the node corresponding the student ID.
          */
         Node * find(string str){
-            for(Node *n : graph){
-                if (n->currentID==str) return n; // found node
-            }
-            return NULL; // not found, return NULL
+        	
+			auto it = std::find_if(graphIn.begin(), graphIn.end(), [&](Node* node) { return node->currentID == str; });
+			if (it != graphIn.end()) {
+    			return *it;
+			} else {
+    			return NULL;
+			}
         }
         /**
          * @brief write .adj file. 
@@ -117,10 +122,15 @@ class Graph{
          * @param fileName 
          */
         void writeFile(string fileName){
+        	for(Node * n : graphIn){
+                n->sort();
+            }
+            graph = vector<Node* >(graphIn.begin(),graphIn.end());
+            std::sort(graph.begin(),graph.end(),[](auto &g1, auto& g2){return g1->currentID<g2->currentID;});
             size_t pos = fileName.find_last_of('.');            
             if (pos != std::string::npos) {
                 // Replace the substring after the last '.' with "adj"
-                fileName.replace(pos + 1, std::string::npos, "adj");
+                fileName.replace(pos + 1, std::string::npos, "adjt");
             }
             ofstream ofs(fileName);
             ofs << "<<< There are " << graph.size() << " IDs in total. >>>"<<endl;
@@ -158,25 +168,23 @@ class Graph{
                 Node * secondPair = find(d.getID);
                 if(firstPair==NULL) {
                     firstPair = new Node(d.putID);
-                    graph.push_back(firstPair);
+                    graphIn.insert(firstPair);
                 }
                 if(secondPair==NULL) {
                     secondPair = new Node(d.getID);
-                    graph.push_back(secondPair);
+                    graphIn.insert(secondPair);
                 }
                 firstPair->addPair(secondPair,d.weight);
             }
-            for(Node * n : graph){
-                n->sort();
-            }
-            std::sort(graph.begin(),graph.end(),[](auto &g1, auto& g2){return g1->currentID<g2->currentID;});
+            // graph = vector<Node*>(graphIn.begin(),graphIn.end());
+            
         }
         /**
          * @brief Print out the graph, for debug uses
          * 
          */
         void printAll(){
-            for(Node * node : graph){
+            for(Node * node : graphIn){
                 cout << node ->currentID << '\n';
                 node -> printNodes();
             }
@@ -192,11 +200,11 @@ class Graph{
         	size_t pos = fileName.find_last_of('.');
             if (pos != std::string::npos) {
                 // Replace the substring after the last '.' with "adj"
-                fileName.replace(pos + 1, std::string::npos, "cnt");
+                fileName.replace(pos + 1, std::string::npos, "cnttt");
             }
             // open file
             ofstream ofs(fileName);
-        	ofs << "<<< There are " << graph.size() << " IDs in total. >>>" << endl; // write
+        	ofs << "<<< There are " << graphIn.size() << " IDs in total. >>>" << endl; // write
         	unordered_set<Node*> visit; // store visited Node
         	vector< std::pair<string, vector<Node*> > > list; // store all info
 			queue<Node *> q; // store unvisited node
@@ -263,6 +271,7 @@ class Graph{
 		
     private:
         vector<Node*> graph;
+        unordered_set<Node*> graphIn;
 };
 
 /**
