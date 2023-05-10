@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <queue>
 #include <unordered_set>
+#include <set>
 using namespace std;
 /**
  * @brief struct of original data
@@ -41,7 +42,6 @@ struct Data
  */
 class Node{
     public:
-        
         /**
          * @brief Construct a new Node object
          * 
@@ -57,17 +57,9 @@ class Node{
          * @param weight the weight of the path
          */
         void addPair(Node * in, float weight){
-            pairs.push_back(make_pair(in,weight));
+            pairs.insert(make_pair(in,weight));
         }
 
-        /**
-         * @brief sort pair by id
-         * 
-         */
-        void sort(){
-            std::sort(pairs.begin(),pairs.end(),[](const auto& n1, auto& n2){return n1.first->currentID <n2.first->currentID;});
-        }
-        
         /**
          * @brief print out the neighbours of every node. For debug use.
          * 
@@ -79,7 +71,20 @@ class Node{
             cout << '\n';
         }
         string currentID;
-        vector<pair<Node *,float> > pairs;
+        struct compp{
+    		bool operator() (const pair<Node*, float>& a, const pair<Node*, float>& b) const {
+        		return a.first->currentID < b.first->currentID;
+    		}
+		};
+        // vector<pair<Node *,float> > pairs;
+        set<pair<Node *,float>, compp > pairs;
+        
+};
+
+struct comp{
+	bool operator() (const Node* nodeA, const Node* nodeB) const{
+		return nodeA->currentID <nodeB->currentID;
+	}
 };
 
 /**
@@ -97,7 +102,7 @@ class Graph{
          * 
          */
         void clear(){
-            graph.clear();
+            // graph.clear();
             graphIn.clear();
             
         }
@@ -108,7 +113,6 @@ class Graph{
          * @return Node* the node corresponding the student ID.
          */
         Node * find(string str){
-        	
 			auto it = std::find_if(graphIn.begin(), graphIn.end(), [&](Node* node) { return node->currentID == str; });
 			if (it != graphIn.end()) {
     			return *it;
@@ -122,21 +126,23 @@ class Graph{
          * @param fileName 
          */
         void writeFile(string fileName){
+        	/*
         	for(Node * n : graphIn){
                 n->sort();
             }
-            graph = vector<Node* >(graphIn.begin(),graphIn.end());
-            std::sort(graph.begin(),graph.end(),[](auto &g1, auto& g2){return g1->currentID<g2->currentID;});
+            */
+            // graph = vector<Node* >(graphIn.begin(),graphIn.end());
+            // std::sort(graph.begin(),graph.end(),[](auto &g1, auto& g2){return g1->currentID<g2->currentID;});
             size_t pos = fileName.find_last_of('.');            
             if (pos != std::string::npos) {
                 // Replace the substring after the last '.' with "adj"
-                fileName.replace(pos + 1, std::string::npos, "adjt");
+                fileName.replace(pos + 1, std::string::npos, "adj");
             }
             ofstream ofs(fileName);
-            ofs << "<<< There are " << graph.size() << " IDs in total. >>>"<<endl;
+            ofs << "<<< There are " << graphIn.size() << " IDs in total. >>>"<<endl;
             int i = 1;
             int count = 0;
-            for(Node * node : graph){
+            for(Node * node : graphIn){
                 if(i<10)ofs << "[  " << i <<"] "<<node->currentID<<":"<<endl;
                 else if (i<100) ofs << "[ " << i <<"] "<<node->currentID<<":"<<endl;
                 else ofs << "[" << i <<"] "<<node->currentID<<":"<<endl;
@@ -162,22 +168,18 @@ class Graph{
          * 
          * @param data vector of original data
          */
-        void createGraph(vector<Data> data){
-            for(Data d : data){
-                Node * firstPair = find(d.putID);
-                Node * secondPair = find(d.getID);
-                if(firstPair==NULL) {
-                    firstPair = new Node(d.putID);
-                    graphIn.insert(firstPair);
-                }
-                if(secondPair==NULL) {
-                    secondPair = new Node(d.getID);
-                    graphIn.insert(secondPair);
-                }
-                firstPair->addPair(secondPair,d.weight);
+        void createGraph(Data d){
+            Node * firstPair = find(d.putID);
+            Node * secondPair = find(d.getID);
+            if(firstPair==NULL) {
+                firstPair = new Node(d.putID);
+                graphIn.insert(firstPair);
             }
-            // graph = vector<Node*>(graphIn.begin(),graphIn.end());
-            
+            if(secondPair==NULL) {
+                secondPair = new Node(d.getID);
+                graphIn.insert(secondPair);
+            }
+            firstPair->addPair(secondPair,d.weight);
         }
         /**
          * @brief Print out the graph, for debug uses
@@ -200,34 +202,29 @@ class Graph{
         	size_t pos = fileName.find_last_of('.');
             if (pos != std::string::npos) {
                 // Replace the substring after the last '.' with "adj"
-                fileName.replace(pos + 1, std::string::npos, "cnttt");
+                fileName.replace(pos + 1, std::string::npos, "cnt");
             }
             // open file
             ofstream ofs(fileName);
         	ofs << "<<< There are " << graphIn.size() << " IDs in total. >>>" << endl; // write
-        	unordered_set<Node*> visit; // store visited Node
-        	vector< std::pair<string, vector<Node*> > > list; // store all info
+        	set<Node*,comp> visit; // store visited Node
+        	vector< std::pair<string, set<Node*,comp> > > list; // store all info
 			queue<Node *> q; // store unvisited node
 			
-        	for(Node * node : graph){
+        	for(Node * node : graphIn){
         		// start travel
         		q.push(node);
         		innerTravel(node,visit,q);
         		// end travel
-        		
         		visit.erase(node); // delete current
-        		
-        		vector<Node * > visited(visit.begin(),visit.end()); 
-        		std::sort(visited.begin(),visited.end(),[](auto &g1, auto& g2){return g1->currentID<g2->currentID;});
-        		list.push_back(make_pair(node->currentID,visited) ); // push back the visited list
+        		list.push_back(make_pair(node->currentID,visit) ); // push back the visited list
         		visit.clear(); // clear data
         		
 			}
-            // use stable sort to prevent order being washed.
-			std::stable_sort(list.begin(),list.end(),[](auto &g1, auto& g2){return g1.second.size()>g2.second.size();});
+            
 			int i = 1;
             // write data
-			for(pair<string, vector<Node*> >  a : list){
+			for(pair<string, set<Node*,comp> >  a : list){
 				if(i<10) ofs << "[  " << i << "] " << a.first<<"("<< a.second.size()<<"):\n";
         		else if(i<100) ofs << "[ " << i << "] " << a.first<<"("<< a.second.size() <<"):\n";
         		else ofs << "[" << i << "] " << a.first<<"("<< a.second.size()<<"):\n";
@@ -242,7 +239,7 @@ class Graph{
 				i++;
 			}
 
-			cout << "<<< There are " << graph.size() << " IDs in total. >>>" << endl;
+			cout << "<<< There are " << graphIn.size() << " IDs in total. >>>" << endl;
 		}
         /**
          * @brief inner traversal, using recursion
@@ -251,7 +248,7 @@ class Graph{
          * @param visited visited nodes
          * @param q the queue
          */
-		void innerTravel(Node* node, unordered_set<Node*>& visited, queue<Node*>& q) {
+		void innerTravel(Node* node, set<Node*,comp>& visited, queue<Node*>& q) {
     		visited.insert(node); // insert current node to visited
     		while (!q.empty()) {
                 // get first node and pop
@@ -269,9 +266,14 @@ class Graph{
     		}
 		}
 		
+		bool isEmpty(){
+			if(graphIn.size()==0) return true;
+			return false;
+		}
+		
     private:
-        vector<Node*> graph;
-        unordered_set<Node*> graphIn;
+        // vector<Node*> graph;
+        set<Node*, comp> graphIn;
 };
 
 /**
@@ -280,7 +282,7 @@ class Graph{
  * @param binFilename binary filename
  * @param data output vector
  */
-void WriteToVec(string binFilename, vector<Data> &data)
+void WriteToVec(string binFilename,Graph & graph)
 {
     Data tempData;
     int stNo = 0;
@@ -295,7 +297,8 @@ void WriteToVec(string binFilename, vector<Data> &data)
     for (int i = 0; i < stNo; i++)
     {
         binFile.read((char *)&tempData, sizeof(tempData));
-        data.push_back(tempData);
+        // data.push_back(tempData);
+        graph.createGraph(tempData);
     } // for
 
     binFile.close();
@@ -352,7 +355,7 @@ string addPrefix(string add, string s)
  * @return true if the file exist
  * @return false if the data doesn't exist
  */
-bool readData(Graph & graph,vector<Data> &data, string & fileName){
+bool readData(Graph & graph, string & fileName){
     if(fileName.size()==3)
         fileName = addPrefix("pairs",fileName);
     ifstream ifs;
@@ -364,9 +367,9 @@ bool readData(Graph & graph,vector<Data> &data, string & fileName){
     
     ifs.close();
     graph.clear();
-    data.clear();
-    WriteToVec(fileName,data);
-    graph.createGraph(data);
+    
+    WriteToVec(fileName,graph);
+    
     return true;
 }
 
@@ -383,14 +386,14 @@ int main()
             case 1:
             cout << "Please input file name :";
             getline(cin,fileName);
-            if(!readData(graph,data,fileName)){
+            if(!readData(graph,fileName)){
                 break;
             }
             graph.writeFile(fileName);
             break;
             
             case 2 :
-            	if(data.empty()){
+            	if(graph.isEmpty()){
             		cout << "Please do mission 1 first\n";
 					break;
 				}
