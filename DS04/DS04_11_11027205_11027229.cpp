@@ -23,6 +23,8 @@
 #include <queue>
 #include <unordered_set>
 #include <set>
+#include <iomanip>
+
 using namespace std;
 /**
  * @brief struct of original data
@@ -136,20 +138,19 @@ class Graph{
             size_t pos = fileName.find_last_of('.');            
             if (pos != std::string::npos) {
                 // Replace the substring after the last '.' with "adj"
-                fileName.replace(pos + 1, std::string::npos, "adj");
+                fileName.replace(pos + 1, std::string::npos, "adjt");
             }
             ofstream ofs(fileName);
             ofs << "<<< There are " << graphIn.size() << " IDs in total. >>>"<<endl;
             int i = 1;
             int count = 0;
             for(Node * node : graphIn){
-                if(i<10)ofs << "[  " << i <<"] "<<node->currentID<<":"<<endl;
-                else if (i<100) ofs << "[ " << i <<"] "<<node->currentID<<":"<<endl;
-                else ofs << "[" << i <<"] "<<node->currentID<<":"<<endl;
+            	ofs << "[" << setw(3) << i << "] "<< node->currentID<<":"<<endl;
+                
                 int j = 1;
                 for(pair<Node *,float> p : node ->pairs){
-                    if (j<10)ofs << "\t( "<<j<<") "<<p.first->currentID<<", "<<p.second;
-                    else ofs << "\t("<<j<<") "<<p.first->currentID<<", "<<p.second;
+                	ofs <<"\t("<<setw(2)<< j<<") " <<p.first->currentID<<", "<< setw(5) <<p.second;
+                    
                     j++;
                     count ++;
                     if (j>1 && (j-1)%10==0)ofs<<endl;
@@ -207,8 +208,9 @@ class Graph{
             // open file
             ofstream ofs(fileName);
         	ofs << "<<< There are " << graphIn.size() << " IDs in total. >>>" << endl; // write
-        	set<Node*,comp> visit; // store visited Node
-        	vector< std::pair<string, set<Node*,comp> > > list; // store all info
+        	unordered_set<Node*> visit; // store visited Node
+        	
+        	vector< std::pair<string, vector<Node*> > > list; // store all info
 			queue<Node *> q; // store unvisited node
 			
         	for(Node * node : graphIn){
@@ -217,21 +219,23 @@ class Graph{
         		innerTravel(node,visit,q);
         		// end travel
         		visit.erase(node); // delete current
-        		list.push_back(make_pair(node->currentID,visit) ); // push back the visited list
+        		vector<Node*> visited(visit.begin(),visit.end());
+        		sort(visited.begin(),visited.end(),[](auto &g1, auto& g2){return g1->currentID<g2->currentID;});
+        		list.push_back(make_pair(node->currentID,visited) ); // push back the visited list
         		visit.clear(); // clear data
         		
 			}
-            
 			int i = 1;
+			stable_sort(list.begin(),list.end(),[](auto &g1, auto& g2){return g1.second.size()>g2.second.size(); });
             // write data
-			for(pair<string, set<Node*,comp> >  a : list){
-				if(i<10) ofs << "[  " << i << "] " << a.first<<"("<< a.second.size()<<"):\n";
-        		else if(i<100) ofs << "[ " << i << "] " << a.first<<"("<< a.second.size() <<"):\n";
-        		else ofs << "[" << i << "] " << a.first<<"("<< a.second.size()<<"):\n";
+			for(pair<string, vector<Node* > >  a : list){
+				ofs << "["<< setw(3) << i <<"] " << a.first<<"("<<a.second.size()<<"):\n";  
+				
         		int j = 1;
         		for(Node * n : a.second){
-        			if(j<10)ofs << "\t( " << j << ") " << n->currentID ;
-        			else ofs << "\t(" << j << ") " << n->currentID ;
+        			// if(j<10)ofs << "\t( " << j << ") " << n->currentID ;
+        			// else ofs << "\t(" << j << ") " << n->currentID ;
+        			ofs << "\t("<<setw(2)<<j<<") " << n->currentID;
 					if(j > 1 && j%10==0) ofs<<"\n"; 
         			j++;
 				}
@@ -248,7 +252,7 @@ class Graph{
          * @param visited visited nodes
          * @param q the queue
          */
-		void innerTravel(Node* node, set<Node*,comp>& visited, queue<Node*>& q) {
+		void innerTravel(Node* node, unordered_set<Node* >& visited, queue<Node*>& q) {
     		visited.insert(node); // insert current node to visited
     		while (!q.empty()) {
                 // get first node and pop
@@ -265,7 +269,6 @@ class Graph{
         		}
     		}
 		}
-		
 		bool isEmpty(){
 			if(graphIn.size()==0) return true;
 			return false;
@@ -286,13 +289,11 @@ void WriteToVec(string binFilename,Graph & graph)
 {
     Data tempData;
     int stNo = 0;
-
     fstream binFile;
     binFile.open(binFilename.c_str(), fstream::in | fstream::binary);
     binFile.seekg(0, binFile.end);
     stNo = binFile.tellg() / sizeof(tempData);
     binFile.seekg(0, binFile.beg);
-
     // push binary data to vec
     for (int i = 0; i < stNo; i++)
     {
@@ -300,10 +301,8 @@ void WriteToVec(string binFilename,Graph & graph)
         // data.push_back(tempData);
         graph.createGraph(tempData);
     } // for
-
     binFile.close();
 } // void WriteToVec
-
 
 /**
  * @brief Get the integer of user input
@@ -364,18 +363,14 @@ bool readData(Graph & graph, string & fileName){
         printf("No File\n");
         return false;
     }
-    
     ifs.close();
     graph.clear();
-    
     WriteToVec(fileName,graph);
-    
     return true;
 }
 
 int main()
 {
-
     vector<Data> data;
     Graph graph;
     string fileName;
@@ -391,7 +386,6 @@ int main()
             }
             graph.writeFile(fileName);
             break;
-            
             case 2 :
             	if(graph.isEmpty()){
             		cout << "Please do mission 1 first\n";
@@ -403,5 +397,4 @@ int main()
         cout << "*** Graph data manipulation **\n* 0. QUIT                  *\n* 1. Build adjancency lists        *\n* 2. Compute connection counts        *\n* *************************************\n";
         n = getInt();
     }
-   
 }
