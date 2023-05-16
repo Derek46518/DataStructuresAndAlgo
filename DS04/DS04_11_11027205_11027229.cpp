@@ -326,7 +326,7 @@ class Graph{
                 // get neighbours
         		for (auto& pair : node->pairs) {
                     // if not visited
-            		if (pair.second>d&&visited.count(pair.first) == 0) {
+            		if (pair.second>=d&&visited.count(pair.first) == 0) {
                 		visited.insert(pair.first);
                 		sk.push(pair.first);
             		}
@@ -464,7 +464,7 @@ int main()
                 
                 cin >> d;
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-				if (d>0 && d <=1)graph.DFStraverse(fileName,d,"ifs");
+				if (d>0 && d <=1)graph.DFStraverse(fileName,d,"inf");
 				else cout << "Wrong Number\n";
 				break;
 			case 4:
