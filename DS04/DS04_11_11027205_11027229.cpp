@@ -433,7 +433,7 @@ int main()
     vector<Data> data;
     Graph graph;
     string fileName;
-    cout << "*** Graph data manipulation **\n* 0. QUIT                  *\n* 1. Build adjancency lists        *\n* 2. Compute connection counts        *\n* *************************************\n";
+    cout << "**** Graph data manipulation *****\n* 0. QUIT                        *\n* 1. Build adjacency lists       *\n* 2. Compute connection counts   *\n* 3. Estimate influence values   *\n* 4. Probability-based influence *\n**********************************\n";
     int n = getInt();
     float d;
     char ch;
@@ -462,7 +462,6 @@ int main()
                 cout << "Please enter number\n";
                 
                 cin >> d;
-                cout << d;
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 				if (d>0 && d <=1)graph.DFStraverse(fileName,d,"inf");
 				else cout << "Wrong Number\n";
@@ -476,7 +475,7 @@ int main()
 				graph.DFStraverse(fileName,d,"pro");
 				break;
         }
-        cout << "*** Graph data manipulation **\n* 0. QUIT                  *\n* 1. Build adjancency lists        *\n* 2. Compute connection counts        *\n* *************************************\n";
+        cout << "**** Graph data manipulation *****\n* 0. QUIT                        *\n* 1. Build adjacency lists       *\n* 2. Compute connection counts   *\n* 3. Estimate influence values   *\n* 4. Probability-based influence *\n**********************************\n";
         n = getInt();
     }
 }
