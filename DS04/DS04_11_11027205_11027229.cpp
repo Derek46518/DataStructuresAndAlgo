@@ -24,6 +24,7 @@
 #include <unordered_set>
 #include <set>
 #include <iomanip>
+#include <stack>
 
 using namespace std;
 /**
@@ -273,6 +274,63 @@ class Graph{
 			if(graphIn.size()==0) return true;
 			return false;
 		}
+        void DFStraverse(string fileName,float d){
+            // create fileName
+        	size_t pos = fileName.find_last_of('.');
+            if (pos != std::string::npos) {
+                // Replace the substring after the last '.' with "adj"
+                fileName.replace(pos + 1, std::string::npos, "inf");
+            }
+            // open file
+            ofstream ofs(fileName);
+        	ofs << "<<< There are " << graphIn.size() << " IDs in total. >>>" << endl; // write
+        	unordered_set<Node*> visit; // store visited Node
+            stack<Node *> sk;
+            vector< std::pair<string, vector<Node*> > > list; // store all info
+            for(Node * n : graphIn){
+                sk.push(n);
+                innerDFStravel(n,visit,sk,d);
+                vector<Node * > visited(visit.begin(),visit.end());
+                sort(visited.begin(),visited.end(),[](auto &g1, auto& g2){return g1->currentID<g2->currentID;});
+                list.push_back(make_pair(n->currentID,visited));
+                visited.clear();
+            }
+            int i = 1;
+			stable_sort(list.begin(),list.end(),[](auto &g1, auto& g2){return g1.second.size()>g2.second.size(); });
+            // write data
+			for(pair<string, vector<Node* > >  a : list){
+				ofs << "["<< setw(3) << i <<"] " << a.first<<"("<<a.second.size()<<"):\n";  
+				
+        		int j = 1;
+        		for(Node * n : a.second){
+        			
+        			ofs << "\t("<<setw(2)<<j<<") " << n->currentID;
+					if(j > 1 && j%10==0) ofs<<"\n"; 
+        			j++;
+				}
+				ofs << "\n";
+				i++;
+			}
+
+			cout << "<<< There are " << graphIn.size() << " IDs in total. >>>" << endl;
+        }
+
+        void innerDFStravel(Node* node, unordered_set<Node* >& visited, stack<Node*>& sk,float d){
+            visited.insert(node); // insert current node to visited
+    		while (!sk.empty()) {
+                // get first node and pop
+        		node = sk.top();
+        		sk.pop();
+                // get neighbours
+        		for (auto& pair : node->pairs) {
+                    // if not visited
+            		if (pair.second>d&&visited.count(pair.first) == 0) {
+                		visited.insert(pair.first);
+                		sk.push(pair.first);
+            		}
+        		}
+    		}
+        }
 		
     private:
         // vector<Node*> graph;
@@ -376,6 +434,7 @@ int main()
     string fileName;
     cout << "*** Graph data manipulation **\n* 0. QUIT                  *\n* 1. Build adjancency lists        *\n* 2. Compute connection counts        *\n* *************************************\n";
     int n = getInt();
+    float d;
     while(n!=0){
         switch(n){
             case 1:
@@ -393,6 +452,14 @@ int main()
 				}
 				graph.traverse(fileName);
             break;
+            case 3:
+                if(graph.isEmpty()){
+            		cout << "Please do mission 1 first\n";
+					break;
+				}
+                cout << "Please enter number\n";
+                cin >> d;
+				graph.DFStraverse(fileName,d);
         }
         cout << "*** Graph data manipulation **\n* 0. QUIT                  *\n* 1. Build adjancency lists        *\n* 2. Compute connection counts        *\n* *************************************\n";
         n = getInt();
