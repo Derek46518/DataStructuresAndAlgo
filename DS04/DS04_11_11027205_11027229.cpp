@@ -264,7 +264,7 @@ class Graph{
             			auto it = std::find_if(list.begin(), list.end(), [&searchString](const auto& pairt) {return pairt.first == searchString;});
             			if(it!=list.end()){
             				visited.insert(list[distance(list.begin(), it)].second.begin(),list[distance(list.begin(), it)].second.end());
-            				// continue;
+            				visited.insert(pair.first);
 						}
 						
                 		visited.insert(pair.first);
@@ -339,7 +339,8 @@ class Graph{
             			auto it = std::find_if(list.begin(), list.end(), [&searchString](const auto& pairt) {return pairt.first == searchString;});
             			if(it!=list.end()){
             				visited.insert(list[distance(list.begin(), it)].second.begin(),list[distance(list.begin(), it)].second.end());
-            				// continue;
+            				visited.insert(pair.first);
+                            continue;
 						}
                 		visited.insert(pair.first);
                 		sk.push(pair.first);
