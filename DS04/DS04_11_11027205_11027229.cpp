@@ -260,6 +260,17 @@ class Graph{
         		}
     		}
 		}
+
+        void t(double d,string fileName){
+            // create fileName
+        	size_t pos = fileName.find_last_of('.');
+            if (pos != std::string::npos) {
+                // Replace the substring after the last '.' with "adj"
+                fileName.replace(pos + 1, std::string::npos, "cnt");
+            }
+            // open file
+            ofstream ofs(fileName);
+        }
 		
     private:
         vector<Node*> graph;
@@ -369,6 +380,7 @@ int main()
     string fileName;
     cout << "*** Graph data manipulation **\n* 0. QUIT                  *\n* 1. Build adjancency lists        *\n* 2. Compute connection counts        *\n* *************************************\n";
     int n = getInt();
+    double d;
     while(n!=0){
         switch(n){
             case 1:
@@ -386,6 +398,15 @@ int main()
 					break;
 				}
 				graph.traverse(fileName);
+            break;
+            case 3:
+                if(data.empty()){
+            		cout << "Please do mission 1 first\n";
+					break;
+				}
+                cout << "Please input a number\n";
+                cin >> d;
+                graph.t(d,fileName);
             break;
         }
         cout << "*** Graph data manipulation **\n* 0. QUIT                  *\n* 1. Build adjancency lists        *\n* 2. Compute connection counts        *\n* *************************************\n";
