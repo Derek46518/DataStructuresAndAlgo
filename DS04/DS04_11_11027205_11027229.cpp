@@ -130,17 +130,11 @@ class Graph{
          * @param fileName 
          */
         void writeFile(string fileName){
-        	/*
-        	for(Node * n : graphIn){
-                n->sort();
-            }
-            */
-            // graph = vector<Node* >(graphIn.begin(),graphIn.end());
-            // std::sort(graph.begin(),graph.end(),[](auto &g1, auto& g2){return g1->currentID<g2->currentID;});
+        	
             size_t pos = fileName.find_last_of('.');            
             if (pos != std::string::npos) {
                 // Replace the substring after the last '.' with "adj"
-                fileName.replace(pos + 1, std::string::npos, "adjt");
+                fileName.replace(pos + 1, std::string::npos, "adj");
             }
             ofstream ofs(fileName);
             ofs << "<<< There are " << graphIn.size() << " IDs in total. >>>"<<endl;
@@ -284,23 +278,28 @@ class Graph{
             }
             // open file
             ofstream ofs(fileName);
-        	ofs << "<<< There are " << graphIn.size() << " IDs in total. >>>" << endl; // write
+        	
         	unordered_set<Node*> visit; // store visited Node
             stack<Node *> sk;
             vector< std::pair<string, vector<Node*> > > list; // store all info
+            int count = 0;
             for(Node * n : graphIn){
                 sk.push(n);
                 innerDFStravel(n,visit,sk,d);
+                visit.erase(n);
                 vector<Node * > visited(visit.begin(),visit.end());
+                if(visit.size()>=1) count++;
                 sort(visited.begin(),visited.end(),[](auto &g1, auto& g2){return g1->currentID<g2->currentID;});
                 list.push_back(make_pair(n->currentID,visited));
                 visited.clear();
+                visit.clear();
             }
             int i = 1;
 			stable_sort(list.begin(),list.end(),[](auto &g1, auto& g2){return g1.second.size()>g2.second.size(); });
+			ofs << "<<< There are " << count << " IDs in total. >>>" << endl; // write
             // write data
 			for(pair<string, vector<Node* > >  a : list){
-				if (a.second.size()<=1) continue;
+				if (a.second.size()<1) continue;
 				ofs << "["<< setw(3) << i <<"] " << a.first<<"("<<a.second.size()<<"):\n";  
 				
         		int j = 1;
@@ -314,7 +313,7 @@ class Graph{
 				i++;
 			}
 
-			cout << "<<< There are " << graphIn.size() << " IDs in total. >>>" << endl;
+			cout << "<<< There are " << i-1 << " IDs in total. >>>" << endl;
         }
 
         void innerDFStravel(Node* node, unordered_set<Node* >& visited, stack<Node*>& sk,float d){
@@ -463,6 +462,7 @@ int main()
                 cout << "Please enter number\n";
                 
                 cin >> d;
+                cout << d;
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 				if (d>0 && d <=1)graph.DFStraverse(fileName,d,"inf");
 				else cout << "Wrong Number\n";
