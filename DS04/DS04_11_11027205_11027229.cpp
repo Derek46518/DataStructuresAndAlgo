@@ -212,7 +212,7 @@ class Graph{
         	for(Node * node : graphIn){
         		// start travel
         		q.push(node);
-        		innerTravel(node,visit,q);
+        		innerTravel(node,visit,q,list);
         		// end travel
         		visit.erase(node); // delete current
         		vector<Node*> visited(visit.begin(),visit.end());
@@ -248,7 +248,7 @@ class Graph{
          * @param visited visited nodes
          * @param q the queue
          */
-		void innerTravel(Node* node, unordered_set<Node* >& visited, queue<Node*>& q) {
+		void innerTravel(Node* node, unordered_set<Node* >& visited, queue<Node*>& q,vector< std::pair<string, vector<Node*> > > list) {
     		visited.insert(node); // insert current node to visited
     		while (!q.empty()) {
                 // get first node and pop
@@ -259,6 +259,14 @@ class Graph{
                     // if not visited
             		if (visited.count(pair.first) == 0) {
                         // insert into visited, and insert into queue
+                        string searchString = pair.first->currentID;
+                        
+            			auto it = std::find_if(list.begin(), list.end(), [&searchString](const auto& pairt) {return pairt.first == searchString;});
+            			if(it!=list.end()){
+            				visited.insert(list[distance(list.begin(), it)].second.begin(),list[distance(list.begin(), it)].second.end());
+            				// continue;
+						}
+						
                 		visited.insert(pair.first);
                 		q.push(pair.first);
             		}
@@ -285,7 +293,8 @@ class Graph{
             int count = 0;
             for(Node * n : graphIn){
                 sk.push(n);
-                innerDFStravel(n,visit,sk,d);
+                if (pre=="pro") d = rand() / (RAND_MAX + 1.);
+                innerDFStravel(n,visit,sk,d,list);
                 visit.erase(n);
                 vector<Node * > visited(visit.begin(),visit.end());
                 if(visit.size()>=1) count++;
@@ -316,7 +325,7 @@ class Graph{
 			cout << "<<< There are " << i-1 << " IDs in total. >>>" << endl;
         }
 
-        void innerDFStravel(Node* node, unordered_set<Node* >& visited, stack<Node*>& sk,float d){
+        void innerDFStravel(Node* node, unordered_set<Node* >& visited, stack<Node*>& sk,float d,vector< std::pair<string, vector<Node*> > > list){
             visited.insert(node); // insert current node to visited
     		while (!sk.empty()) {
                 // get first node and pop
@@ -326,6 +335,12 @@ class Graph{
         		for (auto& pair : node->pairs) {
                     // if not visited
             		if (pair.second>=d&&visited.count(pair.first) == 0) {
+            			string searchString = pair.first->currentID;
+            			auto it = std::find_if(list.begin(), list.end(), [&searchString](const auto& pairt) {return pairt.first == searchString;});
+            			if(it!=list.end()){
+            				visited.insert(list[distance(list.begin(), it)].second.begin(),list[distance(list.begin(), it)].second.end());
+            				// continue;
+						}
                 		visited.insert(pair.first);
                 		sk.push(pair.first);
             		}
