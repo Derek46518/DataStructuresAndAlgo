@@ -8,7 +8,8 @@
  * @date 2023-04-21
  *
  * @copyright Copyright (c) 2023
- *
+ * 
+ * use -std=c++14 to compile
  */
 #include <iostream>
 #include <string>
