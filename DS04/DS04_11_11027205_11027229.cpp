@@ -25,7 +25,7 @@
 #include <set>
 #include <iomanip>
 #include <stack>
-
+#include <random>
 using namespace std;
 /**
  * @brief struct of original data
@@ -274,12 +274,12 @@ class Graph{
 			if(graphIn.size()==0) return true;
 			return false;
 		}
-        void DFStraverse(string fileName,float d){
+        void DFStraverse(string fileName,float d,string pre){
             // create fileName
         	size_t pos = fileName.find_last_of('.');
             if (pos != std::string::npos) {
                 // Replace the substring after the last '.' with "adj"
-                fileName.replace(pos + 1, std::string::npos, "inf");
+                fileName.replace(pos + 1, std::string::npos, pre);
             }
             // open file
             ofstream ofs(fileName);
@@ -299,6 +299,7 @@ class Graph{
 			stable_sort(list.begin(),list.end(),[](auto &g1, auto& g2){return g1.second.size()>g2.second.size(); });
             // write data
 			for(pair<string, vector<Node* > >  a : list){
+				if (a.second.size()<=1) continue;
 				ofs << "["<< setw(3) << i <<"] " << a.first<<"("<<a.second.size()<<"):\n";  
 				
         		int j = 1;
@@ -435,6 +436,7 @@ int main()
     cout << "*** Graph data manipulation **\n* 0. QUIT                  *\n* 1. Build adjancency lists        *\n* 2. Compute connection counts        *\n* *************************************\n";
     int n = getInt();
     float d;
+    char ch;
     while(n!=0){
         switch(n){
             case 1:
@@ -458,8 +460,20 @@ int main()
 					break;
 				}
                 cout << "Please enter number\n";
+                
                 cin >> d;
-				graph.DFStraverse(fileName,d);
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+				if (d>0 && d <=1)graph.DFStraverse(fileName,d,"ifs");
+				else cout << "Wrong Number\n";
+				break;
+			case 4:
+				if(graph.isEmpty()){
+            		cout << "Please do mission 1 first\n";
+					break;
+				}
+				d = rand() / (RAND_MAX + 1.);
+				graph.DFStraverse(fileName,d,"pro");
+				break;
         }
         cout << "*** Graph data manipulation **\n* 0. QUIT                  *\n* 1. Build adjancency lists        *\n* 2. Compute connection counts        *\n* *************************************\n";
         n = getInt();
