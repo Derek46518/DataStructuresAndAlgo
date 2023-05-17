@@ -88,6 +88,11 @@ class File {
 			fileName = fileName.erase( fileName.size()-4, 4 ) + "_" + threshold + ".adj" ;
 			return fileName ;
 		} // void Create_adjFile
+		
+		string Create_adjFile( string fileName ) {
+			fileName = fileName.erase( fileName.size()-4, 4 ) + ".cc" ;
+			return fileName ;
+		} // void Create_adjFile
 }; // class File
 
 class Graph  {
@@ -154,7 +159,7 @@ class Graph  {
 			binFile.close() ;
 		} // void WriteBinToVec
 		
-		void WriteListToAdj( string adjFileName, string tempThreshold, vector<Sender> list ) {
+		void WriteListToAdj( string &adjFileName, string tempThreshold, vector<Sender> list ) {
 			File  file ;
 			adjFileName = file.Create_adjFile( adjFileName, tempThreshold ) ;
 			
@@ -180,6 +185,7 @@ class Graph  {
 				count = 0 ;
 			} // for
 			adjFile << "<<< There are " << node << " nodes in total. >>>\n" ;
+			adjFile.close() ;
 		} // void WriteListToAdj
 		
 		// @ brief :  build graph
@@ -296,12 +302,13 @@ class Graph  {
 
 class Mission {
 	public :
-		void Mission0() {
+		void Mission0( string &fileName, vector<Sender> &list ) {
+			list.clear() ;
+			
 			File file ;
 			Graph graph ;
 			float threshold = 0.0 ;
 			string tempThreshold = "\0" ;
-			string fileName = "\0" ;
 			ifstream binFile ;
 			
 			do {
@@ -325,31 +332,62 @@ class Mission {
 			binFile.open( fileName.c_str() ) ;
 			if ( binFile.is_open() ) {
 				vector<Data> data ;
-				vector<Sender> list ;
 				graph.WriteBinToVec( data , fileName, threshold ) ;
+				if ( data.size() == 0 )
+					return ;
 				graph.BuildList( list, data ) ;
 				graph.WriteListToAdj( fileName, tempThreshold, list )  ;
 				graph.Print(list) ;
+				data.clear() ;
+				binFile.close() ;
 			} // if
 			
 			else 
 				cout << "### "  <<  fileName << " does not exist! ###\n" ;
 		} // void Mission0
 		
-		void Mission1() {
-			cout <<  "This is Mission 1 \n" ;
+		void Mission1( string fileName, vector<Sender> list ) {
+			Graph graph ;
+			
+			if ( list.size() == 0 ) {
+				cout << "\n### There is no graph and choose 0 first. ###\n" ;
+			} // if
+			
+			else {
+				int node = graph.getTotalNode(list) ;
+				int id = graph.getTotalID(list) ;
+				cout << endl << fileName << endl ;
+				cout << "\n<<< There are " << id << " IDs in total. >>>\n" ;
+				cout << "\n<<< There are " << node << " nodes in total. >>>\n" ;
+			}
 		} // void Mission1
 
-		void Mission2() {
-			cout <<  "This is Mission 2 \n" ;
+		void Mission2( string fileName, vector<Sender> list ) {
+			Graph graph ;
+			
+			if ( list.size() == 0 ) {
+				cout << "\n### There is no graph and choose 0 first. ###\n" ;
+			} // if
+			
+			else  {
+				int node = graph.getTotalNode(list) ;
+				int id = graph.getTotalID(list) ;
+				cout << endl << fileName << endl ;
+				cout << "\n<<< There are " << id << " IDs in total. >>>\n" ;
+				cout << "\n<<< There are " << node << " nodes in total. >>>\n" ;
+			}
 		} // void Mission2
 }; // class Mission
 
 void Start() {
 	int command = 0 ;
     string temp = "\0" ;
+    string fileName = "\0" ;
+    vector<Sender> list ;
 	Mission mission ;
 	File file  ;
+	
+	
 	do{
 	    cout << "\n******* Graph data applications ******" ;
         cout << "\n* [Any other key: QUIT]              *" ;
@@ -364,13 +402,13 @@ void Start() {
         	command = stoi(temp) ;
         	switch ( command ) {
     	    	case( 0 ) :
-		  	    	mission.Mission0() ;
+		  	    	mission.Mission0( fileName, list ) ;
 		  	    	break ;
 		   		case( 1 ) :
-		  	    	mission.Mission1() ;
+		  	    	mission.Mission1( fileName, list ) ;
 		  	    	break ;
 		    	case( 2 ) :
-		  	    	mission.Mission2() ;
+		  	    	mission.Mission2( fileName, list ) ;
 		  	    	break ;
 		    	default :
 		  	    	cout << "\nexit" ;
