@@ -1,15 +1,5 @@
-/**
- * @file DS04_11_11027205_11027229.cpp
- * @author Derek(11027229) and Nier(11027205)
- * @brief 
- * This is DS homework 4
- * About building Graph and BFS
- * @version 1.0
- * @date 2023-05-05
- *
- * @copyright Copyright (c) 2023
- *
- */
+// 11027205
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -17,379 +7,381 @@
 #include <sstream>
 #include <cstring>
 #include <cstdlib>
-#include <cmath>
-#include <iomanip>
-#include <algorithm>
 #include <queue>
-#include <unordered_set>
+#include <algorithm>
+
 using namespace std;
-/**
- * @brief struct of original data
- * 
- */
-struct Data
-{
-    char putID[10] = {'\0'};
-    char getID[10] = {'\0'};
-    float weight;
+
+struct Data {
+	char id1[10] = {'\0'} ;
+	char id2[10] = {'\0'} ;
+	float weight ;	
 };
 
-/**
- * @brief The class of node
- * Every student ID is a node, store in currentID, the connection is recorded into pairs
- * 
- */
-class Node{
-    public:
-        
-        /**
-         * @brief Construct a new Node object
-         * 
-         * @param id student id
-         */
-        Node(string id){
-            currentID = id;
-        }
-        /**
-         * @brief add pair in node
-         * 
-         * @param in neighbour node
-         * @param weight the weight of the path
-         */
-        void addPair(Node * in, float weight){
-            pairs.push_back(make_pair(in,weight));
-        }
+struct Receiver {
+	char id[10] = {'\0'} ;
+	float weight ;	
+}; 
 
-        /**
-         * @brief sort pair by id
-         * 
-         */
-        void sort(){
-            std::sort(pairs.begin(),pairs.end(),[](const auto& n1, auto& n2){return n1.first->currentID <n2.first->currentID;});
-        }
-        
-        /**
-         * @brief print out the neighbours of every node. For debug use.
-         * 
-         */
-        void printNodes(){
-            for(auto p : pairs){
-                cout << p.first ->currentID << '\t' << p.second << '\t';
-            }
-            cout << '\n';
-        }
-        string currentID;
-        vector<pair<Node *,float> > pairs;
+struct Sender {
+	char id[10] = {'\0'} ;
+	vector<Receiver> receiver ;
 };
 
-/**
- * @brief The class of a graph
- * This class is used to build graph and run BFS
- * Adjencency list : graph
- * 
- * 
- */
-class Graph{
-    public:
-    
-        /**
-         * @brief clear graph
-         * 
-         */
-        void clear(){
-            graph.clear();
-        }
-        /**
-         * @brief find the node corresponding the student ID.
-         * 
-         * @param str student ID
-         * @return Node* the node corresponding the student ID.
-         */
-        Node * find(string str){
-            for(Node *n : graph){
-                if (n->currentID==str) return n; // found node
-            }
-            return NULL; // not found, return NULL
-        }
-        /**
-         * @brief write .adj file. 
-         * after building graph, sort the Adjencency List by ID, and write the graph into the file.
-         * @param fileName 
-         */
-        void writeFile(string fileName){
-            size_t pos = fileName.find_last_of('.');            
-            if (pos != std::string::npos) {
-                // Replace the substring after the last '.' with "adj"
-                fileName.replace(pos + 1, std::string::npos, "adj");
-            }
-            ofstream ofs(fileName);
-            ofs << "<<< There are " << graph.size() << " IDs in total. >>>"<<endl;
-            int i = 1;
-            int count = 0;
-            for(Node * node : graph){
-                if(i<10)ofs << "[  " << i <<"] "<<node->currentID<<":"<<endl;
-                else if (i<100) ofs << "[ " << i <<"] "<<node->currentID<<":"<<endl;
-                else ofs << "[" << i <<"] "<<node->currentID<<":"<<endl;
-                int j = 1;
-                for(pair<Node *,float> p : node ->pairs){
-                    if (j<10)ofs << "\t( "<<j<<") "<<p.first->currentID<<", "<<p.second;
-                    else ofs << "\t("<<j<<") "<<p.first->currentID<<", "<<p.second;
-                    j++;
-                    count ++;
-                    if (j>1 && (j-1)%10==0)ofs<<endl;
-                }
-                ofs << endl;
-                i++;
-            }
-            ofs << "<<< There are " << i-1 << " IDs in total. >>>\n";
-            cout << "<<< There are " << i-1 << " IDs in total. >>>\n\n";
-            cout << "<<< There are " << count << " nodes in total. >>>\n";
-            ofs.close();
-        }
+class File {
+	public :
 
-        /**
-         * @brief build the Graph
-         * 
-         * @param data vector of original data
-         */
-        void createGraph(vector<Data> data){
-            for(Data d : data){
-                Node * firstPair = find(d.putID);
-                Node * secondPair = find(d.getID);
-                if(firstPair==NULL) {
-                    firstPair = new Node(d.putID);
-                    graph.push_back(firstPair);
-                }
-                if(secondPair==NULL) {
-                    secondPair = new Node(d.getID);
-                    graph.push_back(secondPair);
-                }
-                firstPair->addPair(secondPair,d.weight);
-            }
-            for(Node * n : graph){
-                n->sort();
-            }
-            std::sort(graph.begin(),graph.end(),[](auto &g1, auto& g2){return g1->currentID<g2->currentID;});
-        }
-        /**
-         * @brief Print out the graph, for debug uses
-         * 
-         */
-        void printAll(){
-            for(Node * node : graph){
-                cout << node ->currentID << '\n';
-                node -> printNodes();
-            }
-        }
-
-        /**
-         * @brief travel the graph by BFS, and write the data into .cnt
-         * 
-         * @param fileName 
-         */
-        void traverse(string fileName){
-            // create fileName
-        	size_t pos = fileName.find_last_of('.');
-            if (pos != std::string::npos) {
-                // Replace the substring after the last '.' with "adj"
-                fileName.replace(pos + 1, std::string::npos, "cnt");
-            }
-            // open file
-            ofstream ofs(fileName);
-        	ofs << "<<< There are " << graph.size() << " IDs in total. >>>" << endl; // write
-        	unordered_set<Node*> visit; // store visited Node
-        	vector< std::pair<string, vector<Node*> > > list; // store all info
-			queue<Node *> q; // store unvisited node
-			
-        	for(Node * node : graph){
-        		// start travel
-        		q.push(node);
-        		innerTravel(node,visit,q);
-        		// end travel
-        		
-        		visit.erase(node); // delete current
-        		
-        		vector<Node * > visited(visit.begin(),visit.end()); 
-        		std::sort(visited.begin(),visited.end(),[](auto &g1, auto& g2){return g1->currentID<g2->currentID;});
-        		list.push_back(make_pair(node->currentID,visited) ); // push back the visited list
-        		visit.clear(); // clear data
-        		
-			}
-            // use stable sort to prevent order being washed.
-			std::stable_sort(list.begin(),list.end(),[](auto &g1, auto& g2){return g1.second.size()>g2.second.size();});
-			int i = 1;
-            // write data
-			for(pair<string, vector<Node*> >  a : list){
-				if(i<10) ofs << "[  " << i << "] " << a.first<<"("<< a.second.size()<<"):\n";
-        		else if(i<100) ofs << "[ " << i << "] " << a.first<<"("<< a.second.size() <<"):\n";
-        		else ofs << "[" << i << "] " << a.first<<"("<< a.second.size()<<"):\n";
-        		int j = 1;
-        		for(Node * n : a.second){
-        			if(j<10)ofs << "\t( " << j << ") " << n->currentID ;
-        			else ofs << "\t(" << j << ") " << n->currentID ;
-					if(j > 1 && j%10==0) ofs<<"\n"; 
-        			j++;
-				}
-				ofs << "\n";
-				i++;
-			}
-
-			cout << "<<< There are " << graph.size() << " IDs in total. >>>" << endl;
-		}
-        /**
-         * @brief inner traversal, using recursion
-         * 
-         * @param node current node
-         * @param visited visited nodes
-         * @param q the queue
-         */
-		void innerTravel(Node* node, unordered_set<Node*>& visited, queue<Node*>& q) {
-    		visited.insert(node); // insert current node to visited
-    		while (!q.empty()) {
-                // get first node and pop
-        		node = q.front();
-        		q.pop();
-                // get neighbours
-        		for (auto& pair : node->pairs) {
-                    // if not visited
-            		if (visited.count(pair.first) == 0) {
-                        // insert into visited, and insert into queue
-                		visited.insert(pair.first);
-                		q.push(pair.first);
-            		}
-        		}
-    		}
-		}
+        // cheak string is number
+		bool IsNumber( string filename ) {
+			for ( int i = 0; i < filename.length(); i++ ) {
+				if ( filename[i]-'0' < 0 || filename[i]-'0' > 9 )
+					return false;
+			} // for
+			return true ;
+		} // bool IsNumber
 		
-    private:
-        vector<Node*> graph;
-};
+		bool IsFloat( string filename ) {
+			for ( int i = 0; i < filename.length(); i++ ) {
+				if ( filename[i] != '.' && ( filename[i]-'0' < 0 || filename[i]-'0' > 9 ) )
+					return false;
+			} // for
+			return true ;
+		} // bool IsNumber
 
-/**
- * @brief Write binary file into vector
- * 
- * @param binFilename binary filename
- * @param data output vector
- */
-void WriteToVec(string binFilename, vector<Data> &data)
-{
-    Data tempData;
-    int stNo = 0;
+		string GetData( string &str, string &temp ) {
+			temp = "\0" ;
+			int i = 0 ;
+			int size = str.length() ;
+            // Marge Data ( include space )
+			for( i=0; str[i] != '\t' && str[i] != '\n' && str[i] != '\0'; i++ )
+				temp = temp + str[i] ;
+			for( int j=i+1; j < size; j++ )    // respell str
+				str[j-i-1] = str[j] ;
+			for( int j=size-i-1; j<size; j++ ) // str last word + \0
+				str[j] = '\0' ;
+			return temp ;
+		} // string GetData()
 
-    fstream binFile;
-    binFile.open(binFilename.c_str(), fstream::in | fstream::binary);
-    binFile.seekg(0, binFile.end);
-    stNo = binFile.tellg() / sizeof(tempData);
-    binFile.seekg(0, binFile.beg);
+        // modify filename
+		void Cheak_filename( string &filename ) {
+			bool hasPoint = false ;
+            // cheak filename is or not all int
+			if ( IsNumber( filename ) ) 
+				filename = "pairs" + filename + ".bin" ;
 
-    // push binary data to vec
-    for (int i = 0; i < stNo; i++)
-    {
-        binFile.read((char *)&tempData, sizeof(tempData));
-        data.push_back(tempData);
-    } // for
+			else {
+				for ( int i = 0; i < filename.length(); i++ ) {
+                    // filename has '.'
+					if ( filename[i] == '.') {
+						hasPoint = true ;
+						break ;
+					} // if ( hasPoint == true ) 
+				} // for
 
-    binFile.close();
-} // void WriteToVec
+                // filename has not '.'
+	  		    if ( !hasPoint )
+		  		    filename = filename + ".txt" ;
+			} // else
+		} // string Cheak_filename
+		
+		string Create_adjFile( string fileName, string threshold ) {
+			fileName = fileName.erase( fileName.size()-4, 4 ) + "_" + threshold + ".adj" ;
+			return fileName ;
+		} // void Create_adjFile
+}; // class File
 
+class Graph  {
+	public  :
+		int getTotalNode( vector<Sender> sender ) {
+			int num  = 0 ;
+			for ( Sender s : sender  ) {
+				num = num + (int)s.receiver.size() ;
+			} // for
+			
+			return num ;
+		} // int getNodeTotal
+		
+		int getTotalID( vector<Sender> sender ) {
+			return (int)sender.size() ;
+		} // int getNodeTotal
+		
+		// @ brief : init temp list struct
+		void InitST( Sender &sender, Receiver &receiver ) {
+			sender.id[10] = {'\0'} ;
+			sender.receiver.clear() ;
+			receiver.id[10] = {'\0'} ;
+			receiver.weight = 0 ;
+		} // void InitST
+		
+		void Sort( vector<Sender> &sender ) {
+			for ( int i=0; i < sender.size(); i++ ) {
+				for ( int j=i+1; j < sender.size(); j++ ) {
+					if ( strcmp( sender[i].id, sender[j].id ) > 0 )
+						swap( sender[i], sender[j] ) ;
+				} // for
+			} // for
+			
+			for ( int i=0; i < sender.size(); i++ ) {
+				for ( int j=0; j < sender[i].receiver.size(); j++ ) {
+					for ( int k=j; k < sender[i].receiver.size(); k++ ) {
+						if ( strcmp( sender[i].receiver[j].id, sender[i].receiver[k].id ) > 0 )
+							swap(  sender[i].receiver[j],  sender[i].receiver[k] ) ;
+					}
+				} // for
+			} // for
+		} // void Sort
+		
+		void WriteBinToVec( vector<Data> &data, string binFileName, float threshold ) { 
+			Data tempData ;
+			fstream binFile ;
+			int stNo = 0 ;
+			
+			int count = 0 ;
+			
+			binFile.open( binFileName.c_str(), fstream::in|fstream::binary) ;
+			binFile.seekg( 0, binFile.end ) ;
+			stNo = binFile.tellg() / sizeof(tempData) ;
+			binFile.seekg( 0, binFile.beg ) ;
 
-/**
- * @brief Get the integer of user input
- * 
- * @return int user input
- */
-int getInt()
-{
-  string s;
-  getline(cin, s);
-  int total = 0; // total
-  int a;         
-  if (s.length() == 0)
-    return -1; 
-  // string to integer
-  for (int i = 0; i < s.length(); i++)
-  {
-    total *= 10;
-    a = s[i] - '0';
-    if (a < 0 || a > 9)
-      return -1; 
-    total += a;
-  }
-  return total; 
-}
+			// push binary data to vec
+			for ( int i=0 ; i < stNo ; i++ ) {
+				binFile.read( (char*)&tempData, sizeof(tempData) ) ;
+				if ( tempData.weight <= threshold ) {
+					data.push_back(tempData) ;
+				}  // if
+			} // for
 
-/**
- * @brief add prefix to filename
- * 
- * @param add prefix
- * @param s current filename
- * @return string fixed filename
- */
-string addPrefix(string add, string s)
-{
-  stringstream ss;
-  ss << add;
-  ss << s;
-  ss << ".bin";
-  return ss.str();
-}
-
-/**
- * @brief read the data by filename, and build graph
- * 
- * @param graph 
- * @param data the output data.
- * @param fileName the file to open
- * @return true if the file exist
- * @return false if the data doesn't exist
- */
-bool readData(Graph & graph,vector<Data> &data, string & fileName){
-    if(fileName.size()==3)
-        fileName = addPrefix("pairs",fileName);
-    ifstream ifs;
-    ifs.open(fileName);
-    if(!ifs.is_open()){
-        printf("No File\n");
-        return false;
-    }
-    
-    ifs.close();
-    graph.clear();
-    data.clear();
-    WriteToVec(fileName,data);
-    graph.createGraph(data);
-    return true;
-}
-
-int main()
-{
-
-    vector<Data> data;
-    Graph graph;
-    string fileName;
-    cout << "*** Graph data manipulation **\n* 0. QUIT                  *\n* 1. Build adjancency lists        *\n* 2. Compute connection counts        *\n* *************************************\n";
-    int n = getInt();
-    while(n!=0){
-        switch(n){
-            case 1:
-            cout << "Please input file name :";
-            getline(cin,fileName);
-            if(!readData(graph,data,fileName)){
-                break;
-            }
-            graph.writeFile(fileName);
-            break;
+			binFile.close() ;
+		} // void WriteBinToVec
+		
+		void WriteListToAdj( string adjFileName, string tempThreshold, vector<Sender> list ) {
+			File  file ;
+			adjFileName = file.Create_adjFile( adjFileName, tempThreshold ) ;
+			
+			int count = 0 ;
+			int node = getTotalNode(list) ;
+			int id = getTotalID(list) ;
+			
+			ofstream adjFile ;
+			adjFile.open( adjFileName.c_str() ) ;
+			adjFile << "<<< There are " << id << " IDs in total. >>>\n" ;
+			
+			for( int i=0; i < list.size(); i++ ) {
+				adjFile << "[" << i+1 << "] " << list[i].id << " : \n" ;
+				for ( int j=0; j < list[i].receiver.size(); j++ )  {
+					count++ ;
+					adjFile << "\t(" << j+1 << ") " << list[i].receiver[j].id << ",  " << list[i].receiver[j].weight ;
+					if  ( count == 10 ) {
+						adjFile <<  "\n" ;
+						count = 0 ;
+					}
+				} // for
+				adjFile << "\n" ;
+				count = 0 ;
+			} // for
+			adjFile << "<<< There are " << node << " nodes in total. >>>\n" ;
+		} // void WriteListToAdj
+		
+		// @ brief :  build graph
+		void BuildList( vector<Sender> &list, vector<Data> data ) {
+			int position = -1 ;
+			Sender tempSender ;
+			Receiver tempReceiver ;
+            for(Data d : data){
+            	// list is null
+				if ( list.size() == 0 )  {
+					// set sender
+					strcpy( tempSender.id, d.id1 ) ;
+					// set receiver
+					strcpy( tempReceiver.id, d.id2 ) ;
+					tempReceiver.weight = d.weight ;
+					tempSender.receiver.push_back(tempReceiver) ;
+					// push to graph
+					list.push_back(tempSender) ;
+					
+                    InitST( tempSender, tempReceiver ) ;
+					
+					/* Because it is an undirected graph
+					 * So do it in reverse again 
+					*/
+					strcpy( tempSender.id, d.id2 ) ;
+					strcpy( tempReceiver.id, d.id1 ) ;
+					tempReceiver.weight = d.weight ;
+					tempSender.receiver.push_back(tempReceiver) ;
+					list.push_back(tempSender) ;
+				} // if 
+				
+				// list isn't null
+				else {
+					// set receiver
+					strcpy( tempReceiver.id, d.id2 ) ;
+					tempReceiver.weight = d.weight ;
+					
+					// Find if graphs have the same sender
+					for( int i=0; i < list.size();  i++ )  {
+						if( strcmp( d.id1, list[i].id ) == 0 ) {
+							position = i ;
+							break ;
+						} // if
+					} // for
+					
+					// find the same sender
+					if ( position != -1 ) {
+						list[position].receiver.push_back(tempReceiver) ;
+					}  // if
+					
+					// no find the same sender
+					else {
+						// push new sender in graph
+						strcpy( tempSender.id, d.id1 ) ;
+						tempSender.receiver.push_back(tempReceiver) ;
+						list.push_back(tempSender) ;
+					}  // else
+					
+					// init
+					position  = -1 ;
+					InitST( tempSender, tempReceiver ) ;
+					
+					// do it in reverse again
+					strcpy( tempReceiver.id, d.id1 ) ;
+					tempReceiver.weight = d.weight ;
+					
+					for( int i=0; i < list.size();  i++ )  {
+						if( strcmp( d.id2, list[i].id ) == 0 ) {
+							position = i ;
+							break ;
+						} // if
+					} // for
+					
+					if ( position != -1 ) {
+						list[position].receiver.push_back(tempReceiver) ;
+					}  // if
+					
+					else {
+						strcpy( tempSender.id, d.id2 ) ;
+						tempSender.receiver.push_back(tempReceiver) ;
+						list.push_back(tempSender) ;
+					}  // else
+				} // else
+				
+				position  = -1 ;
+				InitST( tempSender, tempReceiver ) ;
+            } // for
             
-            case 2 :
-            	if(data.empty()){
-            		cout << "Please do mission 1 first\n";
-					break;
-				}
-				graph.traverse(fileName);
-            break;
-        }
-        cout << "*** Graph data manipulation **\n* 0. QUIT                  *\n* 1. Build adjancency lists        *\n* 2. Compute connection counts        *\n* *************************************\n";
-        n = getInt();
-    }
-   
-}
+            Sort( list ) ;
+		}  // void  BuildList
+		
+		void Print( vector<Sender> &list ) {
+//			int count  = 0 ;
+//			for( int i=0; i < list.size(); i++ ) {
+//				count = 0 ;
+//				cout << "\n\n(" << i+1 << ") " << list[i].id << " : " << endl ;
+//				for ( int j=0; j < list[i].receiver.size(); j++ )  {
+//					cout << "\t" << list[i].receiver[j].id ;
+//					count++ ;
+//					if( count == 5 )  {
+//						cout << "\n" ;
+//					count = 0 ;
+//					}
+//				} // for
+//			} // for
+			
+			int node = getTotalNode(list) ;
+			int id = getTotalID(list) ;
+			cout << "\n<<< There are " << id << " IDs in total. >>>\n" ;
+			cout << "\n<<< There are " << node << " nodes in total. >>>\n" ;
+		} // void testPrint
+		
+}; // class Graph
+
+class Mission {
+	public :
+		void Mission0() {
+			File file ;
+			Graph graph ;
+			float threshold = 0.0 ;
+			string tempThreshold = "\0" ;
+			string fileName = "\0" ;
+			ifstream binFile ;
+			
+			do {
+				cout << "\nInput a real number in (0,1] :  " ;
+				cin >> tempThreshold ;
+
+				while ( file.IsFloat(tempThreshold) == false ) {
+					cout  << "\nInput a real number in (0,1] : " ;
+					cin >> tempThreshold ;
+				}  // while
+				
+				threshold = stof( tempThreshold ) ;
+				if ( threshold <= 0 || threshold > 1  ) 
+					threshold = -1 ;
+			} while(  threshold <= 0 || threshold > 1  ) ;
+			
+			cout << "\nInput a file number ( 501, pairs501 ) : " ;
+			cin >> fileName ;
+			file.Cheak_filename(fileName) ;
+			
+			binFile.open( fileName.c_str() ) ;
+			if ( binFile.is_open() ) {
+				vector<Data> data ;
+				vector<Sender> list ;
+				graph.WriteBinToVec( data , fileName, threshold ) ;
+				graph.BuildList( list, data ) ;
+				graph.WriteListToAdj( fileName, tempThreshold, list )  ;
+				graph.Print(list) ;
+			} // if
+			
+			else 
+				cout << "### "  <<  fileName << " does not exist! ###\n" ;
+		} // void Mission0
+		
+		void Mission1() {
+			cout <<  "This is Mission 1 \n" ;
+		} // void Mission1
+
+		void Mission2() {
+			cout <<  "This is Mission 2 \n" ;
+		} // void Mission2
+}; // class Mission
+
+void Start() {
+	int command = 0 ;
+    string temp = "\0" ;
+	Mission mission ;
+	File file  ;
+	do{
+	    cout << "\n******* Graph data applications ******" ;
+        cout << "\n* [Any other key: QUIT]              *" ;
+        cout << "\n* 0. Create adjacency lists          *" ;
+        cout << "\n* 1. Build connected components      *" ;
+        cout << "\n* 2. Find shortest paths by Dijkstra *" ;
+        cout << "\n**************************************" ;
+        cout << "\nInput a choice(0, 1, 2) [Any other key: QUIT] :" ;
+        cin >> temp ;
+
+        if ( file.IsNumber( temp ) ) {
+        	command = stoi(temp) ;
+        	switch ( command ) {
+    	    	case( 0 ) :
+		  	    	mission.Mission0() ;
+		  	    	break ;
+		   		case( 1 ) :
+		  	    	mission.Mission1() ;
+		  	    	break ;
+		    	case( 2 ) :
+		  	    	mission.Mission2() ;
+		  	    	break ;
+		    	default :
+		  	    	cout << "\nexit" ;
+		  	    	return ;
+	    	} // switch
+		} // if
+		
+		else command = -1 ;
+	} while ( command >= 0 && command < 3 ) ; // do while
+} // void start()
+
+int main() { 
+	Start() ;
+} // int main()
