@@ -7,7 +7,7 @@
 #include <sstream>
 #include <cstring>
 #include <cstdlib>
-#include <queue>
+#include <stack>
 #include <algorithm>
 
 using namespace std;
@@ -89,7 +89,7 @@ class File {
 			return fileName ;
 		} // void Create_adjFile
 		
-		string Create_adjFile( string fileName ) {
+		string Create_ccFile( string fileName ) {
 			fileName = fileName.erase( fileName.size()-4, 4 ) + ".cc" ;
 			return fileName ;
 		} // void Create_adjFile
@@ -118,7 +118,7 @@ class Graph  {
 			receiver.weight = 0 ;
 		} // void InitST
 		
-		void Sort( vector<Sender> &sender ) {
+		void SortMission0( vector<Sender> &sender ) {
 			for ( int i=0; i < sender.size(); i++ ) {
 				for ( int j=i+1; j < sender.size(); j++ ) {
 					if ( strcmp( sender[i].id, sender[j].id ) > 0 )
@@ -134,7 +134,25 @@ class Graph  {
 					}
 				} // for
 			} // for
-		} // void Sort
+		} // void SortMission0
+		
+		void SortMission1( vector<Sender> &connectList ) {
+			for ( int i=0; i < connectList.size(); i++ ) {
+				for ( int j=i+1; j < connectList.size(); j++ ) {
+					if ( connectList[i].receiver.size() > connectList[j].receiver.size() )
+						swap( connectList[i], connectList[j] ) ;
+				} // for
+			} // for
+			
+			for ( int i=0; i < connectList.size(); i++ ) {
+				for ( int j=0; j < connectList[i].receiver.size(); j++ ) {
+					for ( int k=j; k < connectList[i].receiver.size(); k++ ) {
+						if ( strcmp( connectList[i].receiver[j].id, connectList[i].receiver[k].id ) > 0 )
+							swap(  connectList[i].receiver[j],  connectList[i].receiver[k] ) ;
+					}
+				} // for
+			} // for
+		} // void SortMission1
 		
 		void WriteBinToVec( vector<Data> &data, string binFileName, float threshold ) { 
 			Data tempData ;
@@ -187,6 +205,35 @@ class Graph  {
 			adjFile << "<<< There are " << node << " nodes in total. >>>\n" ;
 			adjFile.close() ;
 		} // void WriteListToAdj
+		
+		void WriteListToCc( string ccFileName, vector<Sender> connectList )  {
+			File  file ;
+			ccFileName = file.Create_ccFile( ccFileName ) ;
+			int count = 0 ;
+			int connected = connectList.size() ;
+			int ccSize = 0 ;
+
+			ofstream ccFile ;
+			ccFile.open( ccFileName.c_str() ) ;
+			ccFile << "<<< There are " << connected << "  connected components in total. >>>\n" ;
+			
+			for( int i=connectList.size()-1; i >= 0; i-- ) {
+				ccSize = connectList[i].receiver.size() ;
+				ccFile << "{" << connectList.size()-i << "} " << "Connected Component: size = " << ccSize << "\n" ;
+				for ( int j=0; j < connectList[i].receiver.size(); j++ )  {
+					count++ ;
+					ccFile << "\t(" << j+1 << ") " << connectList[i].receiver[j].id  ;
+					if  ( count == 8 ) {
+						ccFile <<  "\n" ;
+						count = 0 ;
+					}
+				} // for
+				ccFile << "\n" ;
+				count = 0 ;
+			} // for
+
+			ccFile.close() ;
+		} //  void WriteListToCc
 		
 		// @ brief :  build graph
 		void BuildList( vector<Sender> &list, vector<Data> data ) {
@@ -274,28 +321,96 @@ class Graph  {
 				InitST( tempSender, tempReceiver ) ;
             } // for
             
-            Sort( list ) ;
+            SortMission0( list ) ;
 		}  // void  BuildList
 		
-		void Print( vector<Sender> &list ) {
-//			int count  = 0 ;
-//			for( int i=0; i < list.size(); i++ ) {
-//				count = 0 ;
-//				cout << "\n\n(" << i+1 << ") " << list[i].id << " : " << endl ;
-//				for ( int j=0; j < list[i].receiver.size(); j++ )  {
-//					cout << "\t" << list[i].receiver[j].id ;
-//					count++ ;
-//					if( count == 5 )  {
-//						cout << "\n" ;
-//					count = 0 ;
-//					}
-//				} // for
-//			} // for
+		void BuildConnectList( vector<Sender> list, vector<Sender> &connectList ) {
+			Sender tempSender ;
+			vector<string> stack ;
+			vector<string> visit ;
 			
+			for ( int i=0; i < list.size(); i++ ) {
+				if ( IsVisit( list[i].id, visit ) == false ) {
+					stack.push_back( list[i].id ) ;
+					visit.push_back( list[i].id ) ;
+					traver( list[i].id, stack, visit, list, tempSender ) ;
+					connectList.push_back(tempSender) ;
+					tempSender.receiver.clear() ;
+					stack.clear() ;
+				} // if
+			} // for
+			
+			SortMission1( connectList ) ;
+		} // void BuildConnectList
+		
+		void traver( string id, vector<string> &stack, vector<string> &visit, vector<Sender> list, Sender &tempSender ) {
+			int position = -1 ;
+			int tempStack = stack.size() ;
+			Receiver tempReceiver ;
+			
+			for ( int i=0; i < list.size(); i++ ) {
+				if ( id == list[i].id ) {
+					position = i ;
+					break ;
+				} // if
+			} // for
+
+			// put ID's receiver in stack
+			Add( stack, visit, list[position] ) ;
+			
+			if ( IsVisit( stack[stack.size()-1], visit ) == false ) {
+				visit.push_back( stack[stack.size()-1] ) ;
+				while ( !stack.empty() ) {
+					traver( stack[stack.size()-1], stack, visit, list, tempSender ) ;
+				} // while
+			} // if
+
+			else {
+				stack.pop_back() ;
+				// copy ID to tempReceiver
+	            for( int i=0; i < id.length(); i++ ) {
+	            	tempReceiver.id[i] = id[i] ;
+				} // for
+				
+				tempSender.receiver.push_back(tempReceiver) ;
+			} // else
+		} // void traver
+		
+		void Add( vector<string> &stack, vector<string> &visit, Sender sender ) {
+			for ( int i=0; i < sender.receiver.size(); i++ ) {
+				if ( IsInStack( sender.receiver[i].id, stack ) == false && IsVisit( sender.receiver[i].id, visit ) == false  )
+					stack.push_back( sender.receiver[i].id ) ;
+			} // for
+			
+		} // void AddToStack
+		
+		bool IsVisit( string id, vector<string> visit ) {
+			for ( string v : visit ) {
+				if ( id == v ) return true ;
+			} //  for
+			return false ;
+		} // bool IsVisit
+		
+		bool IsInStack( string id, vector<string> stack ) {
+			for ( string s : stack ) {
+				if ( id == s ) return true ;
+			} //  for
+			return false ;
+		} // bool IsInStack
+		
+		void Mission0_Print( vector<Sender> list ) {
 			int node = getTotalNode(list) ;
 			int id = getTotalID(list) ;
 			cout << "\n<<< There are " << id << " IDs in total. >>>\n" ;
 			cout << "\n<<< There are " << node << " nodes in total. >>>\n" ;
+		} // void Mission0_Print
+		
+		void Mission1_Print( vector<Sender> connectList ) {
+			int ccSize = connectList.size() ;
+			cout << "\n<<< There are " << ccSize << " connected components in total. >>>\n" ;
+			for ( int i=ccSize-1; i >= 0; i-- ) {
+				cout << "{ " << i+1 << "} Connected Component: size = "  << connectList[i].receiver.size() << endl ;
+			} // for
 		} // void testPrint
 		
 }; // class Graph
@@ -337,7 +452,7 @@ class Mission {
 					return ;
 				graph.BuildList( list, data ) ;
 				graph.WriteListToAdj( fileName, tempThreshold, list )  ;
-				graph.Print(list) ;
+				graph.Mission0_Print(list) ;
 				data.clear() ;
 				binFile.close() ;
 			} // if
@@ -348,18 +463,17 @@ class Mission {
 		
 		void Mission1( string fileName, vector<Sender> list ) {
 			Graph graph ;
+			vector<Sender> connectList ;
 			
 			if ( list.size() == 0 ) {
 				cout << "\n### There is no graph and choose 0 first. ###\n" ;
 			} // if
 			
 			else {
-				int node = graph.getTotalNode(list) ;
-				int id = graph.getTotalID(list) ;
-				cout << endl << fileName << endl ;
-				cout << "\n<<< There are " << id << " IDs in total. >>>\n" ;
-				cout << "\n<<< There are " << node << " nodes in total. >>>\n" ;
-			}
+				graph.BuildConnectList( list, connectList ) ;
+				graph.WriteListToCc( fileName, connectList ) ;
+				graph.Mission1_Print(connectList) ;
+			} // else 
 		} // void Mission1
 
 		void Mission2( string fileName, vector<Sender> list ) {
