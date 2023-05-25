@@ -31,7 +31,7 @@ struct Sender {
 class File {
 	public :
 
-        // cheak string is number
+        // cheak string is int
 		bool IsNumber( string filename ) {
 			for ( int i = 0; i < filename.length(); i++ ) {
 				if ( filename[i]-'0' < 0 || filename[i]-'0' > 9 )
@@ -40,6 +40,7 @@ class File {
 			return true ;
 		} // bool IsNumber
 		
+		// cheak string is float
 		bool IsFloat( string filename ) {
 			for ( int i = 0; i < filename.length(); i++ ) {
 				if ( filename[i] != '.' && ( filename[i]-'0' < 0 || filename[i]-'0' > 9 ) )
@@ -63,7 +64,7 @@ class File {
 		} // string GetData()
 
         // modify filename
-		void Cheak_filename( string &filename ) {
+		void Cheak_FileName( string &filename ) {
 			bool hasPoint = false ;
             // cheak filename is or not all int
 			if ( IsNumber( filename ) ) 
@@ -84,25 +85,18 @@ class File {
 			} // else
 		} // string Cheak_filename
 		
-		string Create_adjFile( string fileName, string threshold ) {
-			fileName = fileName.erase( fileName.size()-4, 4 ) + "_" + threshold + ".adj" ;
+		string Create_FileName( string fileName, string threshold, string lastName ) {
+			fileName = fileName.erase( fileName.size()-4, 4 ) + "_" ;
+			if ( threshold != "0" )
+				fileName = fileName + threshold ;
+			fileName = fileName + lastName ;
 			return fileName ;
-		} // void Create_adjFile
-		
-		string Create_ccFile( string fileName ) {
-			fileName = fileName.erase( fileName.size()-4, 4 ) + ".cc" ;
-			return fileName ;
-		} // void Create_adjFile
-		
-		string Create_dsFile( string fileName ) {
-			fileName = fileName.erase( fileName.size()-4, 4 ) + ".ds" ;
-			return fileName ;
-		} // void Create_adjFile
+		} // string Create_FileName
 }; // class File
 
 class Graph  {
 	public  :
-		int getTotalNode( vector<Sender> sender ) {
+		int getTotalNode( vector<Sender> &sender ) {
 			int num  = 0 ;
 			for ( Sender s : sender  ) {
 				num = num + (int)s.receiver.size() ;
@@ -111,22 +105,95 @@ class Graph  {
 			return num ;
 		} // int getNodeTotal
 		
-		int getTotalID( vector<Sender> sender ) {
+		int getTotalID( vector<Sender> &sender ) {
 			return (int)sender.size() ;
 		} // int getNodeTotal
 		
-		int findList( char id[10], vector<Sender> &list ) {
-			int position = 0 ;
-			for ( int i=0; i < list.size(); i++ )  {
-				if ( strcmp( id, list[i].id ) == 0 ) {
+		int FindID( char id[10], vector<Sender> &list, string state ) {
+			int position = -1 ;
+			// find list 1 dimension ID
+			if ( state == "1D" ) {
+				for ( int i=0; i < list.size(); i++ )  {
+					if ( strcmp( id, list[i].id ) == 0 ) {
+						position = i ;
+						break ;
+					} // if
+				} // for
+			} // if
+			
+			// find list 2 dimension ID
+			else {
+				for ( int i=0; i < list.size(); i++ )  {
+					for ( int j=0; j < list[i].receiver.size(); j++ ) {
+						if ( strcmp( id, list[i].receiver[j].id ) == 0 ) {
+							position = i ;
+							break ;
+						} // if
+					} // for
+				} // for
+			} // else
+			return position ;
+		} // int findList
+		
+		int FindID( string id, vector<Sender> &list, string state ) {
+			int position = -1 ;
+			// find list 1 dimension ID
+			if ( state == "1D" ) {
+				for ( int i=0; i < list.size(); i++ )  {
+					if ( id == list[i].id ) {
+						position = i ;
+						break ;
+					} // if
+				} // for
+			} // if
+			
+			// find list 2 dimension ID
+			else {
+				for ( int i=0; i < list.size(); i++ )  {
+					for ( int j=0; j < list[i].receiver.size(); j++ ) {
+						if ( id == list[i].receiver[j].id ) {
+							position = i ;
+							break ;
+						} // if
+					} // for
+				} // for
+			} // else
+			return position ;
+		} // int findList
+		
+		int FindID( char id[10], Sender &list ) {
+			int position = -1 ;
+			for ( int i=0; i < list.receiver.size(); i++ ) {
+				if ( strcmp ( id, list.receiver[i].id ) == 0 ) {
 					position = i ;
 					break ;
 				} // if
 			} // for
 			return position ;
-		} // int findList
+		} // int FindAnsArray
+
+		bool IsVisit( string id, vector<string> &visit ) {
+			for ( string v : visit ) {
+				if ( id == v ) return true ;
+			} //  for
+			return false ;
+		} // bool IsVisit
+		
+		bool InStack( string id, vector<string> &stack ) {
+			for ( string s : stack ) {
+				if ( id == s ) return true ;
+			} //  for
+			return false ;
+		} // bool IsInStack
+		
+		bool InList( string id, vector<Sender> &list ) {
+			for ( Sender l : list ) {
+				if ( id == l.id ) return true ;
+			} //  for
+			return false ;
+		} // bool InList
 		 
-		// @ brief : init temp list struct
+		// @ brief : Init temp list struct
 		void InitST( Sender &sender, Receiver &receiver ) {
 			sender.id[10] = {'\0'} ;
 			sender.receiver.clear() ;
@@ -145,7 +212,7 @@ class Graph  {
 			for ( int i=0; i < sender.size(); i++ ) {
 				for ( int j=0; j < sender[i].receiver.size(); j++ ) {
 					for ( int k=j; k < sender[i].receiver.size(); k++ ) {
-						if ( strcmp( sender[i].receiver[j].id, sender[i].receiver[k].id ) > 0 )
+						if ( strcmp ( sender[i].receiver[j].id, sender[i].receiver[k].id ) > 0 )
 							swap(  sender[i].receiver[j],  sender[i].receiver[k] ) ;
 					}
 				} // for
@@ -163,25 +230,21 @@ class Graph  {
 			for ( int i=0; i < connectList.size(); i++ ) {
 				for ( int j=0; j < connectList[i].receiver.size(); j++ ) {
 					for ( int k=j; k < connectList[i].receiver.size(); k++ ) {
-						if ( strcmp( connectList[i].receiver[j].id, connectList[i].receiver[k].id ) > 0 )
-							swap(  connectList[i].receiver[j],  connectList[i].receiver[k] ) ;
+						if ( strcmp ( connectList[i].receiver[j].id, connectList[i].receiver[k].id ) > 0 )
+							swap( connectList[i].receiver[j], connectList[i].receiver[k] ) ;
 					}
 				} // for
 			} // for
 		} // void SortMission1
 		
-		void SortMission2( Sender &dsArray ) {
-			for ( int i=0; i < dsArray.receiver.size(); i++ ) {
-				for ( int j=i; j < dsArray.receiver.size(); j++ ) {
-					if ( dsArray.receiver[i].weight >= dsArray.receiver[j].weight ) {
-						if ( dsArray.receiver[i].weight > dsArray.receiver[j].weight )  {
-							swap ( dsArray.receiver[i], dsArray.receiver[j] ) ;
-						} // if
-						else {
-							if ( strcmp( dsArray.receiver[i].id, dsArray.receiver[j].id ) > 0 )  {
-								swap ( dsArray.receiver[i], dsArray.receiver[j] ) ;
-							} // if
-						} // else
+		void SortMission2( Sender &shortArray ) {
+			for ( int i=0; i < shortArray.receiver.size(); i++ ) {
+				for ( int j=i; j < shortArray.receiver.size(); j++ ) {
+					if ( shortArray.receiver[i].weight >= shortArray.receiver[j].weight ) {
+						if ( shortArray.receiver[i].weight > shortArray.receiver[j].weight )
+							swap ( shortArray.receiver[i], shortArray.receiver[j] ) ;
+						else if ( strcmp ( shortArray.receiver[i].id, shortArray.receiver[j].id ) > 0 )
+							swap ( shortArray.receiver[i], shortArray.receiver[j] ) ;
 					} // if
 				} // for
 			} // for
@@ -191,8 +254,6 @@ class Graph  {
 			Data tempData ;
 			fstream binFile ;
 			int stNo = 0 ;
-			
-			int count = 0 ;
 			
 			binFile.open( binFileName.c_str(), fstream::in|fstream::binary) ;
 			binFile.seekg( 0, binFile.end ) ;
@@ -210,11 +271,11 @@ class Graph  {
 			binFile.close() ;
 		} // void WriteBinToVec
 		
-		void WriteListToAdj( string &adjFileName, string tempThreshold, vector<Sender> list ) {
+		void WriteListToAdj( string &adjFileName, string tempThreshold, vector<Sender> &list ) {
 			File  file ;
-			adjFileName = file.Create_adjFile( adjFileName, tempThreshold ) ;
+			adjFileName = file.Create_FileName( adjFileName, tempThreshold, ".adj" ) ;
 			
-			int count = 0 ;
+			int count = 0 ; 
 			int node = getTotalNode(list) ;
 			int id = getTotalID(list) ;
 			
@@ -239,20 +300,19 @@ class Graph  {
 			adjFile.close() ;
 		} // void WriteListToAdj
 		
-		void WriteListToCc( string ccFileName, vector<Sender> connectList )  {
+		void WriteListToCc( string ccFileName, vector<Sender> &connectList )  {
 			File  file ;
-			ccFileName = file.Create_ccFile( ccFileName ) ;
+			ccFileName = file.Create_FileName( ccFileName, "0", ".cc" ) ;
 			int count = 0 ;
-			int connected = connectList.size() ;
-			int ccSize = 0 ;
+			int receiverSize = 0 ;
 
 			ofstream ccFile ;
 			ccFile.open( ccFileName.c_str() ) ;
-			ccFile << "<<< There are " << connected << "  connected components in total. >>>\n" ;
+			ccFile << "<<< There are " << connectList.size() << "  connected components in total. >>>\n" ;
 			
 			for( int i=connectList.size()-1; i >= 0; i-- ) {
-				ccSize = connectList[i].receiver.size() ;
-				ccFile << "{" << connectList.size()-i << "} " << "Connected Component: size = " << ccSize << "\n" ;
+				receiverSize = connectList[i].receiver.size() ;
+				ccFile << "{" << connectList.size()-i << "} " << "Connected Component: size = " << receiverSize << "\n" ;
 				for ( int j=0; j < connectList[i].receiver.size(); j++ )  {
 					count++ ;
 					ccFile << "\t(" << j+1 << ") " << connectList[i].receiver[j].id  ;
@@ -268,15 +328,15 @@ class Graph  {
 			ccFile.close() ;
 		} //  void WriteListToCc
 		
-		void WriteListToDs( string dsFileName, Sender dsArray ) {
+		void WriteListToDs( string id, string dsFileName, Sender &shortArray ) {
 			ofstream dsFile ;
 			int count = 0 ;
 			
 			dsFile.open( dsFileName.c_str(), std::ofstream::out | std::ofstream::app ) ;
-			dsFile << "\norigin: " << dsArray.id << "\n" ;
-			for ( int i=0; i < dsArray.receiver.size(); i++ ) {
+			dsFile << "\norigin: " << id << "\n" ;
+			for ( int i=0; i < shortArray.receiver.size(); i++ ) {
 				count++ ;
-				dsFile << "(" << i+1 << ") \t" << dsArray.receiver[i].id << ", " << dsArray.receiver[i].weight << "\t"   ;
+				dsFile << "(" << i+1 << ") \t" << shortArray.receiver[i].id << ", " << shortArray.receiver[i].weight << "\t"   ;
 				if ( count == 8 ) {
 					dsFile << "\n" ;
 					count = 0 ;
@@ -285,98 +345,32 @@ class Graph  {
 			 
 			dsFile << "\n" ;
 			dsFile.close() ;
-		} // void
+		} // void WriteListToDs
 		
-		// @ brief :  build graph
+		// @ brief : build list
 		void BuildList( vector<Sender> &list, vector<Data> data ) {
 			int position = -1 ;
 			Sender tempSender ;
 			Receiver tempReceiver ;
-            for(Data d : data){
-            	// list is null
-				if ( list.size() == 0 )  {
-					// set sender
-					strcpy( tempSender.id, d.id1 ) ;
-					// set receiver
-					strcpy( tempReceiver.id, d.id2 ) ;
-					tempReceiver.weight = d.weight ;
-					tempSender.receiver.push_back(tempReceiver) ;
-					// push to graph
-					list.push_back(tempSender) ;
-					
-                    InitST( tempSender, tempReceiver ) ;
-					
-					/* Because it is an undirected graph
-					 * So do it in reverse again 
-					*/
-					strcpy( tempSender.id, d.id2 ) ;
-					strcpy( tempReceiver.id, d.id1 ) ;
-					tempReceiver.weight = d.weight ;
-					tempSender.receiver.push_back(tempReceiver) ;
-					list.push_back(tempSender) ;
+			
+            for(Data d : data) {
+				if ( list.size() == 0 ) { // list is null
+					SetList( list, d.id1, d.id2, d.weight, "null" ) ;
+					// Because it is an undirected graph, so do reverse again
+					SetList( list, d.id2, d.id1, d.weight, "null" ) ;
 				} // if 
 				
-				// list isn't null
-				else {
-					// set receiver
-					strcpy( tempReceiver.id, d.id2 ) ;
-					tempReceiver.weight = d.weight ;
-					
-					// Find if graphs have the same sender
-					for( int i=0; i < list.size();  i++ )  {
-						if( strcmp( d.id1, list[i].id ) == 0 ) {
-							position = i ;
-							break ;
-						} // if
-					} // for
-					
-					// find the same sender
-					if ( position != -1 ) {
-						list[position].receiver.push_back(tempReceiver) ;
-					}  // if
-					
-					// no find the same sender
-					else {
-						// push new sender in graph
-						strcpy( tempSender.id, d.id1 ) ;
-						tempSender.receiver.push_back(tempReceiver) ;
-						list.push_back(tempSender) ;
-					}  // else
-					
-					// init
-					position  = -1 ;
-					InitST( tempSender, tempReceiver ) ;
-					
-					// do it in reverse again
-					strcpy( tempReceiver.id, d.id1 ) ;
-					tempReceiver.weight = d.weight ;
-					
-					for( int i=0; i < list.size();  i++ )  {
-						if( strcmp( d.id2, list[i].id ) == 0 ) {
-							position = i ;
-							break ;
-						} // if
-					} // for
-					
-					if ( position != -1 ) {
-						list[position].receiver.push_back(tempReceiver) ;
-					}  // if
-					
-					else {
-						strcpy( tempSender.id, d.id2 ) ;
-						tempSender.receiver.push_back(tempReceiver) ;
-						list.push_back(tempSender) ;
-					}  // else
+				else { // list isn't null
+					SetList( list, d.id1, d.id2, d.weight, "unNull" ) ;
+					SetList( list, d.id2, d.id1, d.weight, "unNull" ) ;
 				} // else
-				
-				position  = -1 ;
-				InitST( tempSender, tempReceiver ) ;
             } // for
             
             SortMission0( list ) ;
 		}  // void  BuildList
 		
-		void BuildConnectList( vector<Sender> list, vector<Sender> &connectList ) {
+		// @ brief : build connect list
+		void BuildConnectList( vector<Sender> &list, vector<Sender> &connectList ) {
 			Sender tempSender ;
 			vector<string> stack ;
 			vector<string> visit ;
@@ -386,7 +380,8 @@ class Graph  {
 					stack.push_back( list[i].id ) ;
 					visit.push_back( list[i].id ) ;
 					traveler( list[i].id, stack, visit, list, tempSender ) ;
-					connectList.push_back(tempSender) ;
+					connectList.push_back(tempSender) ; // put the friend circle to list
+					// Init
 					tempSender.receiver.clear() ;
 					stack.clear() ;
 				} // if
@@ -395,60 +390,120 @@ class Graph  {
 			SortMission1( connectList ) ;
 		} // void BuildConnectList
 		
-		void  BuildDs( string id, vector<Sender> &dsArray, vector<Sender> list, vector<Sender> connectList ) {
+		void  BuildGraph( string id, vector<Sender> &graph, vector<Sender> &list, vector<Sender> &connectList ) {
 			Sender tempSender ;
-			int position = 0 ;
+			int position = -1 ;
 			
-			// find ID
-			for ( int i=0; i < connectList.size(); i++ ) {
-				for ( int j=0; j < connectList[i].receiver.size(); j++ ) {
-					if ( id == connectList[i].receiver[j].id ) {
-						position  = i ;
-						break ;
-					} // if
-				} // for
-			} // for
-			
-			// set start & finish
+			/* find ID, if ID in connectList receiver have the same ID
+			 * connectList 1-D is empty
+			 * so find ID need go to 2D list to search
+			*/
+			position = FindID( id, connectList, "2D" ) ;
+
+			// set graph data
 			for ( int i=0; i < connectList[position].receiver.size(); i++ ) {
+				// set 1D graph
 				strcpy ( tempSender.id, connectList[position].receiver[i].id ) ;
+				// set 2D graph
 				for ( int j=0 ; j < connectList[position].receiver.size(); j++ ) {
 					tempSender.receiver.push_back( connectList[position].receiver[j] ) ;
 				} //  for
-				dsArray.push_back(tempSender) ;
+				
+				// Init
+				graph.push_back(tempSender) ;
 				tempSender.id[10] = {'\0'} ;
 				tempSender.receiver.clear() ;
 			} // for
 			
+			position = -1 ;
 			// set weight
-			for ( int i=0; i < dsArray.size(); i++ ) {
-				position = findList( dsArray[i].id, list ) ;
+			for ( int i=0; i < graph.size(); i++ ) {
+				// find ID in list
+				position = FindID( graph[i].id, list, "1D" ) ;
+				
+				// get weight from mission 0's list
 				for ( int j=0 ; j < list[position].receiver.size(); j++ ) {
-					for ( int k=0 ; k < dsArray[i].receiver.size(); k++ ) {
-						if ( strcmp ( list[position].receiver[j].id, dsArray[i].receiver[k].id ) == 0 ) {
-							dsArray[i].receiver[k].weight =  list[position].receiver[j].weight ;
+					// set weight to graph
+					for ( int k=0 ; k < graph[i].receiver.size(); k++ ) {
+						// if ID is same, set weight
+						if ( strcmp ( list[position].receiver[j].id, graph[i].receiver[k].id ) == 0 ) {
+							graph[i].receiver[k].weight =  list[position].receiver[j].weight ;
 							break ;
 						} // if
 					} //  for
 				} // for
 			} // for
-		} // void BuildDijkstra
+			
+		} // void BuildGraph
+		
+		void SetList( vector<Sender> &list, char id1[10], char id2[10], float weight, string state ) {
+			Sender tempSender ;
+			Receiver tempReceiver ;
+			int position = -1 ;
+
+			// list is null
+			if ( state == "null" ) {
+				strcpy( tempSender.id, id1 ) ;   // set sender
+				strcpy( tempReceiver.id, id2 ) ; // set receiver
+				tempReceiver.weight = weight ;
+				tempSender.receiver.push_back(tempReceiver) ;
+				list.push_back(tempSender) ; 	// push to list
+				InitST( tempSender, tempReceiver ) ; // Init
+			} // if
+			
+			// list isn't null
+			else {
+				strcpy( tempReceiver.id, id2 ) ; // set receiver
+				tempReceiver.weight = weight ;
+				
+				// Find ID, If list have the same sender
+				position = FindID( id1, list, "1D" ) ;
+				
+				// find the same sender
+				if ( position != -1 ) {
+					list[position].receiver.push_back(tempReceiver) ;
+				}  // if
+					
+				// not find the same sender
+				else {
+					// push new sender in graph
+					strcpy( tempSender.id, id1 ) ;
+					tempSender.receiver.push_back(tempReceiver) ;
+					list.push_back(tempSender) ;
+				}  // else
+					
+				// Init
+				position  = -1 ;
+				InitST( tempSender, tempReceiver ) ;
+			} // else
+		} // void SetList
+		
+		void SetSmallWeight( Sender &graph, vector<string> &visit, float &minWeight, char (&preID )[10] ) {
+			char tempID[10] = {'\0'} ;
+			float tempWeight = 0.0 ;
+
+			for ( int i=0; i < graph.receiver.size(); i++ ) {
+			   	strcpy ( tempID, graph.receiver[i].id ) ;
+			    tempWeight = graph.receiver[i].weight ;
+			    if ( IsVisit( tempID, visit ) == false && tempWeight != 0 && tempWeight < minWeight ) {
+			    	preID[10] = {'\0'}  ;
+			    	strcpy( preID, tempID ) ;
+			    	minWeight = tempWeight ;
+				} // if
+			} // for
+		} // void SetSmallWeight
 		
 		void traveler( string id, vector<string> &stack, vector<string> &visit, vector<Sender> list, Sender &tempSender ) {
 			int position = -1 ;
 			int tempStack = stack.size() ;
 			Receiver tempReceiver ;
 			
-			for ( int i=0; i < list.size(); i++ ) {
-				if ( id == list[i].id ) {
-					position = i ;
-					break ;
-				} // if
-			} // for
-
+			// Find ID in list
+			position = FindID( id, list, "1D" ) ;
 			// put ID's receiver in stack
 			Add( stack, visit, list[position] ) ;
 			
+			// stack last point isn't visit
 			if ( IsVisit( stack[stack.size()-1], visit ) == false ) {
 				visit.push_back( stack[stack.size()-1] ) ;
 				while ( !stack.empty() ) {
@@ -456,13 +511,15 @@ class Graph  {
 				} // while
 			} // if
 
+			// stack last point is visit
 			else {
 				stack.pop_back() ;
-				// copy ID to tempReceiver
+				// copy ID to tempReceiver ( char[10] <- string )
 	            for( int i=0; i < id.length(); i++ ) {
 	            	tempReceiver.id[i] = id[i] ;
 				} // for
 				
+				// push back to friend circle
 				tempSender.receiver.push_back(tempReceiver) ;
 			} // else
 		} // void traver
@@ -472,49 +529,15 @@ class Graph  {
 				if ( InStack( sender.receiver[i].id, stack ) == false && IsVisit( sender.receiver[i].id, visit ) == false  )
 					stack.push_back( sender.receiver[i].id ) ;
 			} // for
-			
 		} // void AddToStack
-		
-		bool IsVisit( string id, vector<string> visit ) {
-			for ( string v : visit ) {
-				if ( id == v ) return true ;
-			} //  for
-			return false ;
-		} // bool IsVisit
-		
-		bool InStack( string id, vector<string> stack ) {
-			for ( string s : stack ) {
-				if ( id == s ) return true ;
-			} //  for
-			return false ;
-		} // bool IsInStack
-		
-		bool InList( string id, vector<Sender> list ) {
-			for ( Sender l : list ) {
-				if ( id == l.id ) return true ;
-			} //  for
-			return false ;
-		} // bool InList
-		
-		int FindAnsArray( char id[10], Sender ansArray ) {
-			int position = 0 ;
-			for ( int i=0; i < ansArray.receiver.size(); i++ ) {
-				if ( strcmp ( id, ansArray.receiver[i].id ) == 0 ) {
-					position = i ;
-					break ;
-				} // if
-			} // for
-			 
-			return position ;
-		} // int FindAnsArray
-		
+						
 		void ShortPath( string fileName, vector<Sender> list, vector<Sender> connectList ) {
 			File file ;
 			string tempID = "\0" ;
-			Sender ansArray ;
-			vector<Sender> dsArray ;
+			Sender shortArray ;
+			vector<Sender> graph ;
 			
-			fileName = file.Create_dsFile( fileName ) ;
+			fileName = file.Create_FileName( fileName, "0", ".ds" ) ;
 			
 			do {
 				Mission2_Print( list ) ;
@@ -523,12 +546,12 @@ class Graph  {
 				if ( tempID == "0" ) return ;
 				
 				if ( InList( tempID, list ) == true ) {
-					BuildDs( tempID, dsArray, list, connectList ) ;
-					dijkstra( tempID, ansArray, dsArray ) ;
-					SortMission2( ansArray ) ;
-					WriteListToDs( fileName, ansArray ) ;
-					ansArray.id[10] = {'\0'} ;
-					ansArray.receiver.clear() ;
+					BuildGraph( tempID, graph, list, connectList ) ;
+					Dijkstra( tempID, shortArray, graph ) ;
+					SortMission2( shortArray ) ;
+					WriteListToDs( tempID, fileName, shortArray ) ;
+					shortArray.id[10] = {'\0'} ; // Init
+					shortArray.receiver.clear() ;
 				} // if
 				
 				else {
@@ -537,121 +560,65 @@ class Graph  {
 			} while ( tempID != "0" ) ;
 		} // void ShortPath
 		
-		void dijkstra( string id, Sender &ansArray, vector<Sender> &dsArray ) {
-			 vector<string> visit ;
-			 int position = 0, tempPos = 0 ;
-			 float shortWeight = 999, tempMin = 999 ;
-			 float singleWeight = 0.0 ;
-			 string prePath = "\0" ;
-			 char tempID[10] = {'\0'} ;
-			 char startID[10] = {'\0'} ;
-			
-			// copy ID to ansArray
-	        for( int i=0; i < id.length(); i++ ) {
-	           	ansArray.id[i] = id[i] ;
-			} // for
-			
-			// find ID in dsArray
-			for ( int i=0; i < dsArray.size(); i++ ) {
-				if ( id == dsArray[i].id ) {
-					position  = i ;
-					break ;
-				} // if
-			} // for
+		void Dijkstra( string id, Sender &shortArray, vector<Sender> &graph ) {
+			vector<string> visit ;
+			int position = -1 ;
+			int tempPos = -1 ;
+			float tempWeight = 0.0 ;
+			float minWeight = 999 ;
+			char tempID[10] = {'\0'} ;
+			char preID[10] = {'\0'} ; // store previously path(ID)
+						
+			// find ID in graph
+			position = FindID( id, graph, "1D" ) ;
 		
-			//  set ansArray
-			for ( int i=0; i < dsArray[position].receiver.size(); i++  ) {
-				if ( id != dsArray[position].receiver[i].id ) 
-					ansArray.receiver.push_back( dsArray[position].receiver[i] ) ;
+			//  set shortArray ID and weight
+			for ( int i=0; i < graph[position].receiver.size(); i++  ) {
+				if ( id != graph[position].receiver[i].id ) 
+					shortArray.receiver.push_back( graph[position].receiver[i] ) ;
 			} // for
 			
+			// set smallest weight & previously path(ID)
+			SetSmallWeight( shortArray, visit, minWeight, preID ) ;
 
+			position = -1 ; // Init position
 			
-			// find smallest weight
-			for ( int i=0; i < dsArray[position].receiver.size(); i++ ) {
-			   	strcpy ( tempID, dsArray[position].receiver[i].id ) ;
-			    singleWeight = dsArray[position].receiver[i].weight ;
-			    if ( IsVisit( tempID, visit ) == false && singleWeight != 0 && singleWeight <= shortWeight ) {
-			    	startID[10] = {'\0'}  ;
-			    	strcpy( startID, tempID ) ;
-			    	shortWeight = singleWeight ;
-				} // if
-			} // for
-
-			position = 0 ;
+			// push id to visit
 			visit.push_back( id ) ;
-			visit.push_back( startID ) ;
-			prePath = startID ;
+			visit.push_back( preID ) ;
 			
-			for ( int count=0; count < ansArray.receiver.size()-1; count++  ) {
-				
-				// find ID
-				for ( int i=0; i < dsArray.size(); i++ ) {
-					if ( dsArray[i].id == prePath ) {
-						position  = i ;
-						break ;
-					} // if
-			    } // for
-
+			for ( int count=0; count < shortArray.receiver.size()-1; count++  ) {
+				// find ID in graph
+				position = FindID( preID, graph, "1D" ) ;
 				tempID[10] = {'\0'} ;
-				singleWeight = 0.0 ;
-
+				tempWeight = 0.0 ;
 				
-				// put ID in nextPath
-			    for ( int i=0; i < dsArray[position].receiver.size(); i++ ) {
-			    	strcpy ( tempID, dsArray[position].receiver[i].id ) ;
-			    	singleWeight = dsArray[position].receiver[i].weight ;
+				// update short path 
+			    for ( int i=0; i < graph[position].receiver.size(); i++ ) {
+			    	strcpy ( tempID, graph[position].receiver[i].id ) ;
+			    	tempWeight = graph[position].receiver[i].weight ;
 			    	
-			    	if ( IsVisit( tempID, visit ) == false && singleWeight != 0 ) {
-			    		
-			    		// find min weight
-			    		if ( singleWeight < tempMin ) {
-							tempMin = singleWeight ;
-			    			prePath = tempID ;
-						} // if
-						
-						singleWeight = singleWeight + shortWeight ;
-			    		
-			    		// find ansArray ID
-						for ( int temp=0; temp < ansArray.receiver.size(); temp++ ) {
-							if ( strcmp ( tempID, ansArray.receiver[temp].id ) == 0  ) {
-								tempPos  = temp ;
-								break ;
-							} // if
-						} // for
-						
-			    		if ( singleWeight < ansArray.receiver[tempPos].weight || ansArray.receiver[tempPos].weight == 0 ) {
-			    			ansArray.receiver[tempPos].weight = singleWeight ;
-						} // if
-
+			    	if ( IsVisit( tempID, visit ) == false && tempWeight != 0 ) {						
+						tempWeight = tempWeight + minWeight ;
+						// find ID in shortArray
+			    		tempPos = FindID( tempID, shortArray ) ; 
+			    		// sum weight < short path weight or short path weight = 0
+			    		if ( tempWeight < shortArray.receiver[tempPos].weight || shortArray.receiver[tempPos].weight == 0 )
+			    			shortArray.receiver[tempPos].weight = tempWeight ;
 					} // if
 				} // for
 				
 
-				tempMin = 999 ;
-				
-				// find smallest weight
-				for ( int i=0; i < ansArray.receiver.size(); i++ ) {
-					tempID[10] = {'\0'} ;
-			  	 	strcpy ( tempID, ansArray.receiver[i].id ) ;
-			    	singleWeight = ansArray.receiver[i].weight ;
-			    	if ( IsVisit( tempID, visit ) == false && singleWeight != 0 && singleWeight < tempMin ) {
-			    		//startID[10] = {'\0'} ;
-			    		//strcpy( startID, tempID ) ;
-			    		prePath = tempID ;
-			    		tempMin = singleWeight ;
-					} // if
-				} // for
-				
-				
-				visit.push_back( prePath ) ;
-				shortWeight = tempMin ;
-		
-				position = 0 ;
+				minWeight = 999 ; // reset min weight
+				// set small weight & previously path(ID)
+			    SetSmallWeight( shortArray, visit, minWeight, preID ) ;				
+				visit.push_back( preID ) ;
+
+				// Init 
+				position = -1 ;
 				tempID[10] = {'\0'} ;
-				singleWeight = 0 ;
-				tempPos = 0 ;
-				tempMin = 999 ;
+				tempWeight = 0.0 ;
+				tempPos = -1 ;
 			} // for
 		} // void dijkstra
 		
@@ -666,7 +633,7 @@ class Graph  {
 			int ccSize = connectList.size() ;
 			cout << "\n<<< There are " << ccSize << " connected components in total. >>>\n" ;
 			for ( int i=ccSize-1; i >= 0; i-- ) {
-				cout << "{ " << i+1 << "} Connected Component: size = "  << connectList[i].receiver.size() << endl ;
+				cout << "{ " << ccSize-i << "} Connected Component: size = "  << connectList[i].receiver.size() << endl ;
 			} // for
 		} // void Mission1_Print
 		
@@ -681,9 +648,7 @@ class Graph  {
 					count = 0  ;
 				} // if
 			} // for
-			
 		} // void Mission2_Print
-		
 }; // class Graph
 
 class Mission {
@@ -713,13 +678,13 @@ class Mission {
 			
 			cout << "\nInput a file number ( 501, pairs501 ) : " ;
 			cin >> fileName ;
-			file.Cheak_filename(fileName) ;
+			file.Cheak_FileName(fileName) ;
 			
 			binFile.open( fileName.c_str() ) ;
 			if ( binFile.is_open() ) {
 				vector<Data> data ;
 				graph.WriteBinToVec( data , fileName, threshold ) ;
-				if ( data.size() == 0 )
+				if ( data.size() == 0 ) // any data's weight < threshold
 					return ;
 				graph.BuildList( list, data ) ;
 				graph.WriteListToAdj( fileName, tempThreshold, list )  ;
@@ -768,11 +733,13 @@ void Start() {
 	int command = 0 ;
     string temp = "\0" ;
     string fileName = "\0" ;
+    /* @parem : list, mission 0 build graph will store in this vector
+     * @parem : connectList, mission 1 build graph will store in this vector
+     */
     vector<Sender> list ;
     vector<Sender> connectList ;
 	Mission mission ;
 	File file  ;
-	
 	
 	do{
 	    cout << "\n******* Graph data applications ******" ;
