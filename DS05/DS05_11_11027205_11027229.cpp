@@ -1,4 +1,4 @@
-// 11027205
+// group 11 11027205, 11027229
 
 #include <iostream>
 #include <string>
@@ -377,6 +377,7 @@ class Graph  {
 			
 			for ( int i=0; i < list.size(); i++ ) {
 				if ( IsVisit( list[i].id, visit ) == false ) {
+					strcpy ( tempSender.id, list[i].id ) ;
 					stack.push_back( list[i].id ) ;
 					visit.push_back( list[i].id ) ;
 					traveler( list[i].id, stack, visit, list, tempSender ) ;
@@ -478,7 +479,24 @@ class Graph  {
 			} // else
 		} // void SetList
 		
+		// mission 2
 		void SetSmallWeight( Sender &graph, vector<string> &visit, float &minWeight, char (&preID )[10] ) {
+			char tempID[10] = {'\0'} ;
+			float tempWeight = 0.0 ;
+
+			for ( int i=0; i < graph.receiver.size(); i++ ) {
+			   	strcpy ( tempID, graph.receiver[i].id ) ;
+			    tempWeight = graph.receiver[i].weight ;
+			    if ( IsVisit( tempID, visit ) == false && tempWeight != 0 && tempWeight < minWeight ) {
+			    	preID[10] = {'\0'}  ;
+			    	strcpy( preID, tempID ) ;
+			    	minWeight = tempWeight ;
+				} // if
+			} // for
+		} // void SetSmallWeight
+		
+		// mission 3
+		void SetSmallWeight( Sender &graph, vector<string> &visit, float &minWeight, char (&preID )[10], string mission ) {
 			char tempID[10] = {'\0'} ;
 			float tempWeight = 0.0 ;
 
@@ -531,7 +549,7 @@ class Graph  {
 			} // for
 		} // void AddToStack
 						
-		void ShortPath( string fileName, vector<Sender> list, vector<Sender> connectList ) {
+		void ShortPath( string fileName, vector<Sender> list, vector<Sender> &connectList ) {
 			File file ;
 			string tempID = "\0" ;
 			Sender shortArray ;
@@ -621,6 +639,86 @@ class Graph  {
 				tempPos = -1 ;
 			} // for
 		} // void dijkstra
+		
+		void Kruskal( string fileName, vector<Sender> list, vector<Sender> &connectList ) {
+			Sender shortArray ;
+			vector<Sender> graph ;
+			float totalWeight = 0 ;
+				
+			for ( int i=0; i < connectList.size(); i++ ) {
+				BuildGraph( connectList[i].id , graph, list, connectList ) ;
+				KruskalPath( connectList[i].id, shortArray, graph ) ;
+				totalWeight = AddWeight( shortArray ) ;
+				// print
+				cout << "The MST cost of connected component {" << i+1 <<"} = " << totalWeight << endl ;
+				shortArray.id[10] = {'\0'} ; // Init
+				shortArray.receiver.clear() ;
+				graph.clear() ;
+			} // for
+		
+		} // void Kruskal
+		
+		void KruskalPath( string id, Sender &shortArray, vector<Sender> &graph ) {
+			vector<string> visit ;
+			int position = -1 ;
+			int tempPos = -1 ;
+			float minWeight = 999 ;
+			char preID[10] = {'\0'} ; // store previously path(ID)
+
+			// find ID in graph
+			position = FindID( id, graph, "1D" ) ;
+
+			//  set shortArray ID and weight
+			for ( int i=0; i < graph[position].receiver.size(); i++  ) {
+				if ( id != graph[position].receiver[i].id ) {
+					cout << "\nGraph ID & Weight : " << graph[position].receiver[i].id << " " << graph[position].receiver[i].weight ;
+					shortArray.receiver.push_back( graph[position].receiver[i] ) ;
+				} // if
+			} // for
+
+			visit.push_back( id ) ;
+			for ( int i=0; i < graph.size(); i++ ) {
+				if ( IsVisit( graph[i].id, visit ) == false ) {
+					// set smallest weight & previously path(ID)
+					SetSmallWeight( graph[i], visit, minWeight, preID, "mission3" ) ;
+				} // if
+			} // for
+
+			visit.push_back( preID ) ;
+			
+			position = -1 ; // Init position
+			tempPos = -1 ;
+			
+			for ( int count=0; count < shortArray.receiver.size()-1; count++  ) {
+				tempPos = FindID( preID, shortArray ) ; 
+				shortArray.receiver[tempPos].weight = minWeight ;
+				
+				minWeight = 999 ; // reset min weight
+				for ( int i=0; i < graph.size(); i++ ) {
+					if ( IsVisit( graph[i].id, visit ) == false ) {
+						// set smallest weight & previously path(ID)
+						SetSmallWeight( graph[i], visit, minWeight, preID, "mission3" ) ;
+					} // if
+				} // for
+
+				visit.push_back( preID ) ;
+				if ( minWeight = 999 ) {
+					return ;
+				} // if
+
+				// Init 
+				position = -1 ;
+				tempPos = -1 ;
+			} // for
+		} // void KruskalPath
+		
+		float AddWeight( Sender &shortArray ) {
+			float ans = 0;
+			for ( int i=0; i < shortArray.receiver.size(); i++ ) {
+				ans = ans + shortArray.receiver[i].weight ;
+			} // for
+			return ans ;
+		} // float AddWeight
 		
 		void Mission0_Print( vector<Sender> list ) {
 			int node = getTotalNode(list) ;
@@ -727,6 +825,22 @@ class Mission {
 				graph.ShortPath( fileName, list, connectList ) ;
 			} // else
 		} // void Mission2
+		
+		void Mission3( string fileName, vector<Sender> list, vector<Sender> connectList ) {
+			Graph graph ;
+			
+			if ( list.size() == 0 ) {
+				cout << "\n### There is no graph and choose 0 first. ###\n" ;
+			} // if
+			
+			else if ( connectList.size() == 0 )  {
+				cout << "\n### Choose 1 to find connected components. ###\n" ;
+			} // else if
+			
+			else  {
+				graph.Kruskal( fileName, list, connectList ) ;
+			} // else
+		} // void Mission3
 }; // class Mission
 
 void Start() {
@@ -747,6 +861,7 @@ void Start() {
         cout << "\n* 0. Create adjacency lists          *" ;
         cout << "\n* 1. Build connected components      *" ;
         cout << "\n* 2. Find shortest paths by Dijkstra *" ;
+        cout << "\n* 3. Generate minimum spanning trees *" ;
         cout << "\n**************************************" ;
         cout << "\nInput a choice(0, 1, 2) [Any other key: QUIT] :" ;
         cin >> temp ;
@@ -763,6 +878,9 @@ void Start() {
 		    	case( 2 ) :
 		  	    	mission.Mission2( fileName, list,  connectList ) ;
 		  	    	break ;
+		    	case( 3 ) :
+		  	    	mission.Mission3( fileName, list,  connectList ) ;
+		  	    	break ;
 		    	default :
 		  	    	cout << "\nexit" ;
 		  	    	return ;
@@ -770,7 +888,7 @@ void Start() {
 		} // if
 		
 		else command = -1 ;
-	} while ( command >= 0 && command < 3 ) ; // do while
+	} while ( command >= 0 && command < 4 ) ; // do while
 } // void start()
 
 int main() { 
