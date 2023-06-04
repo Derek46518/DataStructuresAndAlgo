@@ -1,4 +1,4 @@
-// group 11 11027205, 11027229
+// group 11 11027205 ½²©v¾± 11027229 ¨ôºa½÷ 
 
 #include <iostream>
 #include <string>
@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <stack>
 #include <algorithm>
+#include <iomanip>
 
 using namespace std;
 
@@ -171,6 +172,19 @@ class Graph  {
 			} // for
 			return position ;
 		} // int FindAnsArray
+		
+		int FindID( string id, vector<vector<string>> &visit ) {
+			int position = -1 ;
+			for ( int i=0; i < visit.size(); i++ ) {
+				for ( int j=0; j < visit[i].size(); j++ ) {
+					if ( id == visit[i][j] ) {
+						position = i ;
+						break ;
+					} // if
+				} // for
+			} // for
+			return position ;
+		} // int FindAnsArray
 
 		bool IsVisit( string id, vector<string> &visit ) {
 			for ( string v : visit ) {
@@ -178,6 +192,22 @@ class Graph  {
 			} //  for
 			return false ;
 		} // bool IsVisit
+		
+		int InVisit( char id[10], vector<vector<string>> &visit ) {
+			int pos = -1 ;
+			string tempString = "\0" ;
+			for ( int i=0; i < visit.size(); i++ ) {
+				for ( int j=0; j < visit[i].size(); j++ ) {
+					tempString  = id ;
+					if ( tempString == visit[i][j] ) {
+						
+						pos = i ;
+						return pos ;
+					}  // if
+				} // for
+			} //  for
+			return pos ;
+		} // int IsVisit
 		
 		bool InStack( string id, vector<string> &stack ) {
 			for ( string s : stack ) {
@@ -248,7 +278,16 @@ class Graph  {
 					} // if
 				} // for
 			} // for
-		} // void SortMission1
+		} // void SortMission2
+		
+		void SortMission3( vector<Data> &weightList ) {
+			for ( int i=0; i < weightList.size(); i++ ) {
+				for ( int j=i; j < weightList.size(); j++ ) {
+					if ( weightList[i].weight > weightList[j].weight )
+						swap( weightList[i], weightList[j] ) ;
+				} // for
+			} // for
+		} // void SortMission3
 		
 		void WriteBinToVec( vector<Data> &data, string binFileName, float threshold ) { 
 			Data tempData ;
@@ -437,6 +476,25 @@ class Graph  {
 			
 		} // void BuildGraph
 		
+		void BuildWeightList( vector<Sender> &graph, vector<Data> &weightList ) {
+			Data tempData ;
+			for ( int i=0; i < graph.size(); i++ ) {
+				for( int j=0; j < graph[i].receiver.size(); j++ ) {
+					if ( graph[i].receiver[j].weight != 0 ) {
+						strcpy ( tempData.id1, graph[i].id ) ;
+						strcpy ( tempData.id2, graph[i].receiver[j].id ) ;
+						tempData.weight = graph[i].receiver[j].weight ;
+						weightList.push_back( tempData ) ;
+					}  // if
+
+					// Init
+					tempData.id1[10] = {'\0'} ;
+					tempData.id2[10] = {'\0'} ;
+					tempData.weight = 0 ;
+				} // for
+			} // for
+		} // void BuildWeightList
+		
 		void SetList( vector<Sender> &list, char id1[10], char id2[10], float weight, string state ) {
 			Sender tempSender ;
 			Receiver tempReceiver ;
@@ -472,31 +530,15 @@ class Graph  {
 					tempSender.receiver.push_back(tempReceiver) ;
 					list.push_back(tempSender) ;
 				}  // else
-					
+
 				// Init
 				position  = -1 ;
 				InitST( tempSender, tempReceiver ) ;
 			} // else
 		} // void SetList
-		
+
 		// mission 2
 		void SetSmallWeight( Sender &graph, vector<string> &visit, float &minWeight, char (&preID )[10] ) {
-			char tempID[10] = {'\0'} ;
-			float tempWeight = 0.0 ;
-
-			for ( int i=0; i < graph.receiver.size(); i++ ) {
-			   	strcpy ( tempID, graph.receiver[i].id ) ;
-			    tempWeight = graph.receiver[i].weight ;
-			    if ( IsVisit( tempID, visit ) == false && tempWeight != 0 && tempWeight < minWeight ) {
-			    	preID[10] = {'\0'}  ;
-			    	strcpy( preID, tempID ) ;
-			    	minWeight = tempWeight ;
-				} // if
-			} // for
-		} // void SetSmallWeight
-		
-		// mission 3
-		void SetSmallWeight( Sender &graph, vector<string> &visit, float &minWeight, char (&preID )[10], string mission ) {
 			char tempID[10] = {'\0'} ;
 			float tempWeight = 0.0 ;
 
@@ -641,84 +683,93 @@ class Graph  {
 		} // void dijkstra
 		
 		void Kruskal( string fileName, vector<Sender> list, vector<Sender> &connectList ) {
-			Sender shortArray ;
+			vector<Data> weightList ;
 			vector<Sender> graph ;
 			float totalWeight = 0 ;
+			int count = 1 ;
 				
-			for ( int i=0; i < connectList.size(); i++ ) {
+			for ( int i=connectList.size()-1; i >= 0; i-- ) {
+				count ++ ;
 				BuildGraph( connectList[i].id , graph, list, connectList ) ;
-				KruskalPath( connectList[i].id, shortArray, graph ) ;
-				totalWeight = AddWeight( shortArray ) ;
-				// print
-				cout << "The MST cost of connected component {" << i+1 <<"} = " << totalWeight << endl ;
-				shortArray.id[10] = {'\0'} ; // Init
-				shortArray.receiver.clear() ;
+				BuildWeightList( graph, weightList ) ;
+				SortMission3( weightList ) ;
+				KruskalPath( graph, weightList, totalWeight ) ;
+				cout << "The MST cost of connected component {" << count <<"} = " << fixed << setprecision(4) << totalWeight << endl ;
+				weightList.clear() ;
 				graph.clear() ;
+				totalWeight =  0 ;
 			} // for
 		
 		} // void Kruskal
 		
-		void KruskalPath( string id, Sender &shortArray, vector<Sender> &graph ) {
-			vector<string> visit ;
-			int position = -1 ;
-			int tempPos = -1 ;
-			float minWeight = 999 ;
-			char preID[10] = {'\0'} ; // store previously path(ID)
-
-			// find ID in graph
-			position = FindID( id, graph, "1D" ) ;
-
-			//  set shortArray ID and weight
-			for ( int i=0; i < graph[position].receiver.size(); i++  ) {
-				if ( id != graph[position].receiver[i].id ) {
-					cout << "\nGraph ID & Weight : " << graph[position].receiver[i].id << " " << graph[position].receiver[i].weight ;
-					shortArray.receiver.push_back( graph[position].receiver[i] ) ;
-				} // if
-			} // for
-
-			visit.push_back( id ) ;
-			for ( int i=0; i < graph.size(); i++ ) {
-				if ( IsVisit( graph[i].id, visit ) == false ) {
-					// set smallest weight & previously path(ID)
-					SetSmallWeight( graph[i], visit, minWeight, preID, "mission3" ) ;
-				} // if
-			} // for
-
-			visit.push_back( preID ) ;
+		void KruskalPath( vector<Sender> &graph , vector<Data> &weightList, float &totalWeight ) {
+			Data tempData ;
+			vector<vector<string>> visit ;
+			vector<string> tempVec ;
 			
-			position = -1 ; // Init position
-			tempPos = -1 ;
+			float tempWeight = 0.0 ;
+			string tempString1 = "\0", tempString2 = "\0" ;
+			int visitPos1 = -1, visitPos2  = -1 ;
+			int pos1 = -1, pos2 = -1 ;
 			
-			for ( int count=0; count < shortArray.receiver.size()-1; count++  ) {
-				tempPos = FindID( preID, shortArray ) ; 
-				shortArray.receiver[tempPos].weight = minWeight ;
+			for ( int i=0; i < weightList.size(); i++ ) {
+				pos1 =  InVisit( weightList[i].id1, visit ) ;
+				pos2 =  InVisit( weightList[i].id2, visit ) ;
+
+				if ( pos1 == -1 && pos2  == -1 ) {
+					tempString1 = weightList[i].id1 ;
+					tempString2 = weightList[i].id2 ;
+					tempVec.push_back( tempString1 ) ;
+					tempVec.push_back( tempString2 ) ;
+					visit.push_back( tempVec ) ;
+					
+					tempVec.clear() ;
+					totalWeight = totalWeight + weightList[i].weight ;
+				} // if
 				
-				minWeight = 999 ; // reset min weight
-				for ( int i=0; i < graph.size(); i++ ) {
-					if ( IsVisit( graph[i].id, visit ) == false ) {
-						// set smallest weight & previously path(ID)
-						SetSmallWeight( graph[i], visit, minWeight, preID, "mission3" ) ;
+				else if ( ( pos1 != -1 && pos2 == -1 ) || ( pos1 == -1 && pos2 != -1 ) ) {
+					if ( pos1 != -1 ) {
+						tempString1 = weightList[i].id1 ;
+						tempString2 = weightList[i].id2 ;
+						pos1 = FindID( tempString1, visit ) ;
+						visit[pos1].push_back( tempString2 ) ;
 					} // if
-				} // for
-
-				visit.push_back( preID ) ;
-				if ( minWeight = 999 ) {
-					return ;
-				} // if
-
-				// Init 
-				position = -1 ;
-				tempPos = -1 ;
+					
+					else {
+						tempString1 = weightList[i].id1 ;
+						tempString2 = weightList[i].id2 ;
+						pos2 = FindID( tempString2, visit ) ;
+						visit[pos2].push_back( tempString1 ) ;
+					} // else
+					totalWeight = totalWeight + weightList[i].weight ;
+				} // else if
+				
+				else if ( pos1 != pos2 ) {
+					tempString1 = weightList[i].id1 ;
+					tempString2 = weightList[i].id2 ;
+					pos1 = FindID( tempString1, visit ) ;
+					pos2 = FindID( tempString2, visit ) ;
+					
+					for ( int j=0; j < visit[pos2].size(); j++ ) {
+						visit[pos1].push_back( visit[pos2][j] ) ;
+					} // for
+					
+					totalWeight = totalWeight + weightList[i].weight ;
+					visit.erase( visit.begin()+pos2 ) ;
+				} // else if
+				
+//				if ( visit[0].size() == graph.size() )
+//					return ;
+					
+			    tempString1 = "\0" ;
+				tempString2 = "\0" ;
+				visitPos1 = -1 ;
+				visitPos2 = -1 ;
+				pos1 = -1 ;
+				pos2 = -1 ;
 			} // for
+
 		} // void KruskalPath
-		
-		float AddWeight( Sender &shortArray ) {
-			float ans = 0;
-			for ( int i=0; i < shortArray.receiver.size(); i++ ) {
-				ans = ans + shortArray.receiver[i].weight ;
-			} // for
-			return ans ;
-		} // float AddWeight
 		
 		void Mission0_Print( vector<Sender> list ) {
 			int node = getTotalNode(list) ;
@@ -863,7 +914,7 @@ void Start() {
         cout << "\n* 2. Find shortest paths by Dijkstra *" ;
         cout << "\n* 3. Generate minimum spanning trees *" ;
         cout << "\n**************************************" ;
-        cout << "\nInput a choice(0, 1, 2) [Any other key: QUIT] :" ;
+        cout << "\nInput a choice(0, 1, 2, 3) [Any other key: QUIT] :" ;
         cin >> temp ;
 
         if ( file.IsNumber( temp ) ) {
